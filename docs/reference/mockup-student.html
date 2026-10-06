@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>낭독 챌린지 · 수강생 화면 목업</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --main:#76D4CC; --tint:#E2F6F3; --deep:#1F7F77;
+  --bg:#F6F8F8; --line:#E3E9E8; --mute:#EEF2F2; --line2:#D3DCDB;
+  --ink:#2D2D2D; --sub:#5A5A5A; --faint:#8A8A8A; --white:#FFFFFF;
+  --font:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--font);color:var(--ink);background:#E8EEEE;-webkit-font-smoothing:antialiased}
+button,input,select{font-family:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--ink)}
+:focus-visible{outline:3px solid var(--deep);outline-offset:2px}
+
+/* ---------- desktop layout ---------- */
+.stage{display:flex;gap:32px;justify-content:center;align-items:flex-start;min-height:100%;padding:32px 24px}
+.side{width:248px;flex-shrink:0;position:sticky;top:32px;display:flex;flex-direction:column;gap:18px}
+.side h1{font-size:18px;margin:0;line-height:1.4}
+.side p{margin:0;font-size:13px;color:var(--sub);line-height:1.6}
+.side .grp{display:flex;flex-direction:column;gap:4px}
+.side .grp b{font-size:12px;color:var(--deep);margin-bottom:2px}
+.side .nav{border:0;background:transparent;text-align:left;padding:8px 10px;border-radius:10px;font-size:14px}
+.side .nav:hover{background:var(--white)}
+.side .nav.on{background:var(--white);font-weight:800;box-shadow:inset 3px 0 0 var(--main)}
+.side label{font-size:13px;color:var(--sub);display:flex;flex-direction:column;gap:4px}
+.side select{height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--white);padding:0 10px;font-size:14px}
+.side .reset{height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--white);font-size:14px;font-weight:700}
+.phone{width:390px;height:844px;flex-shrink:0;border-radius:44px;background:var(--bg);position:relative;overflow:hidden;
+  box-shadow:0 0 0 10px #FFFFFF,0 0 0 11px var(--line2),0 24px 60px rgba(31,127,119,.18)}
+.menuBtn{display:none}
+
+/* ---------- mobile: phone fills the screen ---------- */
+@media (max-width:720px){
+  body{background:var(--bg)}
+  .stage{padding:0;display:block}
+  .phone{width:100%;height:100vh;height:100dvh;border-radius:0;box-shadow:none}
+  .side{position:fixed;inset:0;width:auto;z-index:50;background:var(--bg);padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));overflow-y:auto;display:none}
+  .side.open{display:flex}
+  .menuBtn{display:flex;position:fixed;z-index:60;right:12px;top:calc(10px + env(safe-area-inset-top,0px));height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--line2);background:rgba(255,255,255,.92);font-size:12px;font-weight:700;align-items:center}
+}
+
+/* ---------- phone internals ---------- */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.scroll{flex:1;overflow-y:auto;padding-bottom:20px}
+.pad{padding:0 16px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 10px}
+.back{display:flex;align-items:center;min-height:44px;border:0;background:transparent;font-size:15px;font-weight:700;padding:0}
+.meta{font-size:13px;color:var(--sub)}
+.h1{font-size:24px;font-weight:800;line-height:1.4;letter-spacing:-.3px;margin:0}
+.help{font-size:13px;color:var(--sub);line-height:1.6}
+.card{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:16px}
+.card.lift{box-shadow:0 2px 10px rgba(31,127,119,.07)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;align-items:center;gap:12px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cta{display:flex;align-items:center;justify-content:center;width:100%;height:56px;border-radius:12px;border:0;background:var(--main);font-size:17px;font-weight:800;text-decoration:none}
+.cta:disabled{background:var(--mute);color:var(--faint);cursor:not-allowed}
+.btn2{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;border-radius:12px;border:1px solid var(--line2);background:var(--white);font-size:15px;font-weight:700}
+.textbtn{border:0;background:transparent;min-height:44px;font-size:14px;font-weight:700;padding:0;text-decoration:underline;text-underline-offset:3px}
+.pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:20px;background:var(--tint);font-size:13px;font-weight:800}
+.chip{flex-shrink:0;min-height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--line2);background:var(--white);font-size:13px;font-weight:700}
+.chip.on{border:2px solid var(--deep);background:var(--tint)}
+.get{flex-shrink:0;display:flex;align-items:center;gap:4px;min-height:44px;padding:0 14px;border-radius:12px;border:0;background:var(--tint);font-size:14px;font-weight:800}
+.play{flex-shrink:0;width:44px;height:44px;border-radius:50%;border:0;background:var(--ink);display:flex;align-items:center;justify-content:center}
+.input{width:100%;height:52px;border-radius:12px;border:1px solid var(--faint);background:var(--white);padding:0 14px;font-size:16px}
+.label{font-size:13px;font-weight:700}
+.sec{font-size:13px;font-weight:800;color:var(--sub);margin-top:6px}
+.bar{height:8px;border-radius:4px;background:var(--line)}
+.bar i{display:block;height:8px;border-radius:4px;background:var(--main)}
+
+/* tab bar */
+.tabs{flex-shrink:0;display:flex;padding:6px 8px calc(14px + env(safe-area-inset-bottom,0px));background:var(--white);border-top:1px solid var(--line)}
+.tab{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:56px;border:0;background:transparent;font-size:12px;color:var(--sub)}
+.tab.on{color:var(--deep);font-weight:800}
+.badge{position:absolute;top:2px;left:50%;margin-left:6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--main);color:var(--ink);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+
+/* home */
+.dots{display:flex;gap:10px}
+.dot{width:44px;height:44px;border-radius:50%;border:2px solid var(--line2);display:flex;align-items:center;justify-content:center}
+.dot.done{background:var(--main);border-color:var(--main)}
+.grid{display:flex;flex-direction:column;gap:6px}
+.grow{display:flex;align-items:center;gap:6px}
+.wk{width:36px;flex-shrink:0;font-size:14px;font-weight:800}
+.wk.future{color:var(--faint)}
+.box{width:44px;height:44px;flex-shrink:0;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.box.done{background:var(--main)}
+.box.miss{background:var(--white);border:2px dashed var(--deep)}
+.box.open{background:var(--white);border:1.5px solid var(--line2)}
+.box.future{background:var(--mute)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px}
+.legend span{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700}
+.recHead{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:52px;padding:0;border:0;background:transparent;text-align:left}
+.reveal{animation:reveal .28s ease-out}
+@keyframes reveal{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+/* activity list */
+.act{display:flex;align-items:center;gap:12px;width:100%;min-height:76px;padding:12px 16px;border-radius:16px;border:1px solid var(--line);background:var(--white);text-align:left}
+.act .ic{width:44px;height:44px;flex-shrink:0;border-radius:12px;background:var(--tint);display:flex;align-items:center;justify-content:center}
+.tag{margin-left:6px;padding:3px 8px;border-radius:8px;background:var(--tint);font-size:11px;font-weight:800;color:var(--deep)}
+
+/* steps */
+.steps{display:flex;gap:6px;padding:0 16px}
+.steps div{flex:1;padding:8px 0;text-align:center;border-radius:10px;font-size:12px;font-weight:800;background:var(--mute);color:var(--sub)}
+.steps div.on{background:var(--ink);color:var(--white)}
+
+/* article */
+.article p{margin:0 0 6px;font-size:17px;line-height:1.7}
+.article p.ko{font-size:14px;color:var(--sub);margin-bottom:14px}
+
+
+/* reading text + highlight */
+.txt .en{font-size:17px;line-height:1.85}
+.txt .ko{font-size:14px;line-height:1.75;color:var(--sub);margin:4px 0 16px}
+.txt.koMain .ko{font-size:17px;color:var(--ink);line-height:1.85;margin:0}
+.txt.koMain .en{font-size:14px;color:var(--sub);line-height:1.75;margin:4px 0 16px}
+.ck,.sk{border-radius:5px;padding:1px 0;transition:background-color .15s,box-shadow .15s}
+.ck.hl,.sk.hl{background:var(--main);box-shadow:0 0 0 3px var(--main)}
+.sl{color:var(--deep);font-weight:800;margin:0 3px}
+.rate{display:flex;align-items:center;gap:6px}
+.rate span{font-size:13px;font-weight:700;color:var(--sub);margin-right:2px}
+.rate button{min-width:52px;height:36px;border-radius:18px;border:1px solid var(--line2);background:var(--white);font-size:13px;font-weight:700}
+.rate button.on{border:2px solid var(--deep);background:var(--tint)}
+.recText .ck,.recText .sk{font-size:21px;line-height:1.9}
+/* recording */
+.count{position:absolute;inset:0;background:rgba(246,248,248,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:5}
+.count b{font-size:96px;line-height:1;color:var(--deep)}
+.rec{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800}
+.rec i{width:12px;height:12px;border-radius:50%;background:var(--deep);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+
+/* overlay */
+.dim{position:absolute;inset:0;background:rgba(45,45,45,.45);z-index:20;animation:fade .2s}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:21;background:var(--white);border-radius:24px 24px 0 0;padding:12px 20px calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;animation:up .28s ease-out}
+.handle{align-self:center;width:40px;height:4px;border-radius:2px;background:var(--line2)}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+
+.toast{position:absolute;left:50%;bottom:100px;transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--white);font-size:14px;font-weight:700;padding:12px 18px;border-radius:12px;white-space:nowrap;animation:fade .2s}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <aside class="side" id="side">
+    <div>
+      <h1>낭독 챌린지<br>수강생 화면 목업</h1>
+      <p style="margin-top:6px">버튼을 눌러 실제처럼 넘겨 볼 수 있어요. 기사는 1주차 지문을 예시로 넣었고, 이름과 날짜는 예시입니다. 음원은 아직 없어서 하이라이트는 예상 시간으로 움직입니다.</p>
+    </div>
+    <div class="grp" id="navList"></div>
+    <div class="grp">
+      <b>데모 설정</b>
+      <label>완주 단계
+        <select id="tierSel"><option value="on">제때 완주</option><option value="grace">유예 완주</option><option value="late">늦은 완주</option></select>
+      </label>
+      <label>마감 이후 홈
+        <select id="graceSel"><option value="g">유예 중</option><option value="after">유예 종료 후</option></select>
+      </label>
+      <button class="reset" id="resetBtn">처음 상태로 되돌리기</button>
+    </div>
+  </aside>
+  <main class="phone" id="phone" aria-live="polite"></main>
+</div>
+<button class="menuBtn" id="menuBtn">화면 목록</button>
+
+<script>
+/* ================= icons ================= */
+const svg=(d,s=22,stroke='currentColor',w=2)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const BUB='<path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-8l-4 3.5V17H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"></path>';
+const TXT=(t,fs)=>`<text x="12" y="13.6" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="${fs}" font-weight="800" fill="currentColor" stroke="none">${t}</text>`;
+const ACT={
+  KR:{name:'한국어 기사 낭독',short:'한국어 낭독',d:BUB+TXT('가','8'),desc:'한글 해석을 소리 내어 읽고 녹음해요'},
+  EN:{name:'영어 기사 낭독',short:'영어 낭독',d:BUB+TXT('A','9'),desc:'음원을 듣고 영어로 읽어 녹음해요'},
+  VO:{name:'VOCA',short:'VOCA',d:'<rect x="3" y="7.5" width="13" height="13" rx="2"></rect><path d="M8 4h11a2 2 0 0 1 2 2v11"></path>',desc:'단어를 익히고 작성지 사진을 올려요'},
+  SU:{name:'기사 요약',short:'기사 요약',d:'<path d="M6.5 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M9 8h6M9 12h6M9 16h3.5"></path>',desc:'작성지 사진 1장을 올려요'},
+  DE:{name:'찬반토론',short:'찬반토론',d:'<path d="M12 4v15M8 20h8M5 7h14"></path><path d="M2 13a3 3 0 0 0 6 0L5 7z"></path><path d="M16 13a3 3 0 0 0 6 0L19 7z"></path>',desc:'작성지 사진 1장을 올려요'}
+};
+const aIcon=(k,s=22)=>svg(ACT[k].d,s);
+const I={
+  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M7 4l14 8-14 8z"></path></svg>',
+  pause:'<svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"></path></svg>',
+  check:svg('<path d="M5 12l5 5 9-10"></path>',18,'currentColor',3),
+  dl:svg('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path>',18,'currentColor',2.4),
+  home:svg('<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path>',24),
+  doc:svg('<path d="M6 3h9l4 4v14H6z"></path><path d="M14 3v5h5"></path>',24),
+  up:svg('<path d="M12 16V4M7 9l5-5 5 5M5 20h14"></path>',24),
+  down:svg('<path d="M6 9l6 6 6-6"></path>',20,'currentColor',2.4),
+  upc:svg('<path d="M6 15l6-6 6 6"></path>',20,'currentColor',2.4),
+  mic:svg('<rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path>',28,'var(--deep)'),
+  mark:svg('<path d="M6 3h12v18l-6-4-6 4z"></path>',20,'var(--deep)',2.2),
+  cam:svg('<path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle>',22),
+  img:svg('<rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M21 16l-5-5-9 9"></path>',22)
+};
+
+/* ================= sample content ================= */
+const ARTICLE={
+  title:'RM Opens His Art Collection to the World', level:'약 780L', week:1,
+  sents:[
+   [1,'What does a pop star collect?','팝 스타는 무엇을 모을까?'],
+   [1,'For RM of BTS, / the answer is art.','방탄소년단의 RM에게 그 답은 미술 작품이다.'],
+   [1,'For the first time, / RM is sharing his personal art collection / in a museum show.','RM은 처음으로 자신이 모은 미술 작품들을 미술관 전시에서 사람들에게 보여 주고 있다.'],
+   [1,'The exhibition, / "RM x SFMOMA: Between You and Me," / is at the San Francisco Museum of Modern Art, / also known as SFMOMA.','\'RM x SFMOMA: Between You and Me\'라는 이 전시는 SFMOMA라고도 불리는 샌프란시스코 현대미술관에서 열리고 있다.'],
+   [2,'The show has 178 artworks.','이 전시에는 작품 178점이 있다.'],
+   [2,'Of these, / 142 come from RM\'s own collection, / and 36 come from the museum.','그중 142점은 RM이 직접 모은 작품이고, 36점은 미술관이 가진 작품이다.'],
+   [2,'Half of the works are by Korean artists.','작품의 절반은 한국 작가들의 작품이다.'],
+   [2,'The other half / are by artists from other countries.','나머지 절반은 다른 나라 작가들의 작품이다.'],
+   [3,'RM did more than lend his art.','RM은 자신이 가진 작품을 빌려주기만 한 것이 아니다.'],
+   [3,'He helped choose the works / and wrote the texts on the walls.','전시할 작품을 고르는 일을 돕고, 벽에 걸린 설명 글도 직접 썼다.'],
+   [3,'He also recorded an audio guide / in Korean and English / and picked the background music.','또 한국어와 영어로 음성 안내를 녹음하고, 배경 음악도 골랐다.'],
+   [4,'"Few things show a person / as honestly as a collection / someone has built over a long time," / RM said.','RM은 "누군가 오랫동안 모아 온 컬렉션만큼 그 사람을 솔직하게 보여 주는 것은 거의 없어요"라고 말했다.'],
+   [4,'"This exhibition / is a long introduction of myself."','"이번 전시는 저를 길게 소개하는 자리예요."'],
+   [5,'The exhibition gives visitors a chance / to see another side of RM— / not just as a musician, / but also as an art lover and collector.','관람객들은 이 전시에서 음악가 RM뿐 아니라, 미술을 사랑하고 작품을 모으는 RM의 또 다른 모습도 볼 수 있다.']
+  ]
+};
+ARTICLE.chunks=ARTICLE.sents.map(x=>x[1].split(' / '));
+const wc=t=>t.replace(/—/g,' ').trim().split(/\s+/).length;
+ARTICLE.words=ARTICLE.chunks.flat().reduce((n,c)=>n+wc(c),0);
+/* 예시 시간 정보: 실제로는 음원 강제 정렬 결과를 씀. 영어 분당 150단어, 한국어 글자당 0.11초로 가정 */
+const T_EN=c=>wc(c)*0.4, T_KO=t=>t.replace(/\s/g,'').length*0.11;
+const fmtT=sec=>{sec=Math.round(sec);return sec>=60?`${Math.floor(sec/60)}분 ${sec%60}초`:`${sec}초`};
+const EN_TOTAL=ARTICLE.chunks.flat().reduce((n,c)=>n+T_EN(c),0)+ARTICLE.sents.length*0.35;
+const KO_TOTAL=ARTICLE.sents.reduce((n,x)=>n+T_KO(x[2])+0.4,0);
+
+/* ================= state ================= */
+const INIT=()=>({
+  screen:'welcome', os:'ios', by:'2015', bm:'3', access:'yes', sent:false,
+  weeks:[['KR','VO','SU','DE','EN'],['EN','EN','EN','EN','EN'],['EN','VO','EN','SU'],['EN','EN','VO'],[],[],[],[],[],[],[],[]],
+  posted:15,
+  queue:[{id:1,t:'EN',week:3,meta:'3주차 · 10월 3일 녹음',kind:'video'},{id:2,t:'VO',week:4,meta:'4주차 · 10월 5일 · 작성지 사진',kind:'photo'}],
+  recOpen:false, selWeek:4, act:'EN', wsType:'SU', photo:false, enOnly:false,
+  playing:null, rate:1, slash:false, pacerOn:true, pacerPaused:false, firstShown:false, popup:null, tier:'on', grace:'g',
+  certIssued:false, certName:'김지우', live:true, nextId:3
+});
+let S=INIT();
+const NOW=4; // 현재 주차
+let timers=[];
+const clearTimers=()=>{timers.forEach(clearInterval);timers.forEach(clearTimeout);timers=[]};
+
+/* ================= helpers ================= */
+const learnedTotal=()=>S.weeks.reduce((n,w)=>n+w.length,0);
+const backlog=()=>{for(let i=0;i<NOW-1;i++){if(S.weeks[i].length<5)return `${i+1}주차 ${5-S.weeks[i].length}회 남음`}return ''};
+const gradeOf=(y)=>{const g=2026-Number(y)-6;if(g>=1&&g<=6)return `초등 ${g}학년`;if(g>=7&&g<=9)return `중학교 ${g-6}학년`;return '학년 확인 필요'};
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;phone.appendChild(t);setTimeout(()=>t.remove(),2200)}
+function addLearning(type,kind){
+  const w=S.selWeek-1;
+  if(S.weeks[w].length>=5){ // 꽉 찬 주차면 이번 주로
+    S.selWeek=NOW;
+  }
+  S.weeks[S.selWeek-1].push(type);
+  const d=new Date(2026,9,5);
+  S.queue.push({id:S.nextId++,t:type,week:S.selWeek,meta:`${S.selWeek}주차 · 10월 5일${kind==='photo'?' · 작성지 사진':' 녹음'}`,kind});
+}
+function tabbar(active,badge){
+  const n=badge??S.queue.length;
+  const t=(k,label,go,ic)=>`<button class="tab${active===k?' on':''}" data-go="${go}" ${active===k?'aria-current="page"':''}>${I[ic]}${k==='up'&&n?`<span class="badge">${n}</span>`:''}<span>${label}</span></button>`;
+  return `<nav class="tabs" aria-label="메뉴">${t('home','홈','home','home')}${t('doc','이번 주 자료','materials','doc')}${t('up','인스타 올리기','queue','up')}</nav>`;
+}
+const topBar=(go,label,right='')=>`<div class="topbar"><button class="back" data-go="${go}">‹ ${label}</button><div class="meta">${right}</div></div>`;
+const audioRow=(key,name,meta)=>`<div class="card row" style="padding:10px 14px"><button class="play" data-play="${key}" aria-label="${name} ${S.playing===key?'멈춤':'재생'}">${S.playing===key?I.pause:I.play}</button><div style="flex:1;font-size:15px;font-weight:800">${name}</div><div class="meta">${S.playing===key?'재생 중':meta}</div></div>`;
+
+/* ================= screens ================= */
+const SCREENS={
+
+welcome(){
+  const step=(n,l)=>progress(n,l);
+  const r=(t)=>`<div style="padding:8px 0;border-bottom:1px solid var(--mute);font-size:14px;font-weight:700">${t}</div>`;
+  const ios=S.os==='ios';
+  return `<div class="scroll">${step(1,'정보 확인')}
+  <div class="pad stack" style="padding-top:22px;gap:20px">
+    <div class="stack" style="gap:8px"><span class="pill" style="align-self:flex-start">새벽달 영어뉴스 1기</span>
+      <h2 class="h1" style="font-size:26px">12주 챌린지에<br>오신 걸 환영해요</h2>
+      <div class="help">신청 정보를 확인하고 보호자 정보를 입력해 주세요.</div></div>
+    <div class="card lift"><div style="font-size:14px;font-weight:800;margin-bottom:4px">신청 정보</div>
+      ${kv('과정','새벽달 영어뉴스 1기')}${kv('기간','12주')}${kv('신청 연락처','010-****-1234')}
+      <button class="textbtn" style="font-size:13px;color:var(--sub)">정보가 다르면 문의하기</button></div>
+    <div class="card lift"><div style="font-size:14px;font-weight:800">제공 자료</div>
+      <div class="sec" style="color:var(--deep);font-size:12px;margin-top:10px">PDF 2종</div>${r('기사 PDF (원문 · 요약 작성지 · 토론 질문지)')}${r('VOCA 정리 PDF')}
+      <div class="sec" style="color:var(--deep);font-size:12px;margin-top:10px">음원 3종</div>${r('영어 기사 음원')}${r('새벽달 한영 구간반복')}${r('VOCA 구간반복')}
+      <div class="sec" style="color:var(--deep);font-size:12px;margin-top:10px">라이브</div>${r('새벽달 Zoom Live 2회')}
+      <div class="help" style="margin-top:10px">매주 월요일에 새 자료가 열려요.</div></div>
+    <div class="stack" style="gap:14px"><div style="font-size:14px;font-weight:800">보호자 정보</div>
+      <div class="stack" style="gap:6px"><label class="label" for="gname">보호자 이름</label><input class="input" id="gname" placeholder="이름 입력"></div>
+      <div class="stack" style="gap:6px"><label class="label" for="gphone">알림 받을 연락처</label><input class="input" id="gphone" value="010-****-1234" readonly style="background:var(--mute)"><div class="help">신청한 번호로 알림톡을 보내드려요.</div></div>
+      <label class="row" style="min-height:44px;font-size:14px;gap:10px"><input type="checkbox" checked style="width:22px;height:22px;accent-color:var(--deep)">학습 안내 알림톡 받기 (필수)</label></div>
+    <div style="padding:18px;border-radius:16px;background:var(--tint)" class="stack">
+      <div style="font-size:15px;font-weight:800">홈 화면에 추가해 두세요</div>
+      <div class="help" style="color:var(--ink)">매일 알림톡을 찾지 않아도 앱처럼 바로 열려요.</div>
+      <div class="row" style="gap:6px;padding:4px;border-radius:12px;background:var(--white)">
+        <button data-os="ios" style="flex:1;height:40px;border-radius:9px;border:0;font-size:14px;font-weight:700;background:${ios?'var(--main)':'var(--white)'}">아이폰</button>
+        <button data-os="and" style="flex:1;height:40px;border-radius:9px;border:0;font-size:14px;font-weight:700;background:${!ios?'var(--main)':'var(--white)'}">안드로이드</button></div>
+      <div class="stack" style="gap:8px;font-size:14px;line-height:1.5">${ios?'<div>1. Safari에서 이 페이지를 열어요</div><div>2. 아래쪽 공유 버튼을 눌러요</div><div>3. \'홈 화면에 추가\'를 눌러요</div>':'<div>1. Chrome에서 이 페이지를 열어요</div><div>2. 오른쪽 위 메뉴(점 3개)를 눌러요</div><div>3. \'홈 화면에 추가\'를 눌러요</div>'}</div>
+      <div class="help">카카오톡 안에서 열렸다면 오른쪽 위 메뉴에서 '다른 브라우저로 열기'를 먼저 눌러 주세요.</div></div>
+    <button class="cta" data-go="student">다음 · 학습자 등록</button>
+  </div></div>`;
+},
+
+student(){
+  const yrs=[2010,2011,2012,2013,2014,2015,2016,2017].map(y=>`<option ${S.by==y?'selected':''} value="${y}">${y}년</option>`).join('');
+  const mos=Array.from({length:12},(_,i)=>`<option ${S.bm==i+1?'selected':''} value="${i+1}">${i+1}월</option>`).join('');
+  return `<div class="scroll">${progress(2,'학습자 등록')}
+  <div class="pad stack" style="padding-top:22px;gap:22px">
+    <div class="stack" style="gap:8px"><h2 class="h1">함께할 학습자를<br>알려주세요</h2></div>
+    <div class="stack" style="gap:6px"><label class="label" for="sname">학습자 이름</label><input class="input" id="sname" placeholder="성과 이름 모두 (예: 김지우)">
+      <div class="help">완주 상장에 이 이름이 그대로 들어가요. 성과 이름을 모두 써 주세요.</div></div>
+    <div class="stack" style="gap:6px"><div class="label">출생 연월</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><select class="input" id="by" aria-label="출생 연도">${yrs}</select><select class="input" id="bm" aria-label="출생 월">${mos}</select></div>
+      <div class="between" style="padding:4px 4px 4px 12px;border-radius:12px;background:var(--tint);font-size:13px"><span>올해 <b>${gradeOf(S.by)}</b>으로 표시돼요</span><button style="min-height:40px;padding:0 12px;border-radius:10px;border:0;background:var(--white);font-size:12px;font-weight:700">학년이 다르면 바꾸기</button></div>
+      <div class="help">학년 표시와 보호자 동의 확인에만 써요. 생일은 받지 않아요.</div></div>
+    <div class="stack" style="gap:6px"><label class="label" for="ig">인증할 인스타그램 계정</label>
+      <div class="row" style="gap:4px;height:52px;border-radius:12px;border:1px solid var(--faint);background:var(--white);padding:0 14px"><span style="color:var(--sub)">@</span><input id="ig" placeholder="계정 아이디" style="flex:1;min-width:0;height:48px;border:0;font-size:16px;background:transparent"></div>
+      <div class="help">낭독 영상과 작성지를 올릴 계정이에요. 보호자 계정도 괜찮아요.</div></div>
+    <button class="btn2" style="border-style:dashed;height:52px">+ 형제·자매 함께 등록하기</button>
+    <div class="row" style="gap:10px"><button class="btn2" style="width:96px;height:56px" data-go="welcome">이전</button><button class="cta" data-go="access">다음</button></div>
+  </div></div>`;
+},
+
+access(){
+  const yes=S.access==='yes';
+  const opt=(k,t,d)=>{const on=S.access===k;return `<button data-access="${k}" style="display:flex;gap:12px;align-items:flex-start;width:100%;padding:16px;border-radius:14px;text-align:left;border:${on?'2px solid var(--deep)':'1px solid var(--line2)'};background:${on?'var(--tint)':'var(--white)'}"><span style="width:22px;height:22px;flex-shrink:0;border-radius:50%;margin-top:1px;border:${on?'7px solid var(--deep)':'2px solid var(--faint)'};background:var(--white)"></span><span class="stack" style="gap:4px"><span style="font-size:15px;font-weight:800">${t}</span><span class="help" style="font-size:12px">${d}</span></span></button>`};
+  return `<div class="scroll">${progress(3,'접속 방법과 동의')}
+  <div class="pad stack" style="padding-top:22px;gap:20px">
+    <h2 class="h1">지우가 본인 휴대폰으로<br>직접 진행하나요?</h2>
+    <div class="stack" style="gap:10px">${opt('yes','네, 지우 휴대폰으로 해요','지우에게 별도 접속 링크를 보내요. 보호자도 같은 기록을 볼 수 있어요.')}${opt('no','아니요, 보호자 휴대폰으로 해요','지금 이 휴대폰에서 함께 진행해요. 나중에 추가할 수 있어요.')}</div>
+    ${yes?`<div class="stack reveal" style="gap:6px"><label class="label" for="cphone">지우 연락처</label><input class="input" id="cphone" type="tel" placeholder="010-0000-0000"><div class="help">등록을 마치면 이 번호로 지우 전용 접속 링크를 보내드려요. 알림톡은 보호자와 지우 모두에게 가요.</div></div>`:''}
+    <div class="card lift"><label class="row" style="align-items:flex-start;gap:10px;font-size:14px;line-height:1.5"><input type="checkbox" style="width:22px;height:22px;margin-top:2px;accent-color:var(--deep)">자녀의 낭독 음성과 작성 이미지 수집·보관에 동의합니다 (필수, 만 14세 미만 보호자 동의)</label>
+      <button class="textbtn" style="font-size:13px;color:var(--sub)">보관 기간과 삭제 기준 보기</button></div>
+    <div class="row" style="gap:10px"><button class="btn2" style="width:96px;height:56px" data-go="student">이전</button><button class="cta" data-go="home">챌린지 시작하기</button></div>
+  </div></div>`;
+},
+
+reentry(){
+  return `<div class="scroll"><div class="pad stack" style="padding-top:48px;gap:22px">
+    <div class="stack" style="gap:8px"><h2 class="h1" style="font-size:26px">다시 들어가기</h2>
+      <div class="help" style="font-size:14px">알림톡 링크를 찾을 수 없거나 휴대폰을 바꿨나요?<br>등록한 번호로 새 접속 링크를 보내드려요.</div></div>
+    ${!S.sent?`<div class="stack" style="gap:14px"><div class="stack" style="gap:6px"><label class="label" for="rphone">등록한 휴대폰 번호</label><input class="input" id="rphone" type="tel" placeholder="010-0000-0000"><div class="help">보호자 번호와 자녀 번호 모두 사용할 수 있어요.</div></div><button class="cta" data-action="sendLink">접속 링크 받기</button></div>`
+    :`<div class="stack reveal" style="padding:20px;border-radius:16px;background:var(--tint);gap:10px"><div style="font-size:16px;font-weight:800">알림톡을 확인해 주세요</div><div style="font-size:14px;line-height:1.6">등록된 번호라면 1분 안에 새 접속 링크가 도착해요. 링크는 24시간 동안 쓸 수 있어요.</div><button class="btn2" style="width:auto;align-self:flex-start;padding:0 14px;height:44px" data-action="resetLink">다른 번호로 받기</button></div>`}
+  </div></div>
+  <div style="padding:20px;text-align:center"><div class="help">번호가 바뀌었거나 알림톡이 오지 않나요?</div><button class="textbtn">운영팀에 문의하기</button></div>`;
+},
+
+home(){
+  const w=S.weeks[NOW-1], learned=learnedTotal(), bl=backlog();
+  const dots=Array.from({length:5},(_,i)=>`<div class="dot${i<w.length?' done':''}">${i<w.length?I.check:''}</div>`).join('');
+  const pct=Math.round(S.posted/60*100);
+  let grid='';
+  if(S.recOpen){
+    const rows=S.weeks.map((acts,wi)=>{const n=wi+1;let b='';for(let i=0;i<5;i++){
+      if(i<acts.length)b+=`<div class="box done" role="img" aria-label="${ACT[acts[i]].short}">${aIcon(acts[i])}</div>`;
+      else if(n<NOW)b+=`<div class="box miss" role="img" aria-label="빈 칸"></div>`;
+      else if(n===NOW)b+=`<div class="box open" role="img" aria-label="빈 칸"></div>`;
+      else b+=`<div class="box future"></div>`;}
+      return `<div class="grow"><div class="wk${n>NOW?' future':''}">${n}주</div>${b}</div>`}).join('');
+    const lg=Object.keys(ACT).map(k=>`<span>${aIcon(k,18)}${ACT[k].short}</span>`).join('');
+    const readCnt=S.weeks.flat().filter(x=>x==='EN').length;
+    grid=`<div class="stack reveal" style="padding:4px 0 12px"><div style="font-size:13px;font-weight:700">지금까지 소리 내어 읽은 영어 단어 <b style="color:var(--deep)">${(readCnt*ARTICLE.words).toLocaleString()}</b>개</div><div class="legend">${lg}</div><div class="grid">${rows}</div></div>`;
+  }
+  return `<div class="scroll">
+    <div class="topbar"><div style="font-size:18px;font-weight:800">안녕, 지우!</div><button class="chip" style="border-radius:22px;min-height:44px">지우 · 초5 ▾</button></div>
+    ${S.live?`<button data-go="materials" class="row" style="margin:0 16px 12px;width:calc(100% - 32px);padding:12px 14px;border-radius:14px;border:0;background:var(--tint);text-align:left">
+      <span style="width:48px;height:48px;flex-shrink:0;border-radius:12px;background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:10px;font-weight:800;color:var(--deep)">LIVE</span><span style="font-size:14px;font-weight:800">D-3</span></span>
+      <span class="stack" style="gap:2px;flex:1"><span style="font-size:14px;font-weight:800">새벽달 Zoom Live 1회차</span><span class="meta">10월 8일(목) 저녁 8시</span></span><span style="font-size:18px;font-weight:800">›</span></button>`:''}
+    <div class="pad"><div class="card lift stack" style="padding:20px">
+      <div class="between"><span class="pill">4주차</span><span class="meta">10월 5일 – 11일</span></div>
+      <div style="font-size:17px;font-weight:700;line-height:1.4">${ARTICLE.title}</div>
+      <div class="row" style="align-items:baseline;gap:8px"><span style="font-size:56px;font-weight:800;line-height:1">${w.length}</span><span style="font-size:20px;font-weight:700;color:var(--sub)">/ 5</span><span style="font-size:14px;color:var(--sub);margin-left:4px">이번 주 학습</span></div>
+      <div class="dots">${dots}</div></div></div>
+    <div class="pad" style="padding-top:12px"><button class="cta" data-go="activity">+ 오늘 학습하기</button></div>
+    <div class="pad" style="padding-top:12px"><div class="card stack" style="gap:10px">
+      <div class="between"><div style="font-size:17px;font-weight:800">종강 12월 6일(일)</div><span class="pill" style="border-radius:10px">9주 남음</span></div>
+      <div class="between" style="align-items:baseline"><div style="font-size:14px;font-weight:700;color:var(--sub)">완주까지 인스타 올리기</div><div style="font-size:16px;font-weight:800">${S.posted} <span style="font-weight:500;color:var(--sub)">/ 60</span></div></div>
+      <div class="bar"><i style="width:${pct}%"></i></div></div></div>
+    <div class="pad" style="padding-top:12px"><div class="card" style="padding:8px 16px">
+      <button class="recHead" data-action="toggleRec" aria-expanded="${S.recOpen}"><span class="stack" style="gap:3px"><span style="font-size:15px;font-weight:800">12주 기록</span><span class="meta">학습 ${learned} / 60${bl?' · '+bl:''}</span></span><span class="row" style="gap:4px;font-size:13px;font-weight:700">${S.recOpen?'접기'+I.upc:'펼쳐 보기'+I.down}</span></button>
+      ${grid}</div></div>
+  </div>${tabbar('home')}`;
+},
+
+activity(){
+  const w=S.weeks[S.selWeek-1];
+  const cnt=(k)=>w.filter(x=>x===k).length;
+  const chips=[4,3].map(n=>{const left=5-S.weeks[n-1].length;return `<button class="chip${S.selWeek===n?' on':''}" data-week="${n}">${n}주차 · ${n===NOW?'이번 주':left+'회 남음'}</button>`}).join('');
+  const item=(k,tag='')=>`<button class="act" data-start="${k}"><span class="ic">${aIcon(k)}</span><span class="stack" style="gap:4px;flex:1"><span style="font-size:16px;font-weight:800">${ACT[k].name}${tag?`<span class="tag">${tag}</span>`:''}</span><span class="help" style="font-size:12px">${ACT[k].desc}</span></span><span class="meta" style="font-size:12px;font-weight:700;white-space:nowrap">${k==='SU'&&S.selWeek===NOW?'작성 중 · 이어서':cnt(k)+'회'}</span></button>`;
+  return `<div class="scroll">${topBar('home','홈',`${S.selWeek}주차 학습 ${w.length} / 5`)}
+  <div class="pad stack" style="gap:14px">
+    <h2 class="h1">오늘은 무엇을 할까요?</h2>
+    <div class="row" style="gap:8px;overflow-x:auto">${chips}</div>
+    <div class="help">월요일 추천은 한국어 기사 낭독이에요. 다른 활동을 골라도 괜찮아요.</div>
+    <div class="stack" style="gap:10px">${item('KR','오늘 추천')}${item('EN')}${item('VO')}${item('SU')}${item('DE')}</div>
+    <div class="help">같은 활동을 여러 번 해도 매번 1회로 인정돼요.</div>
+  </div></div>`;
+},
+
+reading(){
+  const en=S.act==='EN';
+  return `<div class="scroll" id="readScroll">${topBar('activity',ACT[S.act].name,`${S.selWeek}주차`)}
+  <div class="steps"><div class="on">1 듣기</div><div>2 낭독</div><div>3 확인</div></div>
+  <div class="pad stack" style="padding-top:14px;gap:10px">
+    ${en?audioRow('enAudio','영어 기사 음원',fmtT(EN_TOTAL/S.rate)):''}${audioRow('krAudio','새벽달 한영 구간반복',fmtT((KO_TOTAL+EN_TOTAL*2)/S.rate))}
+    ${rateBar()}
+    <div class="card stack" style="gap:12px">
+      <div class="between"><div style="font-size:13px;font-weight:800">${en?'기사 원문':'기사 해석'}</div>
+        <div class="row" style="gap:6px"><button class="get" style="font-size:12px;padding:0 12px" data-action="pdf" data-name="기사 PDF">${I.dl}기사 PDF</button>
+        <button class="chip" style="min-height:44px;border-radius:12px;font-size:12px" data-action="enOnly">${S.enOnly?'함께 보기':(en?'영어만 보기':'한글만 보기')}</button></div></div>
+      ${en?`<label class="row" style="gap:8px;font-size:13px;font-weight:700;color:var(--sub);min-height:32px"><input type="checkbox" data-action="slash" ${S.slash?'checked':''} style="width:18px;height:18px;accent-color:var(--deep)">끊어 읽기 표시</label>`:''}
+      ${articleHTML(en,S.enOnly,false)}
+    </div>
+  </div></div>
+  <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:6px"><div class="help" style="text-align:center" id="estTime">${S.rate}배로 읽으면 약 ${fmtT((en?EN_TOTAL:KO_TOTAL)/S.rate)} 걸려요 · 이어폰을 끼면 녹음이 더 깨끗해요</div><button class="cta" data-go="recording">낭독 시작</button></div>`;
+},
+
+recording(){
+  const en=S.act==='EN';
+  return `${topBar('reading','그만두기','')}
+  <div class="steps"><div>1 듣기</div><div class="on">2 낭독</div><div>3 확인</div></div>
+  <div class="pad stack" style="padding-top:14px;gap:10px">
+    <div class="between"><span class="rec"><i></i>녹음 중</span><span id="clock" style="font-size:18px;font-weight:800;font-variant-numeric:tabular-nums">${Math.floor((S._sec||0)/60)}:${String((S._sec||0)%60).padStart(2,"0")}</span></div>
+    <div class="between">${rateBar(true)}</div>
+    <div class="row" style="gap:6px">
+      <button class="chip" style="border-radius:12px" data-action="pacerToggle">${S.pacerOn?'하이라이트 끄기':'하이라이트 켜기'}</button>
+      ${S.pacerOn?`<button class="chip" style="border-radius:12px" data-action="pacerPause" id="pauseBtn">${S.pacerPaused?'다시 움직이기':'잠깐 멈추기'}</button>`:''}
+    </div>
+  </div>
+  <div class="scroll" id="recScroll"><div class="pad recText" style="padding-top:12px">${articleHTML(en,true,true)}</div></div>
+  <div class="pad" style="padding-bottom:20px"><button class="cta" data-go="review">다 읽었어요</button></div>
+  ${S._recStarted?'':'<div class="count" id="count"><b id="cnum">3</b><div style="font-size:15px;font-weight:700">곧 녹음이 시작돼요</div><div class="help">하이라이트를 따라 읽어 보세요</div></div>'}<span id="clockStore" hidden></span>`;
+},
+
+review(){
+  const h=[12,22,34,18,40,52,30,16,44,36,24,48,56,28,14,38,46,20,32,50,26,42,18,36,54,30,22,46,34,16,40,28,50,24,38,18,30,44,20,12];
+  const bars=h.map(v=>`<span style="flex:1;height:${v}px;border-radius:2px;background:${S.playing==='mine'?'var(--deep)':'var(--main)'}"></span>`).join('');
+  const w=S.weeks[S.selWeek-1].length;
+  return `<div class="scroll">${topBar('reading',ACT[S.act].name,`${S.selWeek}주차`)}
+  <div class="steps"><div>1 듣기</div><div>2 낭독</div><div class="on">3 확인</div></div>
+  <div class="pad stack" style="padding-top:28px;gap:18px">
+    <h2 class="h1" style="font-size:26px">끝까지 읽었어요!<br>한번 들어볼까요?</h2>
+    <div class="card lift stack" style="padding:20px;gap:16px"><div class="row" style="gap:3px;height:56px">${bars}</div>
+      <div class="between"><button class="play" style="width:56px;height:56px" data-play="mine" aria-label="내 낭독 재생">${S.playing==='mine'?I.pause:I.play}</button><div class="meta" style="font-size:14px">0:00 / 1:42</div></div></div>
+    <div class="card help" style="font-size:13px">완료하면 ${S.selWeek}주차 학습이 <b style="color:var(--ink)">${Math.min(w+1,5)} / 5</b>가 돼요. 인스타에는 나중에 몰아서 올려도 괜찮아요.</div>
+  </div></div>
+  <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:10px">
+    <button class="cta" data-action="complete">이대로 완료</button>
+    <button class="btn2" data-action="completeUp">완료하고 바로 올리기</button>
+    <button class="textbtn" style="text-decoration:none" data-go="reading">다시 읽기</button></div>`;
+},
+
+worksheet(){
+  const t=S.wsType;
+  const d={SU:['기사 요약 쓰기','이번 주 기사 PDF','요약 작성지는 PDF 뒤쪽에 있어요','요약하기','기사의 핵심을 내 말로 3~5문장에 담아 보세요.'],
+           DE:['찬반토론 쓰기','이번 주 기사 PDF','토론 질문지는 PDF 맨 뒤에 있어요','내 입장 쓰기','찬성과 반대 중 하나를 고르고, 이유 두 가지를 기사에서 찾아 써 보세요.'],
+           VO:['VOCA 공부','VOCA 정리 PDF','출력하거나 공책에 써도 돼요','단어 익히기','음원을 들으며 단어와 뜻을 따라 써 보세요.']}[t];
+  const step=(n,title,inner)=>`<div class="card lift stack"><div class="row" style="gap:10px"><span style="width:28px;height:28px;border-radius:50%;background:var(--tint);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--deep)">${n}</span><span style="font-size:15px;font-weight:800">${title}</span></div>${inner}</div>`;
+  return `<div class="scroll">${topBar('activity','활동 선택',`${S.selWeek}주차`)}
+  <div class="pad stack">
+    <h2 class="h1">${d[0]}</h2>
+    ${step(1,'작성지 받기',`<div class="row"><div class="stack" style="gap:2px;flex:1"><span style="font-size:15px;font-weight:800">${d[1]}</span><span class="help" style="font-size:12px">${d[2]}</span></div><button class="get" data-action="pdf" data-name="${d[1]}">${I.dl}받기</button></div>
+      ${t==='VO'?`<div class="row" style="padding-top:10px;border-top:1px solid var(--mute)">${''}<button class="play" data-play="voAudio" aria-label="VOCA 구간반복 재생">${S.playing==='voAudio'?I.pause:I.play}</button><span class="stack" style="gap:2px"><span style="font-size:14px;font-weight:800">VOCA 구간반복 음원</span><span class="help" style="font-size:12px">한국어–영어 3회</span></span></div>`:''}`)}
+    ${step(2,d[3],`<div class="help" style="font-size:13px">${d[4]}</div><button class="textbtn" style="align-self:flex-start;font-size:13px" data-action="readArticle">기사 원문 다시 보기</button>`)}
+    ${step(3,'사진 올리기', S.photo
+      ?`<div class="row reveal" style="padding:10px;border-radius:12px;background:var(--tint)"><span style="width:52px;height:64px;border-radius:8px;background:var(--white);border:1px solid var(--line);display:flex;align-items:center;justify-content:center">${I.img}</span><span class="stack" style="gap:2px;flex:1"><span style="font-size:14px;font-weight:800">작성지 사진 1장</span><span class="help" style="font-size:12px">10월 5일 촬영</span></span><button class="textbtn" style="font-size:13px" data-action="unphoto">바꾸기</button></div>`
+      :`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" style="height:72px;border-style:dashed;flex-direction:column;gap:4px;font-size:14px" data-action="photo">${I.cam}사진 찍기</button><button class="btn2" style="height:72px;border-style:dashed;flex-direction:column;gap:4px;font-size:14px" data-action="photo">${I.img}앨범에서 고르기</button></div>
+       ${t==='VO'?`<button class="textbtn" style="font-size:13px;align-self:flex-start" data-action="vocaRead">사진 대신 단어 낭독으로 하기</button>`:''}`)}
+  </div></div>
+  <div class="pad" style="padding-top:12px;padding-bottom:20px"><button class="cta" data-action="wsDone" ${S.photo?'':'disabled'}>${S.photo?'완료하기':'사진을 올리면 완료할 수 있어요'}</button></div>`;
+},
+
+queue(){
+  const steps=['1. 저장하기','2. 인스타에<br>올리기','3. 링크<br>붙여넣기'].map(t=>`<div style="padding:10px;border-radius:12px;background:var(--tint);font-size:13px;font-weight:700;line-height:1.5">${t}</div>`).join('');
+  const items=S.queue.map(q=>`<div class="card stack" style="gap:12px">
+    <div class="between"><div class="row" style="gap:10px"><span class="ic" style="width:40px;height:40px;border-radius:10px;background:var(--tint);display:flex;align-items:center;justify-content:center">${aIcon(q.t)}</span><span class="stack" style="gap:3px"><span style="font-size:16px;font-weight:800">${ACT[q.t].name}</span><span class="meta">${q.meta}</span></span></div>
+      <button style="flex-shrink:0;min-height:44px;padding:0 14px;border-radius:12px;border:0;background:var(--ink);color:var(--white);font-size:14px;font-weight:800" data-action="save" data-kind="${q.kind}">${q.kind==='video'?'영상 저장':'사진 저장'}</button></div>
+    <label class="label" style="color:var(--sub)" for="u${q.id}">올린 게시물 링크</label>
+    <div class="row" style="gap:8px"><input class="input" style="height:48px;font-size:15px;min-width:0;flex:1" id="u${q.id}" placeholder="링크 붙여넣기"><button style="height:48px;padding:0 16px;border-radius:12px;border:0;background:var(--main);font-size:15px;font-weight:800;white-space:nowrap" data-action="verify" data-id="${q.id}">완료</button></div>
+  </div>`).join('');
+  return `<div class="scroll"><div class="pad stack" style="padding-top:22px">
+    <div class="between" style="align-items:baseline"><h2 class="h1">인스타 올리기</h2><span class="meta" style="font-size:14px">완주까지 ${S.posted} / 60</span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${steps}</div>
+    ${S.queue.length?`<div style="font-size:15px;font-weight:800;margin-top:4px">올릴 것 ${S.queue.length}개</div>${items}<div class="help">종강일 12월 6일(일)까지 모두 올려 주세요.</div>`
+      :`<div class="card stack" style="align-items:center;text-align:center;padding:28px 16px"><div style="font-size:16px;font-weight:800">지금은 올릴 것이 없어요</div><div class="help">오늘 학습하면 여기에 올릴 것이 생겨요.</div><button class="cta" data-go="activity" style="margin-top:6px">+ 오늘 학습하기</button></div>`}
+  </div></div>${tabbar('up')}`;
+},
+
+materials(){
+  const chip=(n)=>`<button class="chip${n===4?' on':''}">${n}주차</button>`;
+  const pdf=(name,sub='')=>`<div class="card row" style="padding:12px 14px"><div class="stack" style="gap:2px;flex:1"><span style="font-size:15px;font-weight:800">${name}</span>${sub?`<span class="meta">${sub}</span>`:''}</div><button class="get" data-action="pdf" data-name="${name}">${I.dl}받기</button></div>`;
+  return `<div class="scroll"><div class="pad stack" style="padding-top:22px;gap:10px">
+    <h2 class="h1">이번 주 자료</h2>
+    <div class="row" style="gap:8px;overflow-x:auto;padding-bottom:2px">${[4,3,2,1].map(chip).join('')}</div>
+    <div class="stack" style="gap:2px"><div style="font-size:15px;font-weight:700">${ARTICLE.title}</div><div class="meta" style="font-size:12px">난이도 ${ARTICLE.level} · 본문 ${ARTICLE.words}단어</div></div>
+    <div class="sec">PDF</div>${pdf('기사 PDF','원문 · 요약 작성지 · 토론 질문지')}${pdf('VOCA 정리 PDF')}
+    <div class="sec">음원</div>${audioRow('enAudio','영어 기사 음원','4:12')}${audioRow('krAudio','한영 구간반복','9:30')}${audioRow('voAudio','VOCA 구간반복','6:05')}
+    <div class="sec">라이브</div><div class="row" style="padding:12px 14px;border-radius:14px;background:var(--tint)"><span style="font-size:15px;font-weight:800;flex:1">새벽달 Zoom Live 1회차</span><span style="font-size:13px">10월 8일(목) 저녁 8시</span></div>
+  </div></div>${tabbar('doc')}`;
+},
+
+finish(){
+  const t=S.tier, stats={EN:24,KR:10,VO:12,SU:8,DE:6};
+  const st=Object.keys(ACT).map(k=>`<div style="padding:10px 4px;border-radius:12px;background:var(--white);border:1px solid var(--line);text-align:center" class="stack"><span style="display:flex;justify-content:center">${aIcon(k,20)}</span><span style="font-size:18px;font-weight:800">${stats[k]}</span><span style="font-size:11px;color:var(--sub)">${ACT[k].short}</span></div>`).join('');
+  const clip=(key,t1,t2)=>`<div class="card row" style="padding:12px"><button class="play" style="width:48px;height:48px;background:var(--ink)" data-play="${key}" aria-label="${t1} 재생">${S.playing===key?I.pause:I.play}</button><span class="stack" style="gap:2px;flex:1"><span style="font-size:15px;font-weight:800">${t1}</span><span class="meta">${t2}</span></span><button class="textbtn" style="text-decoration:none;font-size:13px" data-action="insta">인스타 ›</button></div>`;
+  return `<div class="scroll"><div class="pad stack" style="padding-top:28px;gap:18px">
+    ${t==='on'?'<span class="pill" style="align-self:flex-start;background:var(--main);font-size:14px;letter-spacing:1px;padding:8px 16px">COMPLETE!</span>':''}
+    <h2 class="h1" style="font-size:30px;line-height:1.3">12주 완주,<br>정말 해냈어요</h2>
+    <div class="row" style="align-items:baseline;gap:8px"><span style="font-size:64px;font-weight:800;line-height:1">60</span><span style="font-size:18px;color:var(--sub)">/ 60 인증</span></div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">${st}</div>
+    <div class="card" style="font-size:14px;line-height:1.6">12주 동안 소리 내어 읽은 영어 단어 <b style="color:var(--deep)">${(stats.EN*ARTICLE.words).toLocaleString()}</b>개</div>
+    ${t!=='late'?`<div class="stack" style="gap:10px"><div style="font-size:15px;font-weight:800">처음과 지금, 들어볼까요?</div>${clip('first','첫 낭독','1주차 · 9월 15일')}${clip('last','마지막 낭독','12주차 · 12월 4일')}</div>`:''}
+  </div></div>
+  <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:10px">
+    <button class="btn2" data-action="pdf" data-name="12주 기사·VOCA 모음 PDF">${I.dl}12주 기사·VOCA 모음 PDF</button>
+    <button class="cta" data-go="cert">${S.certIssued?'상장 이름 바꾸기':'완주 상장 받기'}</button></div>`;
+},
+
+cert(){
+  return `<div class="scroll">${topBar('finish','완주','')}
+  <div class="pad stack" style="gap:18px;padding:0 20px">
+    <h2 class="h1">상장에 들어갈 이름을<br>확인해 주세요</h2>
+    <div class="stack" style="align-items:center;text-align:center;gap:10px;padding:24px 20px;border-radius:16px;background:var(--white);border:2px solid var(--main)">
+      <div style="font-size:13px;font-weight:800;letter-spacing:6px;color:var(--deep)">완 주 상</div>
+      <div id="certPreview" style="font-size:30px;font-weight:800;letter-spacing:2px;min-height:40px">${S.certName}</div>
+      <div style="font-size:14px;font-weight:700">새벽달 영어뉴스 1기</div>
+      <div class="meta">12주 과정</div>
+      <div class="help">12주 동안 60번의 학습을<br>모두 마쳤기에 이 상장을 드립니다.</div>
+      <div class="meta" style="font-size:12px">2026년 12월 6일 · [발급 기관]</div></div>
+    <div class="stack" style="gap:6px"><label class="label" for="cname">이름</label><input class="input" id="cname" value="${S.certName}"></div>
+  </div></div>
+  <div style="padding:16px 20px 24px"><button class="cta" data-action="issue">이 이름으로 상장 받기</button></div>`;
+},
+
+grace(){
+  const g=S.grace==='g';
+  return `<div class="scroll">
+    <div class="topbar"><div style="font-size:18px;font-weight:800">안녕, 지우!</div><div class="meta">${g?'12월 8일(화)':'12월 20일(일)'}</div></div>
+    <div class="pad"><div class="stack" style="padding:20px;border-radius:16px;background:var(--tint);gap:10px">
+      <div style="font-size:20px;font-weight:800;line-height:1.4">${g?'12주 챌린지가 끝났어요. 조금만 더 하면 완주예요!':'아직 완주할 수 있어요'}</div>
+      <div style="font-size:14px;line-height:1.6">${g?'12월 13일(일)까지 남은 8개를 올리면 완주 상장과 함께 첫 낭독 다시 듣기를 받을 수 있어요.':'남은 8개를 올리면 완주 상장과 12주 기사·VOCA 모음 PDF를 받아요. 아직 올리지 않은 녹음은 3월 6일까지 보관돼요.'}</div></div></div>
+    <div class="pad" style="padding-top:12px"><div class="card stack" style="gap:10px">
+      <div class="between" style="align-items:baseline"><div style="font-size:14px;font-weight:700;color:var(--sub)">완주까지 인스타 올리기</div><div style="font-size:16px;font-weight:800">52 <span style="font-weight:500;color:var(--sub)">/ 60</span></div></div>
+      <div class="bar"><i style="width:87%"></i></div><div class="help">학습 완료 57회 · 남은 올리기 8개</div></div></div>
+    <div class="pad stack" style="padding-top:12px;gap:10px"><button class="cta" data-go="queue">올릴 것 5개 올리기</button><button class="btn2" data-go="activity">+ 학습하기</button></div>
+    <div class="pad" style="padding-top:12px"><div class="card" style="padding:8px 16px"><button class="recHead" data-go="home"><span class="stack" style="gap:3px"><span style="font-size:15px;font-weight:800">12주 기록</span><span class="meta">학습 57 / 60 · 남은 칸 3개</span></span><span class="row" style="gap:4px;font-size:13px;font-weight:700">펼쳐 보기${I.down}</span></button></div></div>
+  </div>${tabbar('home',5)}`;
+}
+};
+
+
+function rateBar(compact){
+  return `<div class="rate" role="group" aria-label="속도">${compact?'':'<span>속도</span>'}${[0.5,0.8,1,1.2].map(r=>`<button class="${S.rate===r?'on':''}" data-rate="${r}" aria-pressed="${S.rate===r}">${r}배</button>`).join('')}</div>`;
+}
+function articleHTML(en,single,rec){
+  const enS=(si)=>ARTICLE.chunks[si].map((c,ci)=>`<span class="ck" id="e-${si}-${ci}">${c}</span>`).join(S.slash&&!rec?'<span class="sl">/</span>':' ');
+  const koS=(si)=>`<span class="sk" id="k-${si}">${ARTICLE.sents[si][2]}</span>`;
+  const paras=[...new Set(ARTICLE.sents.map(x=>x[0]))];
+  return `<div class="txt${en?'':' koMain'}">`+paras.map(pn=>{
+    const idx=ARTICLE.sents.map((x,i)=>x[0]===pn?i:-1).filter(i=>i>=0);
+    const E=`<div class="en">${idx.map(enS).join(' ')}</div>`, K=`<div class="ko">${idx.map(koS).join(' ')}</div>`;
+    if(single) return `<div style="margin-bottom:${rec?18:14}px">${en?E:K}</div>`;
+    return en?E+K:K+E;
+  }).join('')+'</div>';
+}
+/* 하이라이트 순서 만들기 */
+function seqFor(kind){
+  const q=[];
+  if(kind==='en') ARTICLE.chunks.forEach((cs,si)=>cs.forEach((c,ci)=>q.push({ids:[`e-${si}-${ci}`],d:T_EN(c)+(ci===cs.length-1?0.35:0)})));
+  if(kind==='ko') ARTICLE.sents.forEach((x,si)=>q.push({ids:[`k-${si}`],d:T_KO(x[2])+0.4}));
+  if(kind==='kren') ARTICLE.sents.forEach((x,si)=>{const all=ARTICLE.chunks[si].map((c,ci)=>`e-${si}-${ci}`),d=ARTICLE.chunks[si].reduce((n,c)=>n+T_EN(c),0)+0.4;
+    q.push({ids:[`k-${si}`],d:T_KO(x[2])+0.4});q.push({ids:all,d});q.push({ids:all,d});});
+  return q;
+}
+const P={seq:null,i:0,t:null,key:null,onEnd:null};
+function hl(ids){phone.querySelectorAll('.hl').forEach(e=>e.classList.remove('hl'));(ids||[]).forEach(id=>{const e=document.getElementById(id);if(e)e.classList.add('hl')});
+  const f=ids&&document.getElementById(ids[0]);const sc=f&&f.closest('.scroll');
+  if(f&&sc){const r=f.getBoundingClientRect(),b=sc.getBoundingClientRect();if(r.top<b.top+60||r.bottom>b.bottom-60)sc.scrollTo({top:sc.scrollTop+r.top-b.top-b.height/3,behavior:'smooth'})}}
+function pStep(){clearTimeout(P.t);if(!P.seq)return;if(P.i>=P.seq.length){const k=P.key,cb=P.onEnd;pStop(true);if(cb)cb(k);return}
+  const it=P.seq[P.i];hl(it.ids);P.t=setTimeout(()=>{P.i++;pStep()},it.d*1000/S.rate)}
+function pStart(key,kind,onEnd){pStop();P.seq=seqFor(kind);P.i=0;P.key=key;P.onEnd=onEnd;pStep()}
+function pStop(clear){clearTimeout(P.t);P.t=null;P.seq=null;P.key=null;if(clear!==false)hl([])}
+function setPlayBtn(key,on){document.querySelectorAll(`[data-play="${key}"]`).forEach(b=>{b.innerHTML=on?I.pause:I.play;b.setAttribute('aria-label',on?'멈춤':'재생')})}
+function readPlay(key){
+  if(S.playing===key){S.playing=null;setPlayBtn(key,false);pStop();return}
+  if(S.playing)setPlayBtn(S.playing,false);
+  S.playing=key;setPlayBtn(key,true);
+  pStart(key,key==='enAudio'?'en':'kren',k=>{S.playing=null;setPlayBtn(k,false)});
+}
+
+function kv(k,v){return `<div class="between" style="padding:9px 0;border-bottom:1px solid var(--mute);font-size:14px"><span style="color:var(--sub)">${k}</span><span style="font-weight:700;text-align:right">${v}</span></div>`}
+function progress(n,label){
+  const bars=[1,2,3].map(i=>`<span style="flex:1;height:4px;border-radius:2px;background:${i<=n?'var(--main)':'var(--line)'}"></span>`).join('');
+  return `<div style="padding:20px 20px 0" class="stack"><div class="row" style="gap:6px">${bars}</div><div class="meta" style="font-size:12px;font-weight:700">${n} / 3 · ${label}</div></div>`;
+}
+function popupHTML(){
+  return `<div class="dim" data-action="closePopup"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="첫 영어 낭독 안내">
+    <div class="handle"></div>
+    <div style="width:56px;height:56px;border-radius:50%;background:var(--tint);display:flex;align-items:center;justify-content:center">${I.mic}</div>
+    <h2 class="h1" style="font-size:22px">첫 영어 낭독을<br>기억해 둘게요</h2>
+    <div style="font-size:15px;line-height:1.7">인스타에 올리면 그 게시물을 첫 낭독으로 기억해 둬요. 종강일 12월 6일(일)까지 완주하면 마지막 낭독과 나란히 들려드려요.</div>
+    <div class="row" style="padding:14px;border-radius:14px;background:var(--bg);border:1px solid var(--line)"><span style="width:40px;height:40px;flex-shrink:0;border-radius:10px;background:var(--tint);display:flex;align-items:center;justify-content:center">${I.mark}</span><span class="stack" style="gap:2px"><span style="font-size:15px;font-weight:800">지우의 첫 낭독 · 1:42</span><span class="meta">10월 5일 · 완주하면 함께 들어요</span></span></div>
+    <button class="cta" data-action="closePopup">좋아요</button></div>`;
+}
+
+/* ================= navigation ================= */
+const NAV=[
+  ['첫 접속',[['welcome','1. 환영 · 정보 확인'],['student','2. 학습자 등록'],['access','3. 접속 방법 · 동의'],['reentry','다시 들어가기']]],
+  ['학습',[['home','홈 (하단 탭)'],['activity','활동 선택'],['reading','낭독 · 듣기'],['recording','낭독 · 녹음 중'],['review','낭독 · 확인'],['worksheet','작성 활동']]],
+  ['하단 탭',[['materials','이번 주 자료'],['queue','인스타 올리기']]],
+  ['완주 · 마감',[['finish','완주'],['cert','상장 이름 확인'],['grace','마감 이후 홈']]]
+];
+const phone=document.getElementById('phone');
+function go(name){clearTimers();pStop(false);S.playing=null;S.pacerPaused=false;S._sec=0;S.popup=null;S.screen=name;render();phone.querySelector('.scroll')?.scrollTo(0,0)}
+function render(){
+  phone.innerHTML=`<div class="screen">${SCREENS[S.screen]()}</div>${S.popup==='first'?popupHTML():''}`;
+  document.getElementById('navList').innerHTML=NAV.map(([g,items])=>`<div class="grp"><b>${g}</b>${items.map(([k,l])=>`<button class="nav${S.screen===k?' on':''}" data-nav="${k}">${l}</button>`).join('')}</div>`).join('');
+  if(S.screen==='recording'&&!S._recStarted){S._recStarted=true;startRecording()}
+  if(S.screen!=='recording')S._recStarted=false;
+  if(S.screen==='cert'){const i=document.getElementById('cname');i.addEventListener('input',()=>{document.getElementById('certPreview').textContent=i.value||' '})}
+  if(S.screen==='student'){document.getElementById('by').addEventListener('change',e=>{S.by=e.target.value;render()});document.getElementById('bm').addEventListener('change',e=>{S.bm=e.target.value})}
+}
+function startRecording(){
+  let n=3;const cnum=document.getElementById('cnum'),box=document.getElementById('count');
+  const t=setInterval(()=>{n--;if(n<=0){clearInterval(t);box.remove();S._sec=0;
+    timers.push(setInterval(()=>{S._sec++;const c=document.getElementById('clock');if(c)c.textContent=`${Math.floor(S._sec/60)}:${String(S._sec%60).padStart(2,'0')}`},1000));
+    if(S.pacerOn)pStart('pacer',S.act==='EN'?'en':'ko',()=>{});
+  }else cnum.textContent=n},1000);
+  timers.push(t);
+}
+function finishLearning(goUp){
+  addLearning(S.act,'video');
+  const firstEN=S.act==='EN'&&!S.firstShown;
+  if(goUp){S.screen='queue'}else{S.screen='home'}
+  if(firstEN){S.firstShown=true;S.popup='first'}
+  render();
+  if(!firstEN)toast(`${S.selWeek}주차 학습 ${S.weeks[S.selWeek-1].length} / 5 완료!`);
+}
+
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-go],[data-nav],[data-action],[data-os],[data-access],[data-week],[data-start],[data-play],[data-rate]');
+  if(!el)return;
+  const d=el.dataset;
+  if(d.nav){go(d.nav);document.getElementById('side').classList.remove('open');return}
+  if(d.go){go(d.go);return}
+  if(d.os){S.os=d.os;render();return}
+  if(d.access){S.access=d.access;render();return}
+  if(d.week){S.selWeek=Number(d.week);render();return}
+  if(d.start){const k=d.start;if(k==='KR'||k==='EN'){S.act=k;go('reading')}else{S.wsType=k;S.photo=false;go('worksheet')}return}
+  if(d.play){if(S.screen==='reading'){readPlay(d.play);return}S.playing=S.playing===d.play?null:d.play;render();return}
+  if(d.rate){S.rate=Number(d.rate);document.querySelectorAll('[data-rate]').forEach(b=>{const on=Number(b.dataset.rate)===S.rate;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const e=document.getElementById('estTime');if(e)e.textContent=`${S.rate}배로 읽으면 약 ${fmtT((S.act==='EN'?EN_TOTAL:KO_TOTAL)/S.rate)} 걸려요 · 이어폰을 끼면 녹음이 더 깨끗해요`;return}
+  switch(d.action){
+    case 'toggleRec':S.recOpen=!S.recOpen;render();break;
+    case 'sendLink':S.sent=true;render();break;
+    case 'resetLink':S.sent=false;render();break;
+    case 'enOnly':pStop(false);if(S.playing){setPlayBtn(S.playing,false);S.playing=null}S.enOnly=!S.enOnly;render();break;
+    case 'slash':pStop(false);if(S.playing)S.playing=null;S.slash=!S.slash;render();break;
+    case 'pacerToggle':S.pacerOn=!S.pacerOn;S.pacerPaused=false;if(S.pacerOn){render();pStart('pacer',S.act==='EN'?'en':'ko',()=>{});}else{pStop();render();}break;
+    case 'pacerPause':if(S.pacerPaused){S.pacerPaused=false;if(P.seq)pStep();else pStart('pacer',S.act==='EN'?'en':'ko',()=>{});}else{S.pacerPaused=true;clearTimeout(P.t);}document.getElementById('pauseBtn').textContent=S.pacerPaused?'다시 움직이기':'잠깐 멈추기';break;
+    case 'pdf':toast(`${d.name}를 내려받아요 (목업)`);break;
+    case 'complete':finishLearning(false);break;
+    case 'completeUp':finishLearning(true);break;
+    case 'photo':S.photo=true;render();break;
+    case 'unphoto':S.photo=false;render();break;
+    case 'vocaRead':S.act='EN';toast('단어 낭독 녹음 화면으로 이어져요 (목업)');break;
+    case 'readArticle':S.act='EN';go('reading');break;
+    case 'wsDone':addLearning(S.wsType,'photo');S.photo=false;S.screen='home';render();toast(`${S.selWeek}주차 학습 ${S.weeks[S.selWeek-1].length} / 5 완료!`);break;
+    case 'save':toast(d.kind==='video'?'사진첩에 영상을 저장했어요 (목업)':'사진첩에 사진을 저장했어요 (목업)');break;
+    case 'verify':{const id=Number(d.id);S.queue=S.queue.filter(q=>q.id!==id);S.posted=Math.min(60,S.posted+1);render();toast(`올리기 완료! 완주까지 ${S.posted} / 60`);break}
+    case 'closePopup':S.popup=null;render();toast(`${S.selWeek}주차 학습 ${S.weeks[S.selWeek-1].length} / 5 완료!`);break;
+    case 'insta':toast('인스타그램 게시물로 이동해요 (목업)');break;
+    case 'issue':{const v=document.getElementById('cname').value.trim();if(!v){toast('이름을 입력해 주세요');return}S.certName=v;S.certIssued=true;S.screen='finish';render();toast(`'${v}' 이름으로 상장을 보냈어요`);break}
+  }
+});
+document.getElementById('tierSel').addEventListener('change',e=>{S.tier=e.target.value;if(S.screen!=='finish')S.screen='finish';render()});
+document.getElementById('graceSel').addEventListener('change',e=>{S.grace=e.target.value;S.screen='grace';render()});
+document.getElementById('resetBtn').addEventListener('click',()=>{clearTimers();S=INIT();document.getElementById('tierSel').value='on';document.getElementById('graceSel').value='g';render()});
+document.getElementById('menuBtn').addEventListener('click',()=>document.getElementById('side').classList.toggle('open'));
+render();
+</script>
+</body>
+</html>
