@@ -97,6 +97,8 @@ function Manual({
   );
 }
 
+const STORE_KEY = "t01-lab-v1";
+
 let seq = 0;
 const nextId = () => `${Date.now().toString(36)}${(seq++).toString(36)}`;
 
@@ -144,6 +146,47 @@ export default function LabPage() {
   useEffect(() => {
     getDeviceInfo().then(setDevice, (e) => setDevice({ error: errorText(e) }));
   }, []);
+
+  // 기록과 사람 확인 칸은 브라우저에 저장한다. 카메라·인스타 앱에 다녀오는 사이 페이지가 다시 열려도 남도록.
+  // (녹음·영상 파일은 저장하지 않는다. 다시 열리면 다시 만들어야 한다.)
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE_KEY) ?? "null") as { logs?: LogEntry[]; manual?: Record<string, ManualMark> } | null;
+      if (saved?.manual) setManual(saved.manual);
+      if (saved?.logs?.length) {
+        const prev = saved.logs;
+        setLogs([
+          ...prev,
+          {
+            id: prev.length + 1,
+            at: new Date().toISOString(),
+            test: "페이지 다시 열림",
+            ok: true,
+            detail: { note: "저장된 기록을 불러옴. 녹음·영상 파일은 사라짐", visibility: document.visibilityState },
+          },
+        ]);
+      }
+    } catch {
+      // 저장소를 쓸 수 없는 환경이면 메모리 기록만 쓴다.
+    }
+    setRestored(true);
+  }, []);
+
+  useEffect(() => {
+    if (!restored) return;
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ logs, manual }));
+    } catch {
+      // 저장 실패는 무시한다.
+    }
+  }, [logs, manual, restored]);
+
+  function clearAll() {
+    if (!window.confirm("이 기기의 기록과 확인 칸을 모두 지울까요?")) return;
+    setLogs([]);
+    setManual({});
+  }
 
   // ───────── 검사 1. 마이크 녹음 ─────────
   async function startRec(label: string, target: number | null) {
@@ -425,6 +468,15 @@ export default function LabPage() {
       <h1>기기 기술 검증 (T01)</h1>
       <p className="lead">검사 1부터 차례로 눌러 주세요. 녹음·사진·영상은 이 휴대폰 안에서만 쓰이고 서버로 보내지 않습니다. 끝나면 아래 &quot;결과 복사&quot;를 눌러 붙여 넣어 주세요.</p>
 
+      {device && (
+        <section className="card" style={{ background: "var(--soft)", borderColor: "var(--main)" }}>
+          <h2>지금 연 환경: {String(device.environment)}</h2>
+          <p className="hint" style={{ margin: 0 }}>
+            시험 목록과 다르면 주소를 복사해 원하는 브라우저(Chrome, 삼성 인터넷, Safari, 카카오톡 나와의 채팅)에서 다시 열어 주세요.
+          </p>
+        </section>
+      )}
+
       <section className="card">
         <h2>기기 정보</h2>
         {!device && <p className="hint">확인 중…</p>}
@@ -611,6 +663,7 @@ export default function LabPage() {
       <div className="copybar">
         <div className="inner">
           <button className="primary" onClick={() => void copyResult()}>결과 복사</button>
+          <button onClick={clearAll} style={{ flex: "0 0 auto" }}>기록 지우기</button>
         </div>
         {copyMsg && <div className="status" style={{ textAlign: "center", maxWidth: 560, margin: "6px auto 0" }}>{copyMsg}</div>}
       </div>
