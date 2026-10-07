@@ -15,10 +15,12 @@
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "@mediabunny/aac-encoder": "^1.61.3",
+    "@supabase/supabase-js": "^2.117.2",
     "mediabunny": "^1.61.3",
     "next": "^16.3.8",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",

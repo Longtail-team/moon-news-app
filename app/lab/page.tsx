@@ -9,6 +9,7 @@ import { canvasToPng, drawArticleImage } from "@/lib/lab/articleImage";
 import { decodeAudio, queryMicPermission, startRecording, type RecordingSession } from "@/lib/lab/record";
 import { FPS_OPTIONS, makeVideoA, makeVideoB, makeVideoC, type VideoOutput } from "@/lib/lab/video";
 import { PHRASES } from "@/lib/lab/content";
+import "./lab.css";
 import { errorText, extFromMime, fmtBytes, fmtSec, probeMedia, round, type LogEntry, type ManualMark } from "@/lib/lab/log";
 
 const LEARNER_NAME = "김지우"; // 목업의 샘플 이름
