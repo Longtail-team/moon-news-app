@@ -51,7 +51,7 @@ describe("낭독 시작과 완료", () => {
       expect(s2.activity_id).toBe(s1.activity_id);
 
       const key = `recordings/${s1.enrollment_id}/${s1.activity_id}-1.m4a`;
-      const done = (await tx.query<Row>("select public.complete_reading('S-0006', $1, $2) as j", [s1.activity_id, key])).rows[0].j as any;
+      const done = (await tx.query<Row>("select public.complete_activity('S-0006', $1, $2) as j", [s1.activity_id, key])).rows[0].j as any;
       expect(done).toEqual({ week_no: 1, week_completed: 1, first_en: true });
 
       const a = (await tx.query<Row>("select state, media_key, completed_at from activities where activity_id = $1", [s1.activity_id])).rows[0];
@@ -61,7 +61,7 @@ describe("낭독 시작과 완료", () => {
       // 두 번째 영어 낭독은 첫 낭독이 아니다
       const s3 = (await tx.query<Row>("select public.start_activity('S-0006', 1, 'EN_READING') as j")).rows[0].j as any;
       expect(s3.activity_id).not.toBe(s1.activity_id);
-      const done2 = (await tx.query<Row>("select public.complete_reading('S-0006', $1, $2) as j", [s3.activity_id, `recordings/${s3.enrollment_id}/x.m4a`])).rows[0].j as any;
+      const done2 = (await tx.query<Row>("select public.complete_activity('S-0006', $1, $2) as j", [s3.activity_id, `recordings/${s3.enrollment_id}/x.m4a`])).rows[0].j as any;
       expect(done2.first_en).toBe(false);
       await tx.rollback();
     });
@@ -72,14 +72,14 @@ describe("낭독 시작과 완료", () => {
     const tryComplete = (student: string, key: string) =>
       db.transaction(async (tx) => {
         const s = (await tx.query<Row>("select public.start_activity('S-0006', 1, 'KR_READING') as j")).rows[0].j as any;
-        await tx.query("select public.complete_reading($1, $2, $3)", [student, s.activity_id, key]);
+        await tx.query("select public.complete_activity($1, $2, $3)", [student, s.activity_id, key]);
       });
     await expect(tryComplete("S-0001", "recordings/x/y.m4a")).rejects.toThrow(/not found/);
     await expect(tryComplete("S-0006", "recordings/other/y.m4a")).rejects.toThrow(/invalid media key/);
     const [done] = (await db.query<Row>(
       `select a.activity_id from activities a join enrollments en using (enrollment_id) where en.student_id = 'S-0001' and a.activity_type = 'KR_READING' and a.completed_at is not null limit 1`,
     )).rows;
-    await expect(db.query("select public.complete_reading('S-0001', $1, 'recordings/x/y.m4a')", [done.activity_id])).rejects.toThrow();
+    await expect(db.query("select public.complete_activity('S-0001', $1, 'recordings/x/y.m4a')", [done.activity_id])).rejects.toThrow();
   });
 
   it("없는 주차에는 시작할 수 없다", async () => {
