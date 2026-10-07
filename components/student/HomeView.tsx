@@ -6,8 +6,9 @@ import { fmtDay, fmtLive, fmtWeekRange, givenName } from "@/lib/format";
 import { CheckIcon } from "./icons";
 import { RecordCard } from "./RecordCard";
 import { TabBar } from "./TabBar";
+import { Toast } from "./Toast";
 
-export function HomeView({ home, learner, canSwitch, now }: { home: HomeData; learner: Learner; canSwitch: boolean; now: number }) {
+export function HomeView({ home, learner, canSwitch, now, toast }: { home: HomeData; learner: Learner; canSwitch: boolean; now: number; toast?: string | null }) {
   const { cohort, progress, weeks, live } = home;
   const totalWeeks = weeks.length;
   // 기준 주차: 기수 시작 전 0, 종강 뒤 totalWeeks + 1
@@ -138,6 +139,7 @@ export function HomeView({ home, learner, canSwitch, now }: { home: HomeData; le
         </div>
       </div>
       <TabBar active="home" uploadCount={progress.pending_post_count} />
+      {toast && <Toast message={toast} />}
     </div>
   );
 }
