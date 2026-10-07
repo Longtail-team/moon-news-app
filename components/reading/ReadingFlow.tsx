@@ -5,17 +5,19 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Material } from "@/lib/server/reading";
+import type { AudioSrc, Material } from "@/lib/server/reading";
 import { chunksOf, clock, enId, fmtDuration, koId, paragraphs, timeline, totalSec, type Sentence, type Step } from "@/lib/reading/text";
 import { micErrorText, openRecorder, type Recorder } from "@/lib/reading/recorder";
+import { post, uploadMedia } from "@/lib/client-api";
 
-type Kind = "en" | "kr";
+type Kind = "en" | "kr" | "voca";
 type Phase = "listen" | "count" | "record" | "review";
-type AudioKey = "article" | "krEn" | "mine";
+type AudioKey = string; // 음원 key 또는 "mine"(내 낭독)
 
 const RATES = [0.5, 0.8, 1, 1.2];
 const RATE_KEY = "nd_rate"; // 고른 속도를 이 기기에 기억 (spec 8장)
-const NAME: Record<Kind, string> = { en: "영어 기사 낭독", kr: "한국어 기사 낭독" };
+const NAME: Record<Kind, string> = { en: "영어 기사 낭독", kr: "한국어 기사 낭독", voca: "VOCA 단어 낭독" };
+const TYPE: Record<Kind, string> = { en: "EN_READING", kr: "KR_READING", voca: "VOCA" };
 
 const PlayIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
@@ -58,15 +60,23 @@ function stepAt(steps: Step[], ratio: number): Step | undefined {
   return undefined;
 }
 
-async function post<T>(url: string, body: unknown): Promise<T> {
-  const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-  if (!r.ok) throw new Error(`${url} ${r.status}`);
-  return r.json() as Promise<T>;
-}
-
-export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: { kind: Kind; material: Material; maxSec: number; learnerName: string; deadline: string }) {
+export function ReadingFlow({
+  kind,
+  material,
+  audios,
+  maxSec,
+  learnerName,
+  deadline,
+}: {
+  kind: Kind;
+  material: Material;
+  audios: AudioSrc[];
+  maxSec: number;
+  learnerName: string;
+  deadline: string;
+}) {
   const router = useRouter();
-  const en = kind === "en";
+  const en = kind !== "kr"; // 영어가 주인 화면 (영어 낭독, VOCA 단어)
   const sentences = material.sentences;
   const readSteps = useMemo(() => timeline(sentences, en ? "en" : "ko"), [sentences, en]);
   const readTotal = useMemo(() => totalSec(readSteps), [readSteps]);
@@ -92,7 +102,7 @@ export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: {
   const pacer = useRef<{ i: number; t: ReturnType<typeof setTimeout> | null }>({ i: 0, t: null });
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startedAt = useRef(0);
-  const audioRefs = useRef<Partial<Record<AudioKey, HTMLAudioElement | null>>>({});
+  const audioRefs = useRef<Record<AudioKey, HTMLAudioElement | null>>({});
   const stopRef = useRef<() => void>(() => {});
 
   // 속도 기억
@@ -104,14 +114,14 @@ export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: {
   }, []);
   useEffect(() => {
     rateRef.current = rate;
-    for (const k of ["article", "krEn"] as const) {
+    for (const k of audios.map((x) => x.key)) {
       const a = audioRefs.current[k];
       if (a) {
         a.playbackRate = rate;
         a.preservesPitch = true; // 재생 속도만 바꾸고 목소리 높이는 유지
       }
     }
-  }, [rate]);
+  }, [rate, audios]);
   const chooseRate = (r: number) => {
     setRate(r);
     try {
@@ -131,9 +141,10 @@ export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: {
   // ───────── 1 듣기: 음원 재생 위치에 맞춰 칠하기 ─────────
   // 시간 정보 파일이 생기기 전까지는 예상 시간 비율로 맞춘다.
   useEffect(() => {
-    if (playing !== "article" && playing !== "krEn") return;
+    const how = audios.find((x) => x.key === playing)?.highlight;
+    if (!playing || !how) return;
     const a = audioRefs.current[playing];
-    const steps = playing === "article" ? timeline(sentences, "en") : krEnTimeline(sentences);
+    const steps = how === "en" ? timeline(sentences, "en") : krEnTimeline(sentences);
     let raf = 0;
     const loop = () => {
       if (a && a.duration > 0) setHl(stepAt(steps, a.currentTime / a.duration)?.ids ?? []);
@@ -141,7 +152,7 @@ export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [playing, sentences]);
+  }, [playing, sentences, audios]);
 
   const togglePlay = (key: AudioKey) => {
     const a = audioRefs.current[key];
@@ -152,7 +163,7 @@ export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: {
       if (key !== "mine") setHl([]);
       return;
     }
-    for (const k of Object.keys(audioRefs.current) as AudioKey[]) audioRefs.current[k]?.pause();
+    for (const k of Object.keys(audioRefs.current)) audioRefs.current[k]?.pause();
     a.onended = () => {
       setPlaying(null);
       setHl([]);
@@ -207,7 +218,7 @@ export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: {
 
   async function begin() {
     setError(null);
-    for (const k of Object.keys(audioRefs.current) as AudioKey[]) audioRefs.current[k]?.pause();
+    for (const k of Object.keys(audioRefs.current)) audioRefs.current[k]?.pause();
     setPlaying(null);
     setHl([]);
     try {
@@ -216,7 +227,7 @@ export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: {
       setError(micErrorText(e));
       return;
     }
-    const p = post<{ activityId: string }>("/api/reading/start", { week: material.week_no, type: en ? "EN_READING" : "KR_READING" }).then((j) => j.activityId);
+    const p = post<{ activityId: string }>("/api/activity/start", { week: material.week_no, type: TYPE[kind] }).then((j) => j.activityId);
     p.catch(() => {});
     activityRef.current = p;
 
@@ -268,10 +279,8 @@ export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: {
     setError(null);
     try {
       const activityId = await activityRef.current!;
-      const u = await post<{ path: string; uploadUrl: string; contentType: string }>("/api/reading/upload-url", { activityId, mime: result.mime });
-      const put = await fetch(u.uploadUrl, { method: "PUT", headers: { "content-type": u.contentType, "x-upsert": "false" }, body: result.blob });
-      if (!put.ok) throw new Error(`upload ${put.status}`);
-      const c = await post<{ weekNo: number; weekCompleted: number; firstEn: boolean }>("/api/reading/complete", { activityId, path: u.path });
+      const path = await uploadMedia(activityId, result.blob, result.mime);
+      const c = await post<{ weekNo: number; weekCompleted: number; firstEn: boolean }>("/api/activity/complete", { activityId, path });
       const to = goUp ? "/upload" : `/?done=${c.weekNo}-${c.weekCompleted}`;
       if (c.firstEn) setPopupTo(to);
       else router.push(to);
@@ -329,7 +338,7 @@ export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: {
     </div>
   );
 
-  const audioRow = (key: "article" | "krEn", name: string, src: string | null) => (
+  const audioRow = (key: string, name: string, src: string | null) => (
     <div className="card row" style={{ padding: "10px 14px" }}>
       <button className="play" disabled={!src} onClick={() => togglePlay(key)} aria-label={`${name} ${playing === key ? "멈춤" : "재생"}`}>
         {playing === key ? <PauseIcon /> : <PlayIcon />}
@@ -350,7 +359,7 @@ export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: {
     </div>
   );
 
-  const backToPicker = `/activity?week=${material.week_no}`;
+  const backToPicker = kind === "voca" ? `/write/${material.week_no}/voca` : `/activity?week=${material.week_no}`;
 
   // ───────── 2 낭독 화면 ─────────
   if (phase === "count" || phase === "record") {
@@ -523,17 +532,18 @@ export function ReadingFlow({ kind, material, maxSec, learnerName, deadline }: {
         </div>
         {steps(1)}
         <div className="pad stack" style={{ paddingTop: 14, gap: 10 }}>
-          {en && audioRow("article", "영어 기사 음원", material.audio.article)}
-          {audioRow("krEn", "새벽달 한영 구간반복", material.audio.krEn)}
+          {audios.map((a) => (
+            <div key={a.key}>{audioRow(a.key, a.label, a.src)}</div>
+          ))}
           {rateBar()}
           <div className="card stack" style={{ gap: 12 }}>
             <div className="between">
-              <div style={{ fontSize: 13, fontWeight: 800 }}>{en ? "기사 원문" : "기사 해석"}</div>
+              <div style={{ fontSize: 13, fontWeight: 800 }}>{kind === "voca" ? "이번 주 단어" : en ? "기사 원문" : "기사 해석"}</div>
               <button className="chip" style={{ minHeight: 44, borderRadius: 12, fontSize: 12 }} onClick={() => setSingle(!single)}>
-                {single ? "함께 보기" : en ? "영어만 보기" : "한글만 보기"}
+                {single ? "함께 보기" : kind === "voca" ? "단어만 보기" : en ? "영어만 보기" : "한글만 보기"}
               </button>
             </div>
-            {en && (
+            {kind === "en" && (
               <label className="row" style={{ gap: 8, fontSize: 13, fontWeight: 700, color: "var(--sub)", minHeight: 32 }}>
                 <input type="checkbox" checked={slash} onChange={(e) => setSlash(e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--deep)" }} />
                 끊어 읽기 표시

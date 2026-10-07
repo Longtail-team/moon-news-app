@@ -36,3 +36,9 @@ export function fmtLive(iso: string): string {
 export function givenName(name: string): string {
   return name.length >= 3 ? name.slice(1) : name;
 }
+
+/** "10월 3일" (한국 시간) */
+export function fmtMonthDay(iso: string): string {
+  const p = kstParts(new Date(iso));
+  return `${p.m}월 ${p.d}일`;
+}
