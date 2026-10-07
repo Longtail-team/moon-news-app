@@ -56,7 +56,8 @@
 - **학습 완료와 인스타그램 인증을 분리해 센다.** 주간 진도는 학습 완료 기준, 완주 진행률은 인스타그램 인증 기준이다.
 - 주간 학습 = 해당 주차의 학습 완료 건수 ÷ 5. 완주 진행률 = 인스타그램 인증 건수 ÷ 60.
 - 학습 완료 후 인증하지 않은 기록은 "게시 대기"로 표시한다.
-- 모든 주차는 닫히지 않는다. 지난 주차도 언제든 소급해서 채울 수 있다. 실적은 학습 완료 시점의 주차에 귀속한다.
+- 모든 주차는 닫히지 않는다. 지난 주차도 언제든(종강 후 포함) 소급해서 채울 수 있다. 실적은 학습자가 고른 주차에 귀속한다(2026-10-07 확정). 아직 시작하지 않은 주차는 고를 수 없다.
+- 종강일은 주차 귀속이 아니라 완주 단계 판정에만 쓴다: 60번째 인증 시각이 종강일(KST) 안이면 제때, 유예 기간 안이면 유예, 그 뒤면 늦은 완주.
 - 활동 다양성은 기록하되 성취도 점수로 사용하지 않는다.
 
 
@@ -152,7 +153,7 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 - **시간 정보**: 음원마다 단어 단위 시간 정보 파일 1개. 자료 반영 때 일레븐랩스 강제 정렬(Forced Alignment)로 만든다. 정렬할 때는 "/"를 뺀 원문을 쓴다. 정렬 신뢰도 점수가 낮으면 자료 반영 오류 목록에 띄운다.
 - **원문 일치**: 자료 시트의 영어·한국어 원문은 음원 대본과 글자 그대로 같아야 한다. 숫자, 약어(SFMOMA 등), 기호는 음원에서 읽는 방식을 미리 정한다.
 - **예상 시간**: 낭독 시작 버튼 위에 고른 속도 기준 예상 낭독 시간을 보여준다.
-- **난이도 표시**: 렉사일(추정치는 "난이도"로 표기)과 본문 단어 수는 낭독 화면이 아니라 이번 주 자료 탭의 기사 제목 아래에 작게 둔다. 누적 낭독 단어 수는 12주 기록 펼침과 완주 화면에 보여준다.
+- **난이도 표시**: 렉사일(추정치는 "난이도"로 표기)과 본문 단어 수는 낭독 화면이 아니라 이번 주 자료 탭의 기사 제목 아래에 작게 둔다. 누적 낭독 단어 수(영어 낭독 학습 완료 × 그 주차 기사 단어 수, 한국어 낭독은 세지 않음)는 12주 기록 펼침과 완주 화면에 보여준다.
 
 
 ## 9. 첫 낭독과 마지막 낭독
@@ -291,6 +292,11 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 | 학습 자료 입력 | 자료 시트 + 드라이브 폴더 | 운영자가 입력, 동기화 때 DB와 Storage로 복사. 앱은 시트·드라이브를 직접 읽지 않음 |
 | 비상용 시트 | 구글 시트 (읽기 전용) | DB → 시트 한 방향. 매일 밤 자동 + 관리자 화면 수동 버튼 |
 
+운영 환경 (2026-10-07)
+- Supabase: 조직 "moon news webapp"(Pro, 이 서비스 전용) / 프로젝트 `moon.news.app`(ref `mefmwetcfrmwdqcgxtpz`, 서울). 다른 서비스(멤버십 앱)와 조직을 나눠 비용·사용량을 따로 본다.
+- Vercel: 프로젝트 `moon-news-app`, 운영 주소 `news.momthereader.com`(main), 기기 시험 페이지 `/lab`.
+- DB 비밀번호 등 비밀 값은 저장소에 넣지 않는다(로컬 `.env.local`, Vercel 환경변수).
+
 영상은 휴대폰에서 만들고 서버에 저장하지 않는다. 이 경우 서버 전송량이 작아 Supabase Storage 하나로 충분하다. 서버 합성은 도입하지 않는다(T01 결론). 2단계 기기 시험에서 아이폰 Safari나 안드로이드 Chrome이 실패할 때만 Cloudflare R2와 서버 합성을 다시 검토한다. 파일을 다루는 코드는 한 모듈에 모아 저장소를 바꿀 수 있게 둔다.
 
 
@@ -298,7 +304,7 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 
 | 테이블 | 한 행 = | 열 |
 | --- | --- | --- |
-| guardians | 보호자 1명 | guardian_id, name, phone, alimtalk_agreed_at, reenroll_marketing_agreed_at, created_at |
+| guardians | 보호자 1명 | guardian_id, name, phone(결제자 번호, 숫자만, 고유값), alimtalk_agreed_at, reenroll_marketing_agreed_at, created_at |
 | students | 학습자 1명 | student_id, guardian_id, name, birth_ym, own_phone, instagram_id, consent_at, admin_memo, created_at |
 | access_tokens | 접속 링크 1개 | token_id, student_id, holder(보호자/자녀), sent_to_phone, token_hash, issued_at, expires_at, revoked_at, last_used_at |
 | cohorts | 기수 1개 | cohort_id, course_title, cohort_no, start_date, deadline(12주차 일요일), grace_until(마감 + 7일), weekly_target(5), total_target(60), reward_pdf_key |
@@ -327,6 +333,9 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 ### 규칙
 
 - 재수강 여부는 저장하지 않고 수강 2건 이상으로 계산한다.
+- 수강 상태(enrollments.status): paid(이 상품·기수를 결제함) / refunded(환불·과정 취소 완료).
+- 환불 처리(enrollments.refund_status): 관리자가 확인 후 수동으로 처리한다. requested(요청 접수·확인 대기) → approved(환불 완료, refunded_at 기록, status = refunded) 또는 rejected(환불 불가). 접속 링크 폐기는 approved일 때만.
+- 전화번호는 숫자만 저장한다(예: 01012345678).
 - 학년은 birth_ym으로 계산하고, 수강 당시 학년은 grade_at_enrollment에 남긴다.
 - 횟수는 저장하지 않고 계산한다. 주간 학습 = 해당 주차 completed_at 건수, 완주 진행률 = verified_at 건수 ÷ 60, 게시 대기 = completed_at은 있고 verified_at은 없는 건수.
 - completion_tier: 60번째 verified_at이 deadline 이전이면 on_time, grace_until 이전이면 grace, 그 이후면 late.

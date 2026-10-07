@@ -10,3 +10,4 @@ public/ffmpeg/
 .claude/
 
 .vercel
+supabase/.temp/
