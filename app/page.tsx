@@ -1,11 +1,16 @@
-import Link from "next/link";
+import { redirect } from "next/navigation";
+import { currentLearner, getSession } from "@/lib/server/session";
+import { getHome } from "@/lib/server/home";
+import { HomeView } from "@/components/student/HomeView";
+import { Landing } from "@/components/student/Landing";
+import "./student.css";
 
-export default function Home() {
-  return (
-    <main className="home">
-      <h1>새벽달 영어뉴스 낭독 챌린지</h1>
-      <p>개발 중입니다.</p>
-      <Link href="/lab">기기 검증 페이지(/lab)</Link>
-    </main>
-  );
+export default async function Home({ searchParams }: { searchParams: Promise<{ link?: string }> }) {
+  const session = await getSession();
+  if (!session) return <Landing invalid={(await searchParams).link === "invalid"} />;
+  const learner = await currentLearner(session);
+  if (!learner) redirect("/profiles");
+  const home = await getHome(learner.student_id);
+  if (!home) return <Landing invalid />;
+  return <HomeView home={home} learner={learner} canSwitch={session.learners.length > 1} now={Date.now()} />;
 }
