@@ -82,18 +82,18 @@ begin
   values (c1, 1, '2026-10-24 20:00+09', 'https://zoom.example/sample');
 
   -- ───────── 보호자·학습자 ─────────
-  insert into guardians (name, phone, alimtalk_agreed_at) values ('김지우 보호자', '010-0000-0001', '2026-09-08 10:00+09') returning guardian_id into g1;
-  insert into guardians (name, phone, alimtalk_agreed_at) values ('박서연 보호자', '010-0000-0002', '2026-09-08 10:00+09') returning guardian_id into g2;
-  insert into guardians (name, phone, alimtalk_agreed_at) values ('이도윤 보호자', '010-0000-0003', '2026-09-08 10:00+09') returning guardian_id into g3;
-  insert into guardians (name, phone, alimtalk_agreed_at) values ('최하린 보호자', '010-0000-0004', '2026-02-25 10:00+09') returning guardian_id into g4;
-  insert into guardians (name, phone, alimtalk_agreed_at) values ('정민준 보호자', '010-0000-0005', '2026-09-08 10:00+09') returning guardian_id into g5;
-  insert into guardians (name, phone, alimtalk_agreed_at) values ('한예린 보호자', '010-0000-0006', '2026-09-08 10:00+09') returning guardian_id into g6;
-  insert into guardians (name, phone, alimtalk_agreed_at) values ('윤시우·강다은 보호자', '010-0000-0007', '2026-09-08 10:00+09') returning guardian_id into g7;
+  insert into guardians (name, phone, alimtalk_agreed_at) values ('김지우 보호자', '01000000001', '2026-09-08 10:00+09') returning guardian_id into g1;
+  insert into guardians (name, phone, alimtalk_agreed_at) values ('박서연 보호자', '01000000002', '2026-09-08 10:00+09') returning guardian_id into g2;
+  insert into guardians (name, phone, alimtalk_agreed_at) values ('이도윤 보호자', '01000000003', '2026-09-08 10:00+09') returning guardian_id into g3;
+  insert into guardians (name, phone, alimtalk_agreed_at) values ('최하린 보호자', '01000000004', '2026-02-25 10:00+09') returning guardian_id into g4;
+  insert into guardians (name, phone, alimtalk_agreed_at) values ('정민준 보호자', '01000000005', '2026-09-08 10:00+09') returning guardian_id into g5;
+  insert into guardians (name, phone, alimtalk_agreed_at) values ('한예린 보호자', '01000000006', '2026-09-08 10:00+09') returning guardian_id into g6;
+  insert into guardians (name, phone, alimtalk_agreed_at) values ('윤시우·강다은 보호자', '01000000007', '2026-09-08 10:00+09') returning guardian_id into g7;
 
   insert into students (student_id, guardian_id, name, birth_ym, own_phone, instagram_id, consent_at) values
     ('S-0001', g1, '김지우', '2015-05-01', null, 'sample_jiwoo', '2026-09-08 10:05+09'),
     ('S-0002', g2, '박서연', '2014-03-01', null, 'sample_seoyeon', '2026-09-08 10:05+09'),
-    ('S-0003', g3, '이도윤', '2013-07-01', '010-0000-1003', 'sample_doyun', '2026-09-08 10:05+09'),
+    ('S-0003', g3, '이도윤', '2013-07-01', '01000001003', 'sample_doyun', '2026-09-08 10:05+09'),
     ('S-0004', g4, '최하린', '2015-11-01', null, 'sample_harin', '2026-02-25 10:05+09'),
     ('S-0005', g5, '정민준', '2014-09-01', null, 'sample_minjun', '2026-09-08 10:05+09'),
     ('S-0006', g6, '한예린', '2012-12-01', null, 'sample_yerin', '2026-09-08 10:05+09'),
@@ -106,7 +106,7 @@ begin
   select s.student_id, 'guardian', g.phone, encode(sha256(convert_to('sample-token-' || s.student_id, 'UTF8')), 'hex'), '2026-09-08 10:00+09'
   from students s join guardians g using (guardian_id);
   insert into access_tokens (student_id, holder, sent_to_phone, token_hash, issued_at)
-  values ('S-0003', 'child', '010-0000-1003', encode(sha256(convert_to('sample-token-S-0003-child', 'UTF8')), 'hex'), '2026-09-08 10:10+09');
+  values ('S-0003', 'child', '01000001003', encode(sha256(convert_to('sample-token-S-0003-child', 'UTF8')), 'hex'), '2026-09-08 10:10+09');
 
   -- ───────── 수강 ─────────
   insert into enrollments (student_id, cohort_id, grade_at_enrollment, paid_at, paid_amount, completed_at, completion_tier)
@@ -179,7 +179,7 @@ begin
 
   -- ───────── 환불 (트리거가 접속 링크를 폐기) ─────────
   update enrollments
-  set refunded_at = '2026-09-25 15:00+09', refund_amount = 120000, refund_reason = '샘플: 일정 사정'
+  set status = 'refunded', refund_status = 'approved', refunded_at = '2026-09-25 15:00+09', refund_amount = 120000, refund_reason = '샘플: 일정 사정'
   where enrollment_id = e_minjun;
 
   -- ───────── 알림 기록 ─────────
@@ -189,10 +189,10 @@ begin
   where en.cohort_id = c1;
 
   insert into notifications (student_id, enrollment_id, template, recipient, sent_to_phone, sent_at, result)
-  values ('S-0003', e_doyun, 'child_link', 'child', '010-0000-1003', '2026-09-08 10:10+09', 'sent');
+  values ('S-0003', e_doyun, 'child_link', 'child', '01000001003', '2026-09-08 10:10+09', 'sent');
 
   -- 1차 독려(2주차 월요일): 한예린만 대상이었음
   insert into notifications (student_id, enrollment_id, template, checkpoint, recipient, sent_to_phone, sent_at, result)
-  values ('S-0006', e_yerin, 'nudge', 'nudge_1', 'guardian', '010-0000-0006', '2026-09-21 09:00+09', 'sent');
+  values ('S-0006', e_yerin, 'nudge', 'nudge_1', 'guardian', '01000000006', '2026-09-21 09:00+09', 'sent');
 end
 $$;

@@ -94,7 +94,7 @@ create table live_sessions (
 create table guardians (
   guardian_id uuid primary key default gen_random_uuid(),
   name text,
-  phone text not null unique,       -- 신청 연락처. 연락·조회용이며 식별자로 쓰지 않는다
+  phone text not null unique check (phone ~ '^01[0-9]{8,9}$'), -- 결제자(신청) 연락처, 숫자만. 보호자 1명 = 번호 1개
   alimtalk_agreed_at timestamptz,
   reenroll_marketing_agreed_at timestamptz,
   created_at timestamptz not null default now()
@@ -108,7 +108,7 @@ create table students (
   guardian_id uuid not null references guardians on delete restrict,
   name text not null,               -- 완주 상장에 들어가는 이름(한국어)
   birth_ym date check (extract(day from birth_ym) = 1), -- 출생 연월. 매월 1일로 저장
-  own_phone text,                   -- 자녀 본인 휴대폰으로 진행할 때만
+  own_phone text check (own_phone ~ '^01[0-9]{8,9}$'), -- 자녀 본인 휴대폰으로 진행할 때만, 숫자만
   instagram_id text,
   consent_at timestamptz,           -- 음성·이미지 수집 보호자 동의
   admin_memo text,
@@ -141,9 +141,11 @@ create table enrollments (
   paid_amount int,
   coupon_code text,
   source text,                      -- 유입 경로
-  status text,                      -- 값 목록 미정 (질문 목록 참고)
-  refund_status text,               -- 값 목록 미정. 환불 여부 판정은 refunded_at으로 한다
-  refunded_at timestamptz,
+  -- 수강 상태: paid = 이 기수를 결제함(수강 중), refunded = 환불·과정 취소 완료
+  status text not null default 'paid' check (status in ('paid', 'refunded')),
+  -- 환불 처리 단계(관리자 확인 후 수동): requested = 요청 접수·확인 대기, approved = 환불 완료, rejected = 환불 불가
+  refund_status text check (refund_status in ('requested', 'approved', 'rejected')),
+  refunded_at timestamptz,          -- 환불 완료 시각 (approved일 때만)
   refund_amount int,
   refund_reason text,
   completed_at timestamptz,         -- 상장 발급 시점의 기록. 판정은 enrollment_progress()로 계산
@@ -151,7 +153,9 @@ create table enrollments (
   certificate_name text,
   certificate_sent_at timestamptz,
   created_at timestamptz not null default now(),
-  unique (student_id, cohort_id)
+  unique (student_id, cohort_id),
+  check ((status = 'refunded') = (refund_status is not distinct from 'approved')),
+  check ((refund_status is not distinct from 'approved') = (refunded_at is not null))
 );
 create index enrollments_cohort_idx on enrollments (cohort_id);
 

@@ -214,6 +214,26 @@ create trigger notifications_nudge_cap
 before insert on notifications
 for each row execute function app.enforce_nudge_cap();
 
+-- ───────── 규칙: 아직 시작하지 않은 주차에는 학습할 수 없다 ─────────
+-- 지난 주차는 언제든(종강 후 포함) 소급해서 채울 수 있다. 실적은 학습자가 고른 주차(week_no)에 귀속한다.
+create function app.check_activity_week() returns trigger
+language plpgsql as $$
+begin
+  if not exists (
+    select 1 from cohort_weeks w
+    join enrollments en on en.cohort_id = w.cohort_id
+    where en.enrollment_id = new.enrollment_id and w.week_no = new.week_no and w.starts_at <= new.started_at)
+  then
+    raise exception 'week % has not started (or does not exist) for this enrollment', new.week_no using errcode = 'check_violation';
+  end if;
+  return new;
+end
+$$;
+
+create trigger activities_week_started
+before insert or update of week_no, started_at on activities
+for each row execute function app.check_activity_week();
+
 -- ───────── 규칙: 환불하면 접속 링크 폐기 ─────────
 -- 접속 링크는 수강이 아니라 학습자에 붙어 있으므로, 환불하지 않은 다른 수강(재수강 등)이 남아 있으면 폐기하지 않는다.
 create function app.revoke_tokens_on_refund() returns trigger

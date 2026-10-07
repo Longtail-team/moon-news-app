@@ -178,7 +178,7 @@ describe("규칙", () => {
   const insertNudge = (tx: { query: PGlite["query"] }, checkpoint: string, recipient = "guardian") =>
     tx.query(
       `insert into notifications (student_id, enrollment_id, template, checkpoint, recipient, sent_to_phone)
-       select en.student_id, en.enrollment_id, 'nudge', $1, $2, '010-0000-0007'
+       select en.student_id, en.enrollment_id, 'nudge', $1, $2, '01000000007'
        from enrollments en join cohorts c using (cohort_id) where en.student_id = 'S-0008' and c.cohort_no = 1`,
       [checkpoint, recipient],
     );
@@ -209,14 +209,49 @@ describe("규칙", () => {
     expect(others[0].n).toBe(0);
   });
 
+  it("환불 요청(관리자 확인 전)만으로는 링크를 폐기하지 않는다", async () => {
+    await db.transaction(async (tx) => {
+      await tx.query("update enrollments set refund_status = 'requested' where student_id = 'S-0001'");
+      const r = await tx.query<Row>("select revoked_at from access_tokens where student_id = 'S-0001'");
+      expect(r.rows[0].revoked_at).toBeNull();
+      await tx.rollback();
+    });
+  });
+
+  it("환불 상태값은 서로 맞아야 한다 (환불 완료 = refunded + approved + 환불 시각)", async () => {
+    await expect(db.query("update enrollments set status = 'refunded' where student_id = 'S-0001'")).rejects.toThrow();
+    await expect(db.query("update enrollments set refund_status = 'approved' where student_id = 'S-0001'")).rejects.toThrow();
+  });
+
   it("다른 수강이 남은 학습자는 한 수강을 환불해도 링크를 유지한다 (최하린)", async () => {
     await db.transaction(async (tx) => {
       await tx.query(
-        `update enrollments set refunded_at = now()
+        `update enrollments set status = 'refunded', refund_status = 'approved', refunded_at = now()
          where student_id = 'S-0004' and cohort_id = (select cohort_id from cohorts where cohort_no = 1)`,
       );
       const r = await tx.query<Row>("select revoked_at from access_tokens where student_id = 'S-0004'");
       expect(r.rows[0].revoked_at).toBeNull();
+      await tx.rollback();
+    });
+  });
+
+  it("아직 시작하지 않은 주차에는 학습할 수 없고, 지난 주차는 소급할 수 있다", async () => {
+    const insertAt = (week: number, at: string) =>
+      db.query(
+        `insert into activities (enrollment_id, week_no, activity_type, started_at)
+         select en.enrollment_id, $1, 'VOCA', $2 from enrollments en join cohorts c using (cohort_id)
+         where en.student_id = 'S-0006' and c.cohort_no = 1 returning activity_id`,
+        [week, at],
+      );
+    await expect(insertAt(5, NOW)).rejects.toThrow(/has not started/);
+    await expect(insertAt(13, "2026-12-20T12:00:00+09:00")).rejects.toThrow(/does not exist/);
+    await db.transaction(async (tx) => {
+      // 종강 뒤에도 1주차를 채울 수 있다 (늦은 완주)
+      await tx.query(
+        `insert into activities (enrollment_id, week_no, activity_type, started_at)
+         select en.enrollment_id, 1, 'VOCA', '2026-12-20T12:00:00+09:00' from enrollments en join cohorts c using (cohort_id)
+         where en.student_id = 'S-0006' and c.cohort_no = 1`,
+      );
       await tx.rollback();
     });
   });
@@ -236,22 +271,22 @@ describe("알림 받는 사람 (spec 12장)", () => {
     (await rows("select recipient, phone from app.notification_recipients($1, $2, $3) order by recipient desc", [student, template, phone]));
 
   it("보호자 휴대폰으로 진행: 독려는 보호자만", async () => {
-    expect(await recipients("S-0001", "nudge")).toEqual([{ recipient: "guardian", phone: "010-0000-0001" }]);
+    expect(await recipients("S-0001", "nudge")).toEqual([{ recipient: "guardian", phone: "01000000001" }]);
   });
 
   it("자녀 본인 휴대폰으로 진행: 독려는 보호자와 자녀 모두, 시작 안내는 보호자만", async () => {
     expect(await recipients("S-0003", "nudge")).toEqual([
-      { recipient: "guardian", phone: "010-0000-0003" },
-      { recipient: "child", phone: "010-0000-1003" },
+      { recipient: "guardian", phone: "01000000003" },
+      { recipient: "child", phone: "01000001003" },
     ]);
-    expect(await recipients("S-0003", "start_guide")).toEqual([{ recipient: "guardian", phone: "010-0000-0003" }]);
-    expect(await recipients("S-0003", "child_link")).toEqual([{ recipient: "child", phone: "010-0000-1003" }]);
+    expect(await recipients("S-0003", "start_guide")).toEqual([{ recipient: "guardian", phone: "01000000003" }]);
+    expect(await recipients("S-0003", "child_link")).toEqual([{ recipient: "child", phone: "01000001003" }]);
     expect(await recipients("S-0001", "child_link")).toEqual([]);
   });
 
   it("새 접속 링크는 등록된 번호로 요청했을 때만", async () => {
-    expect(await recipients("S-0003", "new_link", "010-0000-1003")).toEqual([{ recipient: "child", phone: "010-0000-1003" }]);
-    expect(await recipients("S-0003", "new_link", "010-9999-9999")).toEqual([]);
+    expect(await recipients("S-0003", "new_link", "01000001003")).toEqual([{ recipient: "child", phone: "01000001003" }]);
+    expect(await recipients("S-0003", "new_link", "01099999999")).toEqual([]);
   });
 });
 
