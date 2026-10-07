@@ -328,6 +328,28 @@ describe("권한 (RLS)", () => {
     expect(r).toEqual({ articles: 4, sentences: 14 + 3 });
   });
 
+  it("재수강생이 새 기수를 환불하면 링크는 유지되고 그 기수만 보이지 않는다 (최하린 1기 환불)", async () => {
+    const seen = await db.transaction(async (tx) => {
+      await tx.query(
+        `update enrollments set status = 'refunded', refund_status = 'approved', refunded_at = now()
+         where student_id = 'S-0004' and cohort_id = (select cohort_id from cohorts where cohort_no = 1)`,
+      );
+      const token = (await tx.query<Row>("select revoked_at from access_tokens where student_id = 'S-0004'")).rows[0];
+      await tx.exec("set local role authenticated");
+      await tx.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ student_ids: ["S-0004"] })]);
+      const r = {
+        tokenRevoked: token.revoked_at !== null,
+        cohorts: (await tx.query<Row>("select cohort_no from cohorts order by cohort_no")).rows.map((x) => x.cohort_no),
+        enrollments: (await tx.query<Row>("select count(*)::int as n from enrollments")).rows[0].n,
+        activities: (await tx.query<Row>("select count(*)::int as n from activities")).rows[0].n,
+        weeks: (await tx.query<Row>("select count(*)::int as n from cohort_weeks")).rows[0].n,
+      };
+      await tx.rollback();
+      return r;
+    });
+    expect(seen).toEqual({ tokenRevoked: false, cohorts: [0], enrollments: 1, activities: 60, weeks: 12 });
+  });
+
   it("학습자 세션은 쓰기를 할 수 없다", async () => {
     await expect(
       asUser(db, { student_ids: ["S-0001"] }, (tx) => tx.query("update activities set post_url = 'x'")),
