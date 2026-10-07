@@ -292,6 +292,11 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 | 학습 자료 입력 | 자료 시트 + 드라이브 폴더 | 운영자가 입력, 동기화 때 DB와 Storage로 복사. 앱은 시트·드라이브를 직접 읽지 않음 |
 | 비상용 시트 | 구글 시트 (읽기 전용) | DB → 시트 한 방향. 매일 밤 자동 + 관리자 화면 수동 버튼 |
 
+운영 환경 (2026-10-07)
+- Supabase: 조직 "moon news webapp"(Pro, 이 서비스 전용) / 프로젝트 `moon.news.app`(ref `mefmwetcfrmwdqcgxtpz`, 서울). 다른 서비스(멤버십 앱)와 조직을 나눠 비용·사용량을 따로 본다.
+- Vercel: 프로젝트 `moon-news-app`, 운영 주소 `news.momthereader.com`(main), 기기 시험 페이지 `/lab`.
+- DB 비밀번호 등 비밀 값은 저장소에 넣지 않는다(로컬 `.env.local`, Vercel 환경변수).
+
 영상은 휴대폰에서 만들고 서버에 저장하지 않는다. 이 경우 서버 전송량이 작아 Supabase Storage 하나로 충분하다. 서버 합성은 도입하지 않는다(T01 결론). 2단계 기기 시험에서 아이폰 Safari나 안드로이드 Chrome이 실패할 때만 Cloudflare R2와 서버 합성을 다시 검토한다. 파일을 다루는 코드는 한 모듈에 모아 저장소를 바꿀 수 있게 둔다.
 
 
