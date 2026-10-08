@@ -55,6 +55,11 @@ begin
     (a, 'voca_pdf', 'week01_voca.pdf', 'sample/week01/voca.pdf'),
     (a, 'insta_template', 'week01_template.png', 'sample/week01/template.png');
 
+  -- 주차별 추가 자료(링크·안내 텍스트) 샘플
+  insert into week_items (article_id, sort_no, kind, title, url, body) values
+    (a, 1, 'text', '이번 주 안내', null, '이번 주 기사는 RM의 미술 전시 이야기예요. 낭독 전에 영어 음원을 한 번 들어 보세요.'),
+    (a, 2, 'link', 'SFMOMA 미술관 홈페이지', 'https://www.sfmoma.org/', null);
+
   for i in 2..12 loop
     insert into articles (title_en, level, word_count, status)
     values (format('Week %s article (placeholder)', i), '샘플', 180, case when i <= 4 then 'published' else 'draft' end)
