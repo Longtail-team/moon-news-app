@@ -227,8 +227,8 @@ export function Learners({ s, onDone, adding = false }: { s: State; onDone: () =
         {forms.map((f, i) => {
           const auto = gradeLabel(f.year);
           const returning = s.returning.filter((r) => !used.has(r.student_id) || r.student_id === f.existing);
-          // 결제자 본인은 한 가정에 1명: 이미 등록했거나 다른 칸에서 골랐으면 고를 수 없다
-          const selfTaken = s.has_self || forms.some((x, j) => j !== i && x.self);
+          // "저 혼자 학습해요"(결제자 본인)는 혼자 하는 경우라 칸이 하나일 때만 고를 수 있다. 한 가정에 1명.
+          const selfTaken = s.has_self || forms.length > 1;
           return (
             <div key={i} className={forms.length > 1 ? "card stack" : "stack"} style={{ gap: 18 }}>
               {forms.length > 1 && (
@@ -263,7 +263,7 @@ export function Learners({ s, onDone, adding = false }: { s: State; onDone: () =
                     자녀
                   </button>
                   <button className={`chip${f.self ? " on" : ""}`} onClick={() => set(i, { self: true, name: s.guardian.name ?? "" })}>
-                    제가 직접 할게요
+                    저 혼자 학습해요
                   </button>
                 </div>
               )}
@@ -348,7 +348,7 @@ export function Learners({ s, onDone, adding = false }: { s: State; onDone: () =
             </div>
           );
         })}
-        {forms.length < seats && (
+        {forms.length < seats && !forms.some((f) => f.self) && (
           <button className="btn2" style={{ borderStyle: "dashed", minHeight: 52 }} onClick={() => setForms((fs) => [...fs, emptyForm()])}>
             + 형제·자매 함께 등록하기
           </button>
