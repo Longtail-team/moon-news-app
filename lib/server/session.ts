@@ -13,7 +13,7 @@ export const SESSION_DAYS = 180; // T03 결정 4 (임시 적용)
 export const sha256 = (s: string) => createHash("sha256").update(s, "utf8").digest("hex");
 
 export type Learner = { student_id: string; name: string; grade: string | null };
-export type Session = { sessionId: string; holder: "guardian" | "child"; learners: Learner[] };
+export type Session = { sessionId: string; holder: "guardian" | "child"; guardianId: string; learners: Learner[] };
 
 /** 접속 링크를 확인하고 새 세션 값을 돌려준다. 쓸 수 없는 링크면 null. */
 export async function openLink(rawToken: string): Promise<string | null> {
@@ -42,14 +42,29 @@ export const getSession = cache(async (): Promise<Session | null> => {
   if (!raw) return null;
   const { data, error } = await db().rpc("session_scope", { p_session_hash: sha256(raw) });
   if (error) throw error;
-  const rows = (data ?? []) as { session_id: string; holder: "guardian" | "child"; student_id: string; student_name: string; grade: string | null }[];
+  const rows = (data ?? []) as { session_id: string; holder: "guardian" | "child"; guardian_id: string; student_id: string | null; student_name: string; grade: string | null }[];
   if (rows.length === 0) return null;
-  return {
-    sessionId: rows[0].session_id,
-    holder: rows[0].holder,
-    learners: rows.map((r) => ({ student_id: r.student_id, name: r.student_name, grade: r.grade })),
-  };
+  const learners = rows.filter((r) => r.student_id).map((r) => ({ student_id: r.student_id!, name: r.student_name, grade: r.grade }));
+  // 자녀 링크인데 볼 수 있는 학습자가 없으면(환불 등) 세션이 아닌 것으로 본다. 보호자는 결제 직후 학습자가 없을 수 있다.
+  if (rows[0].holder === "child" && learners.length === 0) return null;
+  return { sessionId: rows[0].session_id, holder: rows[0].holder, guardianId: rows[0].guardian_id, learners };
 });
+
+/** 새 접속 링크를 만들고 원문을 돌려준다(DB에는 해시만). */
+export async function issueLink(holder: "guardian" | "child", target: { guardianId?: string; studentId?: string }, phone: string): Promise<string> {
+  const raw = randomBytes(24).toString("base64url");
+  const { error } = await db().rpc("issue_token", {
+    p_holder: holder,
+    p_guardian: target.guardianId ?? null,
+    p_student: target.studentId ?? null,
+    p_phone: phone,
+    p_token_hash: sha256(raw),
+  });
+  if (error) throw error;
+  return raw;
+}
+
+export const linkUrl = (origin: string, raw: string) => `${origin}/a/${raw}`;
 
 /** 지금 고른 학습자. 한 명이면 그 학습자, 여럿이면 고른 프로필(없으면 null → 프로필 고르기). */
 export async function currentLearner(session: Session): Promise<Learner | null> {

@@ -5,7 +5,10 @@ import { useEffect } from "react";
 
 export function Toast({ message }: { message: string }) {
   useEffect(() => {
-    window.history.replaceState(null, "", window.location.pathname);
+    // ?done= 만 지우고 ?k=(홈 화면용 링크)는 남긴다
+    const u = new URL(window.location.href);
+    u.searchParams.delete("done");
+    window.history.replaceState(null, "", u.pathname + u.search);
   }, []);
   return (
     <div className="toast" role="status">

@@ -102,8 +102,9 @@ begin
   perform setval('student_no_seq', 8);
 
   -- 접속 링크 (token_hash만 저장)
-  insert into access_tokens (student_id, holder, sent_to_phone, token_hash, issued_at)
-  select s.student_id, 'guardian', g.phone, encode(sha256(convert_to('sample-token-' || s.student_id, 'UTF8')), 'hex'), '2026-09-08 10:00+09'
+  -- 보호자 링크는 보호자에 붙는다(T04). 샘플 링크 이름은 학습자 번호로 둔다(형제 보호자는 링크 2개)
+  insert into access_tokens (guardian_id, holder, sent_to_phone, token_hash, issued_at)
+  select s.guardian_id, 'guardian', g.phone, encode(sha256(convert_to('sample-token-' || s.student_id, 'UTF8')), 'hex'), '2026-09-08 10:00+09'
   from students s join guardians g using (guardian_id);
   insert into access_tokens (student_id, holder, sent_to_phone, token_hash, issued_at)
   values ('S-0003', 'child', '01000001003', encode(sha256(convert_to('sample-token-S-0003-child', 'UTF8')), 'hex'), '2026-09-08 10:10+09');

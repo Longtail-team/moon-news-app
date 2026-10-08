@@ -37,15 +37,16 @@ describe("세션 범위", () => {
   });
 
   it("환불로 링크가 폐기되면 세션도 막힌다 (정민준)", async () => {
-    // 정민준의 링크는 샘플 데이터에서 이미 폐기됨 → 세션을 만들어도 범위가 비어 있다
-    expect(await scope(await sessionFor("sample-token-S-0005", "m5"))).toEqual([]);
+    // 정민준의 링크는 샘플 데이터에서 이미 폐기됨 → 세션을 만들어도 결과가 없다
+    const hash = await sessionFor("sample-token-S-0005", "m5");
+    expect((await db.query<Row>("select count(*)::int as n from public.session_scope($1)", [hash])).rows[0].n).toBe(0);
   });
 
   it("링크가 나중에 폐기되면 이미 만든 세션도 함께 끝난다", async () => {
     const hash = await sessionFor("sample-token-S-0001", "j1");
     expect(await scope(hash)).toEqual(["S-0001"]);
     await db.transaction(async (tx) => {
-      await tx.query("update access_tokens set revoked_at = now() where student_id = 'S-0001'");
+      await tx.query("update access_tokens t set revoked_at = now() from students s where s.guardian_id = t.guardian_id and s.student_id = 'S-0001'");
       const r = await tx.query<Row>("select revoked_at from sessions where session_hash = $1", [hash]);
       expect(r.rows[0].revoked_at).not.toBeNull();
       const s = await tx.query<Row>("select count(*)::int as n from public.session_scope($1)", [hash]);
@@ -57,7 +58,7 @@ describe("세션 범위", () => {
   it("만료된 세션과 없는 세션은 비어 있다", async () => {
     const hash = await sessionFor("sample-token-S-0002", "s2");
     await db.query("update sessions set expires_at = now() - interval '1 second' where session_hash = $1", [hash]);
-    expect(await scope(hash)).toEqual([]);
+    expect((await db.query<Row>("select count(*)::int as n from public.session_scope($1)", [hash])).rows[0].n).toBe(0);
     expect(await scope("no-such-session")).toEqual([]);
   });
 });

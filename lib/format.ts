@@ -32,9 +32,12 @@ export function fmtLive(iso: string): string {
   return `${p.m}월 ${p.d}일(${DOW[p.dow]}) ${part} ${h12}시${p.minute ? ` ${p.minute}분` : ""}`;
 }
 
-/** "김지우" → "지우" (세 글자 이상이면 성을 뺀다) */
+/** 부르는 이름: "김지우" → "지우", "남궁민수" → "민수"(네 글자는 두 글자 성으로 본다), 두 글자·다섯 글자 이상은 그대로 */
 export function givenName(name: string): string {
-  return name.length >= 3 ? name.slice(1) : name;
+  const n = name.trim();
+  if (n.length === 3) return n.slice(1);
+  if (n.length === 4) return n.slice(2);
+  return n;
 }
 
 /** "10월 3일" (한국 시간) */

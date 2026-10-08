@@ -202,17 +202,17 @@ describe("규칙", () => {
   });
 
   it("환불하면 접속 링크가 폐기된다 (정민준)", async () => {
-    const r = await rows("select revoked_at from access_tokens where student_id = 'S-0005'");
+    const r = await rows("select t.revoked_at from access_tokens t join students s on s.guardian_id = t.guardian_id where s.student_id = 'S-0005'");
     expect(r.length).toBe(1);
     expect(r[0].revoked_at).not.toBeNull();
-    const others = await rows("select count(*)::int as n from access_tokens where student_id <> 'S-0005' and revoked_at is not null");
-    expect(others[0].n).toBe(0);
+    const others = await rows("select count(*)::int as n from access_tokens where revoked_at is not null");
+    expect(others[0].n).toBe(1);
   });
 
   it("환불 요청(관리자 확인 전)만으로는 링크를 폐기하지 않는다", async () => {
     await db.transaction(async (tx) => {
       await tx.query("update enrollments set refund_status = 'requested' where student_id = 'S-0001'");
-      const r = await tx.query<Row>("select revoked_at from access_tokens where student_id = 'S-0001'");
+      const r = await tx.query<Row>("select revoked_at from access_tokens t join students s on s.guardian_id = t.guardian_id where s.student_id = 'S-0001'");
       expect(r.rows[0].revoked_at).toBeNull();
       await tx.rollback();
     });
@@ -229,7 +229,7 @@ describe("규칙", () => {
         `update enrollments set status = 'refunded', refund_status = 'approved', refunded_at = now()
          where student_id = 'S-0004' and cohort_id = (select cohort_id from cohorts where cohort_no = 1)`,
       );
-      const r = await tx.query<Row>("select revoked_at from access_tokens where student_id = 'S-0004'");
+      const r = await tx.query<Row>("select t.revoked_at from access_tokens t join students s on s.guardian_id = t.guardian_id where s.student_id = 'S-0004'");
       expect(r.rows[0].revoked_at).toBeNull();
       await tx.rollback();
     });
@@ -334,7 +334,7 @@ describe("권한 (RLS)", () => {
         `update enrollments set status = 'refunded', refund_status = 'approved', refunded_at = now()
          where student_id = 'S-0004' and cohort_id = (select cohort_id from cohorts where cohort_no = 1)`,
       );
-      const token = (await tx.query<Row>("select revoked_at from access_tokens where student_id = 'S-0004'")).rows[0];
+      const token = (await tx.query<Row>("select t.revoked_at from access_tokens t join students s on s.guardian_id = t.guardian_id where s.student_id = 'S-0004'")).rows[0];
       await tx.exec("set local role authenticated");
       await tx.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ student_ids: ["S-0004"] })]);
       const r = {
