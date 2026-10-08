@@ -55,11 +55,16 @@ describe("결제 → 첫 접속 3단계 (형제 2명 주문)", () => {
       expect((await state(tx, o.guardian_id)).step).toBe("learners");
 
       const a = (await tx.query<Row>("select public.register_learner($1, $2, null, '테스트하나', '2015-05-01', null, 'test_one') as s", [o.guardian_id, o.order_id])).rows[0].s;
-      expect((await state(tx, o.guardian_id)).orders[0]).toMatchObject({ quantity: 2, registered: 1 });
+      // 수량(2)보다 적게 등록해도 다음 단계로 간다. 남은 자리는 나중에 추가
+      const half = await state(tx, o.guardian_id);
+      expect(half.orders[0]).toMatchObject({ quantity: 2, registered: 1 });
+      expect(half.step).toBe("access");
+      expect(half.open_seats).toBe(1);
       const b = (await tx.query<Row>("select public.register_learner($1, $2, null, '테스트둘', '2013-03-01', '중2', null) as s", [o.guardian_id, o.order_id])).rows[0].s;
 
       const st = await state(tx, o.guardian_id);
       expect(st.step).toBe("access");
+      expect(st.open_seats).toBe(0);
       expect(st.pending.map((p: any) => [p.name, p.grade]).sort()).toEqual([["테스트둘", "중2"], ["테스트하나", "초5"]]);
 
       await tx.query("select public.onboarding_access($1, $2, null)", [o.guardian_id, a]);
@@ -72,6 +77,16 @@ describe("결제 → 첫 접속 3단계 (형제 2명 주문)", () => {
       expect(await scope(tx, ch)).toEqual([b]);
       await tx.rollback();
     });
+  });
+
+  it("자녀 본인 번호에 보호자 번호를 넣을 수 없다", async () => {
+    await expect(
+      db.transaction(async (tx) => {
+        const o = await newOrder(tx, "IMWEB-T6", "01000009006", 1);
+        const s = (await tx.query<Row>("select public.register_learner($1, $2, null, '하나', '2015-01-01', null, null) as s", [o.guardian_id, o.order_id])).rows[0].s;
+        await tx.query("select public.onboarding_access($1, $2, '01000009006')", [o.guardian_id, s]);
+      }),
+    ).rejects.toThrow(/same as guardian/);
   });
 
   it("주문 수량을 넘겨 등록할 수 없다", async () => {

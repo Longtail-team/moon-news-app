@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     const phone = it.ownPhone ? normalizePhone(it.ownPhone) : null;
     if (it.ownPhone && !phone) return json({ error: "bad_phone", studentId: it.studentId }, 400);
     const { error } = await db().rpc("onboarding_access", { p_guardian: g, p_student: it.studentId, p_own_phone: phone });
-    if (error) return json({ error: "cannot save" }, 409);
+    if (error) return json({ error: error.message.includes("same as guardian") ? "same_phone" : "cannot save" }, 409);
     if (phone) {
       const raw = await issueLink("child", { studentId: it.studentId }, phone);
       const r = await sendAlimtalk({ template: "child_link", to: phone, recipient: "child", studentId: it.studentId, link: linkUrl(origin, raw) });

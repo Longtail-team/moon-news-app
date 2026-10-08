@@ -2,12 +2,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/server/session";
+import { getOnboarding } from "@/lib/server/onboarding";
 import { givenName } from "@/lib/format";
 import "../student.css";
 
 export default async function Profiles() {
   const session = await getSession();
   if (!session || session.learners.length === 0) redirect("/");
+  const openSeats = session.holder === "guardian" ? (await getOnboarding(session.guardianId)).open_seats : 0;
   return (
     <div className="app">
       <div className="scroll">
@@ -24,6 +26,11 @@ export default async function Profiles() {
                 <span style={{ fontSize: 18, fontWeight: 800 }}>›</span>
               </Link>
             ))}
+            {openSeats > 0 && (
+              <Link className="btn2" href="/add-learner" style={{ borderStyle: "dashed", minHeight: 56 }}>
+                + 학습자 추가 · {openSeats}명 더 등록할 수 있어요
+              </Link>
+            )}
           </div>
         </div>
       </div>

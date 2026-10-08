@@ -4,6 +4,7 @@ import { db } from "./db";
 export type OnboardingOrder = { order_id: string; course_title: string; cohort_no: number; start_date: string; deadline: string; quantity: number; registered: number };
 export type Onboarding = {
   step: "welcome" | "learners" | "access" | "done";
+  open_seats: number; // 주문 수량 중 아직 등록하지 않은 자리(나중에 학습자 추가)
   guardian: { name: string | null; phone: string };
   orders: OnboardingOrder[];
   returning: { student_id: string; name: string; birth_ym: string | null; instagram_id: string | null }[];

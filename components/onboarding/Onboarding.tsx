@@ -178,12 +178,13 @@ function Welcome({ s, onDone }: { s: State; onDone: () => void }) {
 // ───────── 2 학습자 등록 ─────────
 type Form = { existing?: string; name: string; year: number; month: number; grade: string | null; gradeEdit: boolean; instagram: string };
 
-function Learners({ s, onDone }: { s: State; onDone: () => void }) {
+const emptyForm = (): Form => ({ name: "", year: 2015, month: 3, grade: null, gradeEdit: false, instagram: "" });
+
+/** 학습자 등록: 처음엔 1명, "형제·자매 추가"로 주문 수량까지. 수량보다 적게 등록해도 진행하고 남은 자리는 나중에 추가 */
+export function Learners({ s, onDone, adding = false }: { s: State; onDone: () => void; adding?: boolean }) {
   const order = s.orders.find((o) => o.registered < o.quantity)!;
   const seats = order.quantity - order.registered;
-  const [forms, setForms] = useState<Form[]>(() =>
-    Array.from({ length: seats }, () => ({ name: "", year: 2015, month: 3, grade: null, gradeEdit: false, instagram: "" })),
-  );
+  const [forms, setForms] = useState<Form[]>(() => [emptyForm()]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const used = new Set(forms.map((f) => f.existing).filter(Boolean));
@@ -211,19 +212,33 @@ function Learners({ s, onDone }: { s: State; onDone: () => void }) {
 
   return (
     <div className="scroll">
-      <Progress n={2} label="학습자 등록" />
+      {!adding && <Progress n={2} label="학습자 등록" />}
       <div className="pad stack" style={{ paddingTop: 22, gap: 22 }}>
         <h1 className="h1">
-          함께할 학습자를
-          <br />
-          알려주세요
+          {adding ? "학습자 추가" : "함께할 학습자를"}
+          {!adding && (
+            <>
+              <br />
+              알려주세요
+            </>
+          )}
         </h1>
+        {seats > 1 && <div className="help">이 주문으로 {seats}명까지 등록할 수 있어요. 나중에 추가해도 돼요.</div>}
         {forms.map((f, i) => {
           const auto = gradeLabel(f.year);
           const returning = s.returning.filter((r) => !used.has(r.student_id) || r.student_id === f.existing);
           return (
-            <div key={i} className={seats > 1 ? "card stack" : "stack"} style={{ gap: 18 }}>
-              {seats > 1 && <div style={{ fontSize: 15, fontWeight: 800 }}>학습자 {i + 1}</div>}
+            <div key={i} className={forms.length > 1 ? "card stack" : "stack"} style={{ gap: 18 }}>
+              {forms.length > 1 && (
+                <div className="between">
+                  <div style={{ fontSize: 15, fontWeight: 800 }}>학습자 {i + 1}</div>
+                  {i > 0 && (
+                    <button className="textbtn" style={{ fontSize: 13 }} onClick={() => setForms((fs) => fs.filter((_, j) => j !== i))}>
+                      빼기
+                    </button>
+                  )}
+                </div>
+              )}
               {returning.length > 0 && (
                 <div className="stack" style={{ gap: 6 }}>
                   <div style={{ fontSize: 13, fontWeight: 700 }}>지난 기수에 함께한 학습자</div>
@@ -312,9 +327,14 @@ function Learners({ s, onDone }: { s: State; onDone: () => void }) {
             </div>
           );
         })}
+        {forms.length < seats && (
+          <button className="btn2" style={{ borderStyle: "dashed", minHeight: 52 }} onClick={() => setForms((fs) => [...fs, emptyForm()])}>
+            + 형제·자매 함께 등록하기
+          </button>
+        )}
         {err && <div className="err">{err}</div>}
         <button className="cta" disabled={busy} onClick={() => void next()}>
-          다음
+          {adding ? "등록하기" : "다음"}
         </button>
       </div>
     </div>
@@ -332,7 +352,12 @@ function Access({ s, onDone, onDevLinks }: { s: State; onDone: () => void; onDev
 
   async function start() {
     if (!consent) return setErr("음성·이미지 수집에 동의해야 시작할 수 있어요.");
-    for (const p of s.pending) if (own[p.student_id] && !(phones[p.student_id] ?? "").replace(/\D/g, "")) return setErr(`${givenName(p.name)} 연락처를 입력해 주세요.`);
+    for (const p of s.pending) {
+      if (!own[p.student_id]) continue;
+      const d = (phones[p.student_id] ?? "").replace(/\D/g, "");
+      if (!d) return setErr(`${givenName(p.name)} 연락처를 입력해 주세요.`);
+      if (d === s.guardian.phone) return setErr("보호자 번호와 같아요. 보호자 휴대폰으로 진행한다면 '아니요'를 골라 주세요.");
+    }
     setBusy(true);
     setErr(null);
     try {
@@ -343,7 +368,14 @@ function Access({ s, onDone, onDevLinks }: { s: State; onDone: () => void; onDev
       if (r.devLinks.length) onDevLinks(r.devLinks.map((d) => ({ name: s.pending.find((p) => p.student_id === d.studentId)?.name ?? "", link: d.link })));
       else onDone();
     } catch (e) {
-      setErr((e as { code?: string }).code === "bad_phone" ? "휴대폰 번호를 다시 확인해 주세요." : "저장하지 못했어요. 다시 눌러 주세요.");
+      const code = (e as { code?: string }).code;
+      setErr(
+        code === "bad_phone"
+          ? "휴대폰 번호를 다시 확인해 주세요."
+          : code === "same_phone"
+            ? "보호자 번호와 같아요. 보호자 휴대폰으로 진행한다면 '아니요'를 골라 주세요."
+            : "저장하지 못했어요. 다시 눌러 주세요.",
+      );
       setBusy(false);
     }
   }
