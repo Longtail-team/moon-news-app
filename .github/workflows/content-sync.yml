@@ -1,0 +1,50 @@
+# 콘텐츠 시트 → 앱 반영 (docs/tasks/T05-콘텐츠-시트-반영.md, docs/setup/google-cloud.md)
+# 구글 연결은 키 파일 없이: GitHub 신원 토큰 → 구글 Workload Identity Federation → content-sync 서비스 계정(시트·폴더 보기만)
+# 매일 새벽 자동 실행은 저장소 변수 CONTENT_SYNC_ENABLED=true 일 때만. 수동 실행(검사만 / 반영)은 언제든.
+name: 콘텐츠 시트 반영
+
+on:
+  schedule:
+    - cron: "0 18 * * *" # 매일 03:00 KST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "검사만 하고 반영하지 않기"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write # 구글에 GitHub 신원 토큰을 보여 주기 위해
+
+concurrency:
+  group: content-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.event_name == 'workflow_dispatch' || vars.CONTENT_SYNC_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/140098722985/locations/global/workloadIdentityPools/github/providers/github-actions
+          service_account: content-sync@moon-news-content.iam.gserviceaccount.com
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/spreadsheets.readonly,https://www.googleapis.com/auth/drive.readonly
+          create_credentials_file: false
+      - name: 반영
+        run: node scripts/sync-content.mjs ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}
+        env:
+          GOOGLE_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SYNC_TRIGGER: ${{ github.event_name }}
