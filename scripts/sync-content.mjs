@@ -50,7 +50,7 @@ async function listFiles(folderId, warnings) {
       const j = await (await google(url)).json();
       for (const f of j.files ?? []) {
         if (f.mimeType === "application/vnd.google-apps.folder") queue.push(f.id);
-        else if (!f.md5Checksum) warnings.push(`"${f.name}"은 구글 문서 형식이라 반영하지 않아요(PDF·음원 파일로 올려 주세요)`);
+        else if (!f.md5Checksum) continue; // 구글 문서·시트(콘텐츠 시트 자체 등)는 자료 파일이 아니다
         else if (files.has(f.name)) warnings.push(`자료 폴더에 "${f.name}" 이름이 두 개 있어요. 먼저 찾은 것을 씁니다`);
         else files.set(f.name, { id: f.id, md5: f.md5Checksum, mimeType: f.mimeType });
       }
@@ -77,9 +77,9 @@ async function syncCohort(src) {
   const weeks = must(await db.from("cohort_weeks").select("week_no, starts_at").eq("cohort_id", src.cohort_id));
   const tabs = fixture ? fixture.tabs : await readSheet(src.sheet_id);
   const files = fixture ? new Map(Object.entries(fixture.files ?? {})) : await listFiles(src.folder_id, runWarnings);
-  const r = buildSync(tabs, { weeks, now: new Date(), files });
+  const r = buildSync(tabs, { weeks, now: new Date(), files, cohortNo: cohort.cohort_no });
 
-  const report = { cohort: label, globalErrors: r.globalErrors, warnings: runWarnings, weeks: [], live: r.live.length, liveErrors: r.liveErrors };
+  const report = { cohort: label, globalErrors: r.globalErrors, warnings: [...runWarnings, ...r.fileWarnings], weeks: [], live: r.live.length, liveErrors: r.liveErrors };
   if (r.globalErrors.length === 0) {
     const state = new Map((must(await db.rpc("sync_asset_state", { p_cohort: src.cohort_id })) ?? []).map((s) => [`${s.week_no}:${s.type}`, s]));
     for (const w of r.weeks) {

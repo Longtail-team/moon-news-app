@@ -70,6 +70,26 @@ describe("콘텐츠 시트 반영 검사", () => {
     expect(storageKey(1, 1, "article_pdf", "week01.pdf", "abcdef1234567890")).toBe("cohort-1/week01/article_pdf-abcdef123456.pdf");
   });
 
+  it("이름 규칙(news01_week01_voca.mp3)으로 시트 칸이 비어 있어도 자동 연결, 칸에 쓴 이름이 우선", () => {
+    const f = (id: string) => ({ id, md5: id + "md5", mimeType: "x" });
+    const files = new Map([
+      ["news01_week01_pdf.pdf", f("P")],
+      ["news01_week01_article.mp3", f("A")],
+      ["news01_week01_voca.mp3", f("V")],
+      ["news01_week01_tem.png", f("T")],
+      ["news02_week01_voca.mp3", f("OTHER")], // 다른 기수
+      ["news01_week1_kren.mp3", f("BAD")], // 규칙과 다름
+      ["special.mp3", f("S")],
+    ]);
+    const r = buildSync(
+      tabs({ 기사: [["1", "T", "", "", "", "", "", "공개", "", "", "", "special.mp3"]], 문장: [["1", "1", "1", "A", "가"]] }),
+      { ...ctx(undefined, files), cohortNo: 1 },
+    );
+    const got = Object.fromEntries(r.weeks[0].files.map((x: { type: string; source_file_id: string }) => [x.type, x.source_file_id]));
+    expect(got).toEqual({ article_pdf: "P", article_audio: "A", voca_repeat_audio: "S", insta_template: "T" });
+    expect(r.fileWarnings.join()).toContain("news01_week1_kren.mp3");
+  });
+
   it("주차 숫자·중복·없는 주차는 전체 오류", () => {
     const r = buildSync(tabs({ 기사: [["x", "A"], ["1", "A"], ["1", "B"], ["13", "C"]] }), ctx());
     expect(r.globalErrors).toHaveLength(3);
