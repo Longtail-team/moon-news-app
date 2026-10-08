@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "./db";
+import { courseFileUrl } from "./media";
 
 export type MaterialFile = { type: string; label: string; sub?: string; url: string | null };
 export type WeekItem = { kind: "link" | "text"; title: string; url: string | null; body: string | null };
@@ -30,7 +31,7 @@ const AUDIOS: [type: string, label: string][] = [
   ["voca_repeat_audio", "VOCA 구간반복"],
 ];
 
-/** 이번 주 자료. PDF는 받기 주소(파일 이름 지정), 음원은 재생 주소. 파일이 없으면 url = null(준비 중) */
+/** 이번 주 자료. PDF·음원은 앱 주소(/files/…), 파일이 없으면 url = null(준비 중) */
 export async function getMaterials(studentId: string, week: number | null): Promise<Materials | null> {
   const { data, error } = await db().rpc("materials", { p_student: studentId, p_week: week });
   if (error) throw error;
@@ -42,17 +43,9 @@ export async function getMaterials(studentId: string, week: number | null): Prom
   let selected: Materials["selected"] = null;
   if (r.selected) {
     const s = r.selected;
-    const find = (t: string) => s.assets.find((a) => a.type === t);
-    const sign = async (t: string, download: boolean) => {
-      const a = find(t);
-      if (!a) return null;
-      const { data: u, error: e } = await db()
-        .storage.from("course")
-        .createSignedUrl(a.storage_key, 60 * 60, download ? { download: a.file_name } : undefined);
-      return e || !u ? null : u.signedUrl;
-    };
-    const pdfs = await Promise.all(PDFS.map(async ([t, label, sub]) => ({ type: t, label, sub, url: await sign(t, true) })));
-    const audios = await Promise.all(AUDIOS.map(async ([t, label]) => ({ type: t, label, url: await sign(t, false) })));
+    const url = (t: string) => courseFileUrl(s.week_no, t, s.assets.find((a) => a.type === t)?.storage_key);
+    const pdfs = await Promise.all(PDFS.map(async ([t, label, sub]) => ({ type: t, label, sub, url: await url(t) })));
+    const audios = await Promise.all(AUDIOS.map(async ([t, label]) => ({ type: t, label, url: await url(t) })));
     selected = { week_no: s.week_no, title_en: s.title_en, level: s.level, word_count: s.word_count, pdfs, audios, items: s.items };
   }
   return { current_week: r.current_week, opened: r.opened, next_open: r.next_open, selected, live: r.live };
