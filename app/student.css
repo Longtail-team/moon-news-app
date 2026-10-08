@@ -6,6 +6,10 @@
   padding-top: env(safe-area-inset-top, 0px); -webkit-font-smoothing: antialiased;
 }
 .app a { color: inherit; text-decoration: none; }
+/* 누를 때 휴대폰 기본 회색·파란 박스를 끄고, 아이콘·버튼 자체로 눌림을 보여 준다 */
+.app, .app * { -webkit-tap-highlight-color: transparent; }
+.app a, .app button { transition: transform 0.08s ease; }
+.app a:active, .app button:active { transform: scale(0.97); }
 .app :focus-visible { outline: 3px solid var(--deep); outline-offset: 2px; }
 .app .scroll { flex: 1; padding-bottom: 20px; }
 .app .pad { padding: 0 16px; }
@@ -30,6 +34,10 @@
 .app .tabs { position: sticky; bottom: 0; display: flex; padding: 6px 8px calc(14px + env(safe-area-inset-bottom, 0px)); background: var(--white); border-top: 1px solid var(--line); }
 .app .tab { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 56px; font-size: 12px; color: var(--sub); }
 .app .tab.on { color: var(--deep); font-weight: 800; }
+.app .tab svg { transition: color 0.08s ease; }
+.app .tab:active svg, .app .tab.going svg { color: var(--main); }
+.app .tab.going { color: var(--deep); font-weight: 800; }
+.app .tab:active { transform: none; }
 .app .badge { position: absolute; top: 2px; left: 50%; margin-left: 6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--main); color: var(--ink); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
 
 /* home */
@@ -41,12 +49,12 @@
 .app .wk { width: 36px; flex-shrink: 0; font-size: 14px; font-weight: 800; }
 .app .wk.future { color: var(--faint); }
 .app .box { width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-.app .box.done { background: var(--main); }
+.app .box.done { background: var(--tint); color: var(--deep); }
 .app .box.miss { background: var(--white); border: 2px dashed var(--deep); }
 .app .box.open { background: var(--white); border: 1.5px solid var(--line2); }
 .app .box.future { background: var(--mute); }
-.app .legend { display: flex; flex-wrap: wrap; gap: 6px 12px; }
-.app .legend span { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; }
+.app .legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 8px; color: #767676; }
+.app .legend span { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; }
 .app .recHead { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; padding: 0; border: 0; background: transparent; text-align: left; font: inherit; color: inherit; cursor: pointer; }
 .app .reveal { animation: reveal 0.28s ease-out; }
 @keyframes reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
@@ -104,3 +112,7 @@
 .app .toast { position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%); z-index: 30; background: var(--ink); color: var(--white); font-size: 14px; font-weight: 700; padding: 12px 18px; border-radius: 12px; width: max-content; max-width: calc(100% - 32px); text-align: center; line-height: 1.5; animation: toast 3.2s forwards; }
 @keyframes toast { 0% { opacity: 0; } 8%, 85% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 .app .err { padding: 12px 14px; border-radius: 12px; background: #fdecea; color: #8a1c13; font-size: 14px; line-height: 1.5; }
+
+/* 화면을 불러오는 동안 (app/loading.tsx) */
+.app .skel { border-radius: 16px; background: var(--mute); animation: skel 1.2s ease-in-out infinite; }
+@keyframes skel { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
