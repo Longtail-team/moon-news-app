@@ -21,8 +21,8 @@ const Bubble = ({ t, fs }: { t: string; fs: number }) => (
 );
 
 export const ACT: Record<ActType, { name: string; short: string; icon: ReactNode }> = {
-  KR_READING: { name: "한국어 기사 낭독", short: "한국어 낭독", icon: <Bubble t="가" fs={8} /> },
-  EN_READING: { name: "영어 기사 낭독", short: "영어 낭독", icon: <Bubble t="A" fs={9} /> },
+  KR_READING: { name: "한국어 기사 읽기", short: "한국어 기사 읽기", icon: <Bubble t="가" fs={8} /> },
+  EN_READING: { name: "영어 기사 읽기", short: "영어 기사 읽기", icon: <Bubble t="A" fs={9} /> },
   VOCA: {
     name: "VOCA",
     short: "VOCA",
