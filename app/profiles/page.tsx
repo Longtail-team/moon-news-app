@@ -7,7 +7,7 @@ import "../student.css";
 
 export default async function Profiles() {
   const session = await getSession();
-  if (!session) redirect("/");
+  if (!session || session.learners.length === 0) redirect("/");
   return (
     <div className="app">
       <div className="scroll">

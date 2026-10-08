@@ -182,7 +182,7 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 
 ## 11. 첫 접속과 다시 들어가기
 
-흐름: 아임웹 결제 → 보호자 번호로 시작 안내 알림톡(개인 접속 링크) → 첫 접속 3단계 → 홈.
+흐름: 아임웹 결제 → 결제 신호로 주문 기록 → 보호자(결제자) 번호로 결제 완료·시작 안내 알림톡(보호자 접속 링크) → 첫 접속 3단계 → 홈.
 
 1. **환영**: 신청 정보 확인(과정명 예: 새벽달 영어뉴스 1기, 기간은 "12주"로만 표시, 신청 연락처), 제공 자료 확인(PDF 2종, 음원 3종, Zoom Live 횟수, 이름만 보여주는 확인용이며 내려받기는 없음), 보호자 정보 입력(이름, 알림톡 수신 동의), 홈 화면 바로가기 추가 안내(아이폰/안드로이드, 카카오톡 인앱 브라우저에서 열렸을 때 외부 브라우저로 여는 법).
 2. **학습자 등록**: 이름, 출생 연월(학년 자동 표시), 인스타그램 ID. 형제·자매 추가 등록.
@@ -192,6 +192,15 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 - 한 번 들어온 브라우저는 기억해 두어 링크 없이도 열린다.
 - 링크를 잃어버리면 "다시 들어가기"에서 등록 번호를 입력하고, 그 번호로 새 링크를 알림톡으로 받는다. 화면에서 바로 로그인시키지 않으며, 번호의 등록 여부도 드러내지 않는다.
 - 접속 링크에는 전화번호 대신 무작위 토큰을 쓴다.
+
+접속 방식 결정 (2026-10-08, T04)
+- **로그인 화면은 두지 않는다. 알림톡 링크로만 들어온다.** 연락처 + 인증번호 로그인은 만들지 않는다.
+- 보호자 링크는 학습자가 아니라 **보호자(결제자)**에 붙는다. 결제 직후 학습자가 없어도 링크를 보낼 수 있고, 보호자 링크 하나로 자녀(형제) 전부를 고른다. 자녀 링크는 그 자녀 한 명만.
+- 알림톡 버튼은 **외부 브라우저로 열기**로 설정한다(솔라피 버튼 설정). 아이폰은 Safari, 안드로이드는 기본 브라우저로 열린다.
+- 링크로 들어오면 주소에 링크 문자열을 남겨 둔다. **홈 화면에 추가하면 아이콘이 링크를 품고 있어** 열 때마다 들어온다(브라우저 기록이 지워져도). 그래서 홈 화면 앱 안에서 로그인이 풀리는 일은 링크 폐기·만료·아이콘 삭제 외에는 없다.
+- 다시 들어가기 = 번호 입력 → 그 번호(보호자 또는 자녀 본인 번호)로 **새 링크** 알림톡. 인증번호는 없다. 새 링크를 보내도 이전 링크는 살려 둔다(기존 홈 화면 아이콘 유지). 같은 번호 반복 요청은 막는다.
+- 링크는 여러 번 쓸 수 있고, 마지막 기수 종강 후 3개월(보관 기간 끝)까지 유효하다.
+- 형제는 아임웹 주문 1건(수량 = 학습자 수). 첫 접속 2단계에서 수량만큼 학습자를 등록한다. 재수강생은 새 학습자를 만들지 않고 지난 기수 학습자를 골라 등록한다.
 - 구글폼은 이 등록 화면으로 대체하는 것을 전제로 설계했다(최종 확인 필요).
 
 
@@ -304,9 +313,10 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 
 | 테이블 | 한 행 = | 열 |
 | --- | --- | --- |
+| orders | 아임웹 주문 1건 | order_id, imweb_order_no, guardian_id, cohort_id, quantity(형제 수), paid_at, paid_amount, coupon_code, source |
 | guardians | 보호자 1명 | guardian_id, name, phone(결제자 번호, 숫자만, 고유값), alimtalk_agreed_at, reenroll_marketing_agreed_at, created_at |
 | students | 학습자 1명 | student_id, guardian_id, name, birth_ym, own_phone, instagram_id, consent_at, admin_memo, created_at |
-| access_tokens | 접속 링크 1개 | token_id, student_id, holder(보호자/자녀), sent_to_phone, token_hash, issued_at, expires_at, revoked_at, last_used_at |
+| access_tokens | 접속 링크 1개 | token_id, guardian_id(보호자 링크), student_id(자녀 링크), holder(보호자/자녀), sent_to_phone, token_hash, issued_at, expires_at, revoked_at, last_used_at |
 | cohorts | 기수 1개 | cohort_id, course_title, cohort_no, start_date, deadline(12주차 일요일), grace_until(마감 + 7일), weekly_target(5), total_target(60), reward_pdf_key |
 | cohort_weeks | 기수의 주차 1개 | cohort_id, week_no, starts_at, ends_at, article_id |
 | enrollments | 수강 1건 | enrollment_id, student_id, cohort_id, grade_at_enrollment, imweb_order_no, paid_at, paid_amount, coupon_code, source(유입 경로), status, refund_status, refunded_at, refund_amount, refund_reason, completed_at, completion_tier, certificate_name, certificate_sent_at |
