@@ -84,7 +84,6 @@ function Welcome({ s, onDone }: { s: State; onDone: () => void }) {
           {kv("과정", `${o.course_title} ${o.cohort_no}기`)}
           {kv("기간", "12주")}
           {kv("시작", fmtDay(o.start_date))}
-          {o.quantity > 1 && kv("학습자", `${o.quantity}명`)}
           {kv("신청 연락처", maskPhone(s.guardian.phone))}
           <div className="help" style={{ fontSize: 13, marginTop: 8 }}>
             정보가 다르면 운영팀에 문의해 주세요.
@@ -180,10 +179,10 @@ type Form = { existing?: string; name: string; year: number; month: number; grad
 
 const emptyForm = (): Form => ({ name: "", year: 2015, month: 3, grade: null, gradeEdit: false, instagram: "" });
 
-/** 학습자 등록: 처음엔 1명, "형제·자매 추가"로 주문 수량까지. 수량보다 적게 등록해도 진행하고 남은 자리는 나중에 추가 */
+/** 학습자 등록: 처음엔 1명, "형제·자매 추가"로 최대 4명. 나중에 프로필 화면에서도 추가할 수 있다 */
 export function Learners({ s, onDone, adding = false }: { s: State; onDone: () => void; adding?: boolean }) {
-  const order = s.orders.find((o) => o.registered < o.quantity)!;
-  const seats = order.quantity - order.registered;
+  const order = s.orders[0];
+  const seats = s.open_seats;
   const [forms, setForms] = useState<Form[]>(() => [emptyForm()]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -223,7 +222,6 @@ export function Learners({ s, onDone, adding = false }: { s: State; onDone: () =
             </>
           )}
         </h1>
-        {seats > 1 && <div className="help">이 주문으로 {seats}명까지 등록할 수 있어요. 나중에 추가해도 돼요.</div>}
         {forms.map((f, i) => {
           const auto = gradeLabel(f.year);
           const returning = s.returning.filter((r) => !used.has(r.student_id) || r.student_id === f.existing);

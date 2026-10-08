@@ -1,4 +1,4 @@
-// 형제 프로필 고르기 (spec.md 3장: 접속 시 프로필을 고른다)
+// 형제 프로필 고르기 (spec.md 3장). 보호자는 홈의 이름 버튼으로 들어와 형제·자매를 추가할 수도 있다(주문 1건당 최대 4명)
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/server/session";
@@ -28,7 +28,7 @@ export default async function Profiles() {
             ))}
             {openSeats > 0 && (
               <Link className="btn2" href="/add-learner" style={{ borderStyle: "dashed", minHeight: 56 }}>
-                + 학습자 추가 · {openSeats}명 더 등록할 수 있어요
+                + 형제·자매 추가
               </Link>
             )}
           </div>

@@ -14,14 +14,12 @@ export function HomeView({
   canSwitch,
   now,
   toast,
-  openSeats = 0,
 }: {
   home: HomeData;
   learner: Learner;
   canSwitch: boolean;
   now: number;
   toast?: string | null;
-  openSeats?: number;
 }) {
   const { cohort, progress, weeks, live } = home;
   const totalWeeks = weeks.length;
@@ -49,14 +47,6 @@ export function HomeView({
             </span>
           )}
         </div>
-
-        {openSeats > 0 && (
-          <div className="pad" style={{ marginBottom: 12 }}>
-            <Link className="btn2" href="/add-learner" style={{ borderStyle: "dashed" }}>
-              + 학습자 추가 · {openSeats}명 더 등록할 수 있어요
-            </Link>
-          </div>
-        )}
 
         {live && (
           <Link href="/materials" className="row" style={{ margin: "0 16px 12px", padding: "12px 14px", borderRadius: 14, background: "var(--tint)" }}>

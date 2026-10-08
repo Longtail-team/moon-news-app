@@ -55,16 +55,16 @@ describe("결제 → 첫 접속 3단계 (형제 2명 주문)", () => {
       expect((await state(tx, o.guardian_id)).step).toBe("learners");
 
       const a = (await tx.query<Row>("select public.register_learner($1, $2, null, '테스트하나', '2015-05-01', null, 'test_one') as s", [o.guardian_id, o.order_id])).rows[0].s;
-      // 수량(2)보다 적게 등록해도 다음 단계로 간다. 남은 자리는 나중에 추가
+      // 1명만 등록해도 다음 단계로 간다. 형제는 최대 4명까지 나중에도 추가
       const half = await state(tx, o.guardian_id);
-      expect(half.orders[0]).toMatchObject({ quantity: 2, registered: 1 });
+      expect(half.orders[0]).toMatchObject({ registered: 1 });
       expect(half.step).toBe("access");
-      expect(half.open_seats).toBe(1);
+      expect(half.open_seats).toBe(3);
       const b = (await tx.query<Row>("select public.register_learner($1, $2, null, '테스트둘', '2013-03-01', '중2', null) as s", [o.guardian_id, o.order_id])).rows[0].s;
 
       const st = await state(tx, o.guardian_id);
       expect(st.step).toBe("access");
-      expect(st.open_seats).toBe(0);
+      expect(st.open_seats).toBe(2);
       expect(st.pending.map((p: any) => [p.name, p.grade]).sort()).toEqual([["테스트둘", "중2"], ["테스트하나", "초5"]]);
 
       await tx.query("select public.onboarding_access($1, $2, null)", [o.guardian_id, a]);
@@ -89,12 +89,14 @@ describe("결제 → 첫 접속 3단계 (형제 2명 주문)", () => {
     ).rejects.toThrow(/same as guardian/);
   });
 
-  it("주문 수량을 넘겨 등록할 수 없다", async () => {
+  it("주문 수량과 상관없이 형제는 4명까지, 5번째는 거부", async () => {
     await expect(
       db.transaction(async (tx) => {
         const o = await newOrder(tx, "IMWEB-T2", "01000009003", 1);
-        await tx.query("select public.register_learner($1, $2, null, '하나', '2015-01-01', null, null)", [o.guardian_id, o.order_id]);
-        await tx.query("select public.register_learner($1, $2, null, '둘', '2015-01-01', null, null)", [o.guardian_id, o.order_id]);
+        for (const n of ["하나", "둘", "셋", "넷"])
+          await tx.query("select public.register_learner($1, $2, null, $3, '2015-01-01', null, null)", [o.guardian_id, o.order_id, n]);
+        expect((await state(tx, o.guardian_id)).open_seats).toBe(0);
+        await tx.query("select public.register_learner($1, $2, null, '다섯', '2015-01-01', null, null)", [o.guardian_id, o.order_id]);
       }),
     ).rejects.toThrow(/no seats left/);
   });
@@ -149,13 +151,14 @@ describe("환불과 보호자 링크", () => {
     });
   });
 
-  it("등록하지 않은 자리가 남아 있으면 환불해도 보호자 링크 유지", async () => {
+  it("아직 아무도 등록하지 않은 주문이 있으면 보호자 링크 유지, 등록한 자녀를 모두 환불하면 폐기", async () => {
     await db.transaction(async (tx) => {
-      const o = await newOrder(tx, "IMWEB-T5", "01000009005", 2);
+      const o = await newOrder(tx, "IMWEB-T5", "01000009005", 1);
       await tx.query("select public.issue_token('guardian', $1, null, '01000009005', 'h-t5')", [o.guardian_id]);
+      expect((await tx.query<Row>("select app.guardian_active($1) as a", [o.guardian_id])).rows[0].a).toBe(true);
       const s = (await tx.query<Row>("select public.register_learner($1, $2, null, '하나', '2015-01-01', null, null) as s", [o.guardian_id, o.order_id])).rows[0].s;
       await tx.query("update enrollments set status = 'refunded', refund_status = 'approved', refunded_at = now() where student_id = $1", [s]);
-      expect((await tx.query<Row>("select revoked_at from access_tokens where token_hash = 'h-t5'")).rows[0].revoked_at).toBeNull();
+      expect((await tx.query<Row>("select revoked_at from access_tokens where token_hash = 'h-t5'")).rows[0].revoked_at).not.toBeNull();
       await tx.rollback();
     });
   });
