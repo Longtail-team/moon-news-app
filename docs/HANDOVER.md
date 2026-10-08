@@ -117,7 +117,7 @@ docs/ spec.md · tasks/ · devlog.md · spike-results.md · content/ · referenc
 ## 7. 다음 작업 (제안 순서)
 1. ~~첫 접속 3단계(T04)~~ 완료. 남은 연결: 아임웹 결제 신호 → `record_order` + 보호자 링크 + 시작 안내 알림톡, 솔라피 실제 발송(`lib/server/notify.ts`, 버튼은 외부 브라우저로 열기)
 2. 이번 주 자료 탭(PDF·음원·라이브)
-3. 자료 반영(자료 시트·드라이브 → DB·Storage)과 실제 음원·시간 정보(일레븐랩스 정렬)
+3. ~~자료 반영~~ 구현(T05: GitHub Actions + 키 없는 구글 연결, `docs/setup/google-cloud.md`). 남은 것: 실제 음원·시간 정보(일레븐랩스 정렬)
 4. 관리자 최소(목록, 자료 올리기), 접속 링크 발급, 시작 안내 알림톡(솔라피, 카카오 템플릿 사전 승인 필요)
 5. 완주 화면·상장, 마감 이후 홈, 다시 들어가기(인증번호)
 6. 2단계 영상 모듈은 `docs/tasks/V01-영상-합성-모듈.md`로 별도 진행 후 `lib/video` 교체
