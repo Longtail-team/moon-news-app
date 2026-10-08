@@ -137,6 +137,42 @@ describe("결제 → 첫 접속 3단계 (형제 2명 주문)", () => {
   });
 });
 
+describe("결제자 본인 학습자", () => {
+  it("본인 등록: 이름은 보호자 이름, 학년 '성인', 휴대폰 질문 없이 동의만 → 완료", async () => {
+    await db.transaction(async (tx) => {
+      const o = await newOrder(tx, "IMWEB-S1", "01000009041", 1);
+      await tx.query("select public.onboarding_welcome($1, '박민정')", [o.guardian_id]);
+      const me = (await tx.query<Row>("select public.register_learner($1, $2, null, null, null, null, 'mj_reads', true) as s", [o.guardian_id, o.order_id])).rows[0].s;
+      const st = await state(tx, o.guardian_id);
+      expect(st.has_self).toBe(true);
+      expect(st.pending).toEqual([{ student_id: me, name: "박민정", grade: "성인", is_self: true }]);
+      await expect(
+        tx.query("savepoint a").then(() => tx.query("select public.onboarding_access($1, $2, '01000009042')", [o.guardian_id, me])),
+      ).rejects.toThrow(/self has no own phone/);
+      await tx.query("rollback to savepoint a");
+      await tx.query("select public.onboarding_access($1, $2, null)", [o.guardian_id, me]);
+      expect((await state(tx, o.guardian_id)).step).toBe("done");
+      const hash = await session(tx, "guardian", o.guardian_id, null, "self1");
+      expect((await tx.query<Row>("select student_name, grade from public.session_scope($1)", [hash])).rows).toEqual([{ student_name: "박민정", grade: "성인" }]);
+      await tx.rollback();
+    });
+  });
+
+  it("본인은 한 가정에 1명, 자녀와 함께 등록할 수 있다", async () => {
+    await db.transaction(async (tx) => {
+      const o = await newOrder(tx, "IMWEB-S2", "01000009043", 1);
+      await tx.query("select public.onboarding_welcome($1, '이수진')", [o.guardian_id]);
+      await tx.query("select public.register_learner($1, $2, null, null, null, null, null, true)", [o.guardian_id, o.order_id]);
+      await tx.query("select public.register_learner($1, $2, null, '이하늘', '2014-05-01', null, null)", [o.guardian_id, o.order_id]);
+      expect((await tx.query<Row>("select count(*)::int as n from students where guardian_id = $1", [o.guardian_id])).rows[0].n).toBe(2);
+      await tx.query("savepoint b");
+      await expect(tx.query("select public.register_learner($1, $2, null, null, null, null, null, true)", [o.guardian_id, o.order_id])).rejects.toThrow(/self already registered/);
+      await tx.query("rollback to savepoint b");
+      await tx.rollback();
+    });
+  });
+});
+
 describe("환불과 보호자 링크", () => {
   it("형제 중 한 명만 환불하면 보호자 링크 유지, 둘 다 환불하면 폐기", async () => {
     await db.transaction(async (tx) => {

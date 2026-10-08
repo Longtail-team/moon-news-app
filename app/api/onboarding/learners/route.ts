@@ -3,7 +3,7 @@ import { db } from "@/lib/server/db";
 import { requireGuardian } from "@/lib/server/guardian";
 import { json } from "@/lib/server/learner";
 
-type Learner = { existing?: string; name?: string; birth?: string; grade?: string; instagram?: string };
+type Learner = { existing?: string; self?: boolean; name?: string; birth?: string; grade?: string; instagram?: string };
 
 export async function POST(req: Request) {
   const g = await requireGuardian();
@@ -23,8 +23,13 @@ export async function POST(req: Request) {
       p_birth_ym: birth,
       p_grade: l.grade ?? null,
       p_instagram: insta,
+      p_self: l.self === true,
     });
-    if (error) return json({ error: error.message.includes("no seats") ? "no_seats" : "cannot register", registered: ids }, 409);
+    if (error)
+      return json(
+        { error: error.message.includes("no seats") ? "no_seats" : error.message.includes("self already") ? "self_exists" : "cannot register", registered: ids },
+        409,
+      );
     ids.push(data as string);
   }
   return json({ registered: ids });

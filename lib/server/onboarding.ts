@@ -7,8 +7,9 @@ export type Onboarding = {
   open_seats: number; // 최근 주문에 더 등록할 수 있는 학습자 수 (주문 1건당 최대 4명)
   guardian: { name: string | null; phone: string };
   orders: OnboardingOrder[];
-  returning: { student_id: string; name: string; birth_ym: string | null; instagram_id: string | null }[];
-  pending: { student_id: string; name: string; grade: string | null }[];
+  has_self: boolean; // 결제자 본인이 이미 학습자로 등록됨 (한 가정 1명)
+  returning: { student_id: string; name: string; birth_ym: string | null; instagram_id: string | null; is_self: boolean }[];
+  pending: { student_id: string; name: string; grade: string | null; is_self: boolean }[];
   liveCount: number;
 };
 

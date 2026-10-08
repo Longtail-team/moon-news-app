@@ -175,9 +175,9 @@ function Welcome({ s, onDone }: { s: State; onDone: () => void }) {
 }
 
 // ───────── 2 학습자 등록 ─────────
-type Form = { existing?: string; name: string; year: number; month: number; grade: string | null; gradeEdit: boolean; instagram: string };
+type Form = { existing?: string; self: boolean; name: string; year: number; month: number; grade: string | null; gradeEdit: boolean; instagram: string };
 
-const emptyForm = (): Form => ({ name: "", year: 2015, month: 3, grade: null, gradeEdit: false, instagram: "" });
+const emptyForm = (): Form => ({ self: false, name: "", year: 2015, month: 3, grade: null, gradeEdit: false, instagram: "" });
 
 /** 학습자 등록: 처음엔 1명, "형제·자매 추가"로 최대 4명. 나중에 프로필 화면에서도 추가할 수 있다 */
 export function Learners({ s, onDone, adding = false }: { s: State; onDone: () => void; adding?: boolean }) {
@@ -199,7 +199,9 @@ export function Learners({ s, onDone, adding = false }: { s: State; onDone: () =
         learners: forms.map((f) =>
           f.existing
             ? { existing: f.existing, instagram: f.instagram }
-            : { name: f.name, birth: `${f.year}-${String(f.month).padStart(2, "0")}`, grade: f.gradeEdit ? f.grade : null, instagram: f.instagram },
+            : f.self
+              ? { self: true, name: f.name, instagram: f.instagram }
+              : { name: f.name, birth: `${f.year}-${String(f.month).padStart(2, "0")}`, grade: f.gradeEdit ? f.grade : null, instagram: f.instagram },
         ),
       });
       onDone();
@@ -225,6 +227,8 @@ export function Learners({ s, onDone, adding = false }: { s: State; onDone: () =
         {forms.map((f, i) => {
           const auto = gradeLabel(f.year);
           const returning = s.returning.filter((r) => !used.has(r.student_id) || r.student_id === f.existing);
+          // 결제자 본인은 한 가정에 1명: 이미 등록했거나 다른 칸에서 골랐으면 고를 수 없다
+          const selfTaken = s.has_self || forms.some((x, j) => j !== i && x.self);
           return (
             <div key={i} className={forms.length > 1 ? "card stack" : "stack"} style={{ gap: 18 }}>
               {forms.length > 1 && (
@@ -253,7 +257,26 @@ export function Learners({ s, onDone, adding = false }: { s: State; onDone: () =
                   </div>
                 </div>
               )}
-              {!f.existing && (
+              {!f.existing && !selfTaken && (
+                <div className="chips">
+                  <button className={`chip${!f.self ? " on" : ""}`} onClick={() => set(i, { self: false, name: "" })}>
+                    자녀
+                  </button>
+                  <button className={`chip${f.self ? " on" : ""}`} onClick={() => set(i, { self: true, name: s.guardian.name ?? "" })}>
+                    제가 직접 할게요
+                  </button>
+                </div>
+              )}
+              {!f.existing && f.self && (
+                <div className="stack" style={{ gap: 6 }}>
+                  <label style={{ fontSize: 13, fontWeight: 700 }} htmlFor={`sn${i}`}>
+                    학습자 이름 (본인)
+                  </label>
+                  <input id={`sn${i}`} style={input} value={f.name} onChange={(e) => set(i, { name: e.target.value })} placeholder="성과 이름 모두" />
+                  <div className="help">완주 상장에 이 이름이 그대로 들어가요. 학년 대신 &apos;성인&apos;으로 표시돼요.</div>
+                </div>
+              )}
+              {!f.existing && !f.self && (
                 <>
                   <div className="stack" style={{ gap: 6 }}>
                     <label style={{ fontSize: 13, fontWeight: 700 }} htmlFor={`sn${i}`}>
@@ -340,6 +363,14 @@ export function Learners({ s, onDone, adding = false }: { s: State; onDone: () =
 }
 
 // ───────── 3 접속 방법과 동의 ─────────
+// 동의 문구: 자녀만 / 본인만 / 함께
+function consentText(pending: State["pending"]): string {
+  const self = pending.some((p) => p.is_self);
+  const child = pending.some((p) => !p.is_self);
+  if (self && !child) return "본인의 낭독 음성과 작성 이미지 수집·보관에 동의합니다 (필수)";
+  if (self && child) return "자녀와 본인의 낭독 음성과 작성 이미지 수집·보관에 동의합니다 (필수, 만 14세 미만 자녀는 보호자 동의)";
+  return "자녀의 낭독 음성과 작성 이미지 수집·보관에 동의합니다 (필수, 만 14세 미만 보호자 동의)";
+}
 function Access({ s, onDone, onDevLinks }: { s: State; onDone: () => void; onDevLinks: (l: { name: string; link: string }[]) => void }) {
   const [own, setOwn] = useState<Record<string, boolean>>({});
   const [phones, setPhones] = useState<Record<string, string>>({});
@@ -351,7 +382,7 @@ function Access({ s, onDone, onDevLinks }: { s: State; onDone: () => void; onDev
   async function start() {
     if (!consent) return setErr("음성·이미지 수집에 동의해야 시작할 수 있어요.");
     for (const p of s.pending) {
-      if (!own[p.student_id]) continue;
+      if (p.is_self || !own[p.student_id]) continue;
       const d = (phones[p.student_id] ?? "").replace(/\D/g, "");
       if (!d) return setErr(`${givenName(p.name)} 연락처를 입력해 주세요.`);
       if (d === s.guardian.phone) return setErr("보호자 번호와 같아요. 보호자 휴대폰으로 진행한다면 '아니요'를 골라 주세요.");
@@ -361,7 +392,7 @@ function Access({ s, onDone, onDevLinks }: { s: State; onDone: () => void; onDev
     try {
       const r = await post<{ devLinks: { studentId: string; link: string }[] }>("/api/onboarding/access", {
         consent: true,
-        items: s.pending.map((p) => ({ studentId: p.student_id, ownPhone: own[p.student_id] ? phones[p.student_id] : null })),
+        items: s.pending.map((p) => ({ studentId: p.student_id, ownPhone: !p.is_self && own[p.student_id] ? phones[p.student_id] : null })),
       });
       if (r.devLinks.length) onDevLinks(r.devLinks.map((d) => ({ name: s.pending.find((p) => p.student_id === d.studentId)?.name ?? "", link: d.link })));
       else onDone();
@@ -413,7 +444,8 @@ function Access({ s, onDone, onDevLinks }: { s: State; onDone: () => void; onDev
     <div className="scroll">
       <Progress n={3} label="접속 방법과 동의" />
       <div className="pad stack" style={{ paddingTop: 22, gap: 24 }}>
-        {s.pending.map((p) => {
+        {s.pending.filter((p) => !p.is_self).length === 0 && <h1 className="h1">시작하기 전에 확인해 주세요</h1>}
+        {s.pending.filter((p) => !p.is_self).map((p) => {
           const n = givenName(p.name);
           return (
             <div key={p.student_id} className="stack" style={{ gap: 12 }}>
@@ -447,7 +479,7 @@ function Access({ s, onDone, onDevLinks }: { s: State; onDone: () => void; onDev
         <div className="card lift">
           <label className="row" style={{ alignItems: "flex-start", gap: 10, fontSize: 14, lineHeight: 1.5 }}>
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ width: 22, height: 22, marginTop: 2, accentColor: "var(--deep)", flexShrink: 0 }} />
-            자녀의 낭독 음성과 작성 이미지 수집·보관에 동의합니다 (필수, 만 14세 미만 보호자 동의)
+            {consentText(s.pending)}
           </label>
           <button className="textbtn" style={{ fontSize: 13, color: "var(--sub)" }} onClick={() => setShowPolicy(!showPolicy)}>
             보관 기간과 삭제 기준 보기

@@ -200,6 +200,8 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 - 링크로 들어오면 주소에 링크 문자열을 남겨 둔다. **홈 화면에 추가하면 아이콘이 링크를 품고 있어** 열 때마다 들어온다(브라우저 기록이 지워져도). 그래서 홈 화면 앱 안에서 로그인이 풀리는 일은 링크 폐기·만료·아이콘 삭제 외에는 없다.
 - 다시 들어가기 = 번호 입력 → 그 번호(보호자 또는 자녀 본인 번호)로 **새 링크** 알림톡. 인증번호는 없다. 새 링크를 보내도 이전 링크는 살려 둔다(기존 홈 화면 아이콘 유지). 같은 번호 반복 요청은 막는다.
 - 링크는 여러 번 쓸 수 있고, 마지막 기수 종강 후 3개월(보관 기간 끝)까지 유효하다.
+- **주문 1건 = 한 가정.** 자녀가 여럿이어도 함께 참여하며, 등록 인원과 결제 금액은 대조하지 않는다.
+- **결제자 본인도 학습자가 될 수 있다**("제가 직접 할게요"). 한 가정에 1명. 이름은 보호자 이름(고칠 수 있음), 학년 대신 "성인", 출생 연월·자녀 휴대폰 질문 없음, 동의 문구는 본인용. 자녀와 함께 등록할 수 있다(최대 4명 안에서).
 - 형제는 아임웹 주문 1건(결제자 1명). 자녀가 몇 명 함께하는지는 결제 시점이 아니라 **자녀 정보를 등록할 때** 정해진다. 첫 접속 2단계에서 1명부터 시작해 "형제·자매 추가"로 **최대 4명**까지 등록하고, 나중에는 홈의 이름 버튼 → 프로필 화면에서 추가한다(홈에 추가 버튼을 상시로 두지 않는다). 재수강생은 새 학습자를 만들지 않고 지난 기수 학습자를 골라 등록한다.
 - 구글폼은 이 등록 화면으로 대체하는 것을 전제로 설계했다(최종 확인 필요).
 
@@ -315,7 +317,7 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 | --- | --- | --- |
 | orders | 아임웹 주문 1건 | order_id, imweb_order_no, guardian_id, cohort_id, quantity(아임웹 기록, 등록 인원 제한에 쓰지 않음 · 주문당 학습자 최대 4명), paid_at, paid_amount, coupon_code, source |
 | guardians | 보호자 1명 | guardian_id, name, phone(결제자 번호, 숫자만, 고유값), alimtalk_agreed_at, reenroll_marketing_agreed_at, created_at |
-| students | 학습자 1명 | student_id, guardian_id, name, birth_ym, own_phone, instagram_id, consent_at, admin_memo, created_at |
+| students | 학습자 1명 | student_id, guardian_id, name, is_self(결제자 본인, 가정당 1명), birth_ym(본인은 비움), own_phone, instagram_id, consent_at, admin_memo, created_at |
 | access_tokens | 접속 링크 1개 | token_id, guardian_id(보호자 링크), student_id(자녀 링크), holder(보호자/자녀), sent_to_phone, token_hash, issued_at, expires_at, revoked_at, last_used_at |
 | cohorts | 기수 1개 | cohort_id, course_title, cohort_no, start_date, deadline(12주차 일요일), grace_until(마감 + 7일), weekly_target(5), total_target(60), reward_pdf_key |
 | cohort_weeks | 기수의 주차 1개 | cohort_id, week_no, starts_at, ends_at, article_id |
