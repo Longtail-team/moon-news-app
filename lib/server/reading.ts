@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "./db";
-import { signedUrl } from "./media";
+import { courseFileUrl, signedUrl } from "./media";
 import type { ActType } from "@/components/student/icons";
 import type { Sentence } from "@/lib/reading/text";
 
@@ -33,7 +33,7 @@ export async function getMaterial(studentId: string, week: number): Promise<(Mat
   if (!data) return null;
   const m = data as Material & { assets: Asset[] };
   const key = (t: string) => m.assets.find((x) => x.type === t)?.storage_key;
-  const [article, krEn] = await Promise.all([signedUrl("course", key("article_audio")), signedUrl("course", key("kr_en_repeat_audio"))]);
+  const [article, krEn] = await Promise.all([courseFileUrl(week, "article_audio", key("article_audio")), courseFileUrl(week, "kr_en_repeat_audio", key("kr_en_repeat_audio"))]);
   return { week_no: m.week_no, weekly_target: m.weekly_target, week_completed: m.week_completed, title: m.title, sentences: m.sentences, article, krEn };
 }
 
@@ -61,9 +61,9 @@ export async function getWorkMaterial(studentId: string, week: number, type: Act
   const key = (t: string) => m.assets.find((x) => x.type === t)?.storage_key;
   const photoKey = m.draft?.media_key?.startsWith("photos/") ? m.draft.media_key : null;
   const [articlePdf, vocaPdf, vocaAudio, photoUrl] = await Promise.all([
-    signedUrl("course", key("article_pdf")),
-    signedUrl("course", key("voca_pdf")),
-    signedUrl("course", key("voca_repeat_audio")),
+    courseFileUrl(week, "article_pdf", key("article_pdf")),
+    courseFileUrl(week, "voca_pdf", key("voca_pdf")),
+    courseFileUrl(week, "voca_repeat_audio", key("voca_repeat_audio")),
     signedUrl("media", photoKey),
   ]);
   return {
@@ -100,7 +100,7 @@ export async function getQueue(studentId: string): Promise<Queue | null> {
     q.items.map(async ({ media_key, template_key, ...it }) => ({
       ...it,
       mediaUrl: await signedUrl("media", media_key),
-      templateUrl: await signedUrl("course", template_key),
+      templateUrl: await courseFileUrl(it.week_no, "insta_template", template_key),
     })),
   );
   return { deadline: q.deadline, total_target: q.total_target, verified_count: q.verified_count, items };

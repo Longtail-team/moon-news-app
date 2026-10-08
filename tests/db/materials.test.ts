@@ -68,3 +68,23 @@ describe("이번 주 자료", () => {
     ).rejects.toThrow();
   });
 });
+
+describe("아직 열리지 않은 주차 정보는 브라우저로 보내지 않는다", () => {
+  it("홈 12주 기록: 미리 공개해 둔 5주차 기사 제목도 5주차 시작 전에는 비어 있다", async () => {
+    await db.transaction(async (tx) => {
+      await tx.query("update articles set status = 'published' where title_en like 'Week 5 %'");
+      const at = async (t: string) => ((await tx.query<Row>("select public.student_home('S-0001', $1) as h", [t])).rows[0].h as any).weeks[4].title;
+      expect(await at("2026-10-07T12:00:00+09:00")).toBeNull();
+      expect(await at("2026-10-12T00:00:00+09:00")).toBe("Week 5 article (placeholder)");
+      await tx.rollback();
+    });
+  });
+
+  it("학습 자료 파일: 열린 주차만 주소를 받을 수 있다", async () => {
+    const asset = async (week: number, at: string) =>
+      (await db.query<Row>("select public.course_asset('S-0001', $1, 'article_pdf', $2) as a", [week, at])).rows[0].a as any;
+    expect(await asset(1, "2026-10-07T12:00:00+09:00")).toEqual({ storage_key: "sample/week01/article.pdf", file_name: "week01_article.pdf" });
+    expect(await asset(1, "2026-09-13T12:00:00+09:00")).toBeNull(); // 기수 시작 전
+    expect((await db.query<Row>("select public.course_asset('S-0005', 1, 'article_pdf') as a")).rows[0].a).toBeNull(); // 환불
+  });
+});
