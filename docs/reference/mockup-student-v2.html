@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>새벽달 영어뉴스 · 수강생 화면 목업 v2</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&display=swap">
+<style>
+:root{
+  --main:#76D4CC; --tint:#E2F6F3; --deep:#1F7F77;
+  --bg:#F6F8F8; --line:#E3E9E8; --mute:#EEF2F2; --line2:#D3DCDB;
+  --ink:#2D2D2D; --sub:#5A5A5A; --faint:#8A8A8A; --white:#FFFFFF;
+  --font:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --serif:'Noto Serif KR','Nanum Myeongjo',serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--font);color:var(--ink);background:#E8EEEE;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--ink)}
+:focus-visible{outline:3px solid var(--deep);outline-offset:2px}
+
+/* ---------- desktop layout ---------- */
+.stage{display:flex;gap:32px;justify-content:center;align-items:flex-start;min-height:100%;padding:32px 24px}
+.side{width:248px;flex-shrink:0;position:sticky;top:32px;max-height:calc(100vh - 64px);overflow-y:auto;display:flex;flex-direction:column;gap:18px;padding-right:4px}
+.side h1{font-size:18px;margin:0;line-height:1.4}
+.side p{margin:0;font-size:13px;color:var(--sub);line-height:1.6}
+.side .grp{display:flex;flex-direction:column;gap:4px}
+.side .grp b{font-size:12px;color:var(--deep);margin-bottom:2px;display:flex;align-items:center;gap:6px}
+.side .ptag{padding:2px 7px;border-radius:7px;background:#FFE9B8;color:#7A5300;font-size:11px;font-weight:800}
+.side .nav{border:0;background:transparent;text-align:left;padding:8px 10px;border-radius:10px;font-size:14px}
+.side .nav:hover{background:var(--white)}
+.side .nav.on{background:var(--white);font-weight:800;box-shadow:inset 3px 0 0 var(--main)}
+.side label{font-size:13px;color:var(--sub);display:flex;flex-direction:column;gap:4px}
+.side label.tg{flex-direction:row;align-items:center;gap:8px;min-height:32px;color:var(--ink);font-weight:700}
+.side label.tg input{width:18px;height:18px;accent-color:var(--deep)}
+.side select{height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--white);padding:0 10px;font-size:14px}
+.side .reset{height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--white);font-size:14px;font-weight:700}
+.note{background:var(--white);border:1px solid var(--line);border-left:4px solid var(--main);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.note .nt{font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.note .st{padding:2px 7px;border-radius:7px;background:var(--tint);color:var(--deep);font-size:11px;font-weight:800}
+.note .st.plan{background:#FFE9B8;color:#7A5300}
+.note ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.note li{font-size:13px;line-height:1.55;color:var(--ink)}
+.note .q{font-size:12px;line-height:1.5;color:var(--sub);border-top:1px dashed var(--line2);padding-top:6px}
+.rule{display:flex;gap:10px;align-items:flex-start}
+.rule b.n{width:28px;height:28px;flex-shrink:0;border-radius:50%;background:var(--tint);color:var(--deep);font-size:13px;display:flex;align-items:center;justify-content:center}
+.phone{width:390px;height:844px;flex-shrink:0;border-radius:44px;background:var(--bg);position:relative;overflow:hidden;
+  box-shadow:0 0 0 10px #FFFFFF,0 0 0 11px var(--line2),0 24px 60px rgba(31,127,119,.18)}
+.menuBtn{display:none}
+
+/* ---------- mobile: phone fills the screen ---------- */
+@media (max-width:720px){
+  body{background:var(--bg)}
+  .stage{padding:0;display:block}
+  .phone{width:100%;height:100vh;height:100dvh;border-radius:0;box-shadow:none}
+  .side{position:fixed;inset:0;width:auto;max-height:none;z-index:50;background:var(--bg);padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));overflow-y:auto;display:none}
+  .side.open{display:flex}
+  .menuBtn{display:flex;position:fixed;z-index:60;right:12px;top:calc(10px + env(safe-area-inset-top,0px));height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--line2);background:rgba(255,255,255,.92);font-size:12px;font-weight:700;align-items:center}
+}
+
+/* ---------- phone internals ---------- */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.scroll{flex:1;overflow-y:auto;padding-bottom:20px}
+.pad{padding:0 16px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 10px}
+.back{display:flex;align-items:center;min-height:44px;min-width:44px;border:0;background:transparent;font-size:15px;font-weight:700;padding:0}
+.meta{font-size:13px;color:var(--sub)}
+.h1{font-size:24px;font-weight:800;line-height:1.4;letter-spacing:-.3px;margin:0}
+.help{font-size:13px;color:var(--sub);line-height:1.6}
+.card{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:16px}
+.card.lift{box-shadow:0 2px 10px rgba(31,127,119,.07)}
+.tinted{background:var(--tint);border-radius:16px;padding:16px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;align-items:center;gap:12px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cta{display:flex;align-items:center;justify-content:center;width:100%;height:56px;border-radius:12px;border:0;background:var(--main);font-size:17px;font-weight:800;text-decoration:none}
+.cta:disabled{background:var(--mute);color:var(--faint);cursor:not-allowed}
+.btn2{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;border-radius:12px;border:1px solid var(--line2);background:var(--white);font-size:15px;font-weight:700}
+.btn2:disabled{color:var(--faint);background:var(--mute);cursor:not-allowed}
+.textbtn{border:0;background:transparent;min-height:44px;min-width:44px;font-size:14px;font-weight:700;padding:0;text-decoration:underline;text-underline-offset:3px}
+.pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:20px;background:var(--tint);font-size:13px;font-weight:800}
+.chip{flex-shrink:0;min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--line2);background:var(--white);font-size:13px;font-weight:700}
+.chip.on{border:2px solid var(--deep);background:var(--tint)}
+.get{flex-shrink:0;display:flex;align-items:center;gap:4px;min-height:44px;padding:0 14px;border-radius:12px;border:0;background:var(--tint);font-size:14px;font-weight:800}
+.play{flex-shrink:0;width:44px;height:44px;border-radius:50%;border:0;background:var(--ink);display:flex;align-items:center;justify-content:center}
+.input{width:100%;height:52px;border-radius:12px;border:1px solid var(--faint);background:var(--white);padding:0 14px;font-size:16px}
+.ta{width:100%;min-height:120px;border-radius:12px;border:1px solid var(--faint);background:var(--white);padding:12px 14px;font-size:16px;line-height:1.6;resize:vertical}
+.label{font-size:13px;font-weight:700}
+.sec{font-size:13px;font-weight:800;color:var(--sub);margin-top:6px}
+.bar{height:8px;border-radius:4px;background:var(--line)}
+.bar i{display:block;height:8px;border-radius:4px;background:var(--main)}
+.ckl{display:flex;align-items:center;gap:8px;min-height:44px;font-size:13px;font-weight:700;color:var(--sub)}
+.ckl input{width:20px;height:20px;accent-color:var(--deep);flex-shrink:0}
+.serif{font-family:var(--serif);font-weight:900}
+
+/* tab bar */
+.tabs{flex-shrink:0;display:flex;padding:6px 4px calc(14px + env(safe-area-inset-bottom,0px));background:var(--white);border-top:1px solid var(--line)}
+.tab{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:56px;border:0;background:transparent;font-size:13px;color:var(--sub);white-space:nowrap;padding:0 2px}
+.tab.on{color:var(--deep);font-weight:800}
+.badge{position:absolute;top:2px;left:50%;margin-left:6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--main);color:var(--ink);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center}
+
+/* home */
+.dots{display:flex;gap:10px}
+.dot{width:44px;height:44px;border-radius:50%;border:2px solid var(--line2);display:flex;align-items:center;justify-content:center}
+.dot.done{background:var(--main);border-color:var(--main)}
+.grid{display:flex;flex-direction:column;gap:6px}
+.grow{display:flex;align-items:center;gap:6px}
+.wk{width:36px;flex-shrink:0;font-size:14px;font-weight:800}
+.wk.future{color:var(--faint)}
+.box{width:44px;height:44px;flex-shrink:0;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.box.done{background:var(--main)}
+.box.miss{background:var(--white);border:2px dashed var(--deep)}
+.box.open{background:var(--white);border:1.5px solid var(--line2)}
+.box.future{background:var(--mute)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px}
+.legend span{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700}
+.recHead{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:52px;padding:0;border:0;background:transparent;text-align:left}
+.reveal{animation:reveal .28s ease-out}
+@keyframes reveal{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+/* activity list */
+.act{display:flex;align-items:center;gap:12px;width:100%;min-height:76px;padding:12px 16px;border-radius:16px;border:1px solid var(--line);background:var(--white);text-align:left}
+.act .ic,.ic{width:44px;height:44px;flex-shrink:0;border-radius:12px;background:var(--tint);display:flex;align-items:center;justify-content:center}
+.tag{margin-left:6px;padding:3px 8px;border-radius:8px;background:var(--tint);font-size:13px;font-weight:800;color:var(--deep)}
+
+/* steps */
+.steps{display:flex;gap:6px;padding:0 16px}
+.steps div{flex:1;padding:8px 0;text-align:center;border-radius:10px;font-size:13px;font-weight:800;background:var(--mute);color:var(--sub)}
+.steps div.on{background:var(--ink);color:var(--white)}
+
+/* reading text + highlight */
+.txt .en{font-size:17px;line-height:1.85}
+.txt .ko{font-size:14px;line-height:1.75;color:var(--sub);margin:4px 0 16px}
+.txt.koMain .ko{font-size:17px;color:var(--ink);line-height:1.85;margin:0}
+.txt.koMain .en{font-size:14px;color:var(--sub);line-height:1.75;margin:4px 0 16px}
+.ck,.sk{border-radius:5px;padding:1px 0;transition:background-color .15s,box-shadow .15s}
+.ck.hl,.sk.hl{background:var(--main);box-shadow:0 0 0 3px var(--main)}
+.sl{color:var(--deep);font-weight:800;margin:0 3px}
+.rate{display:flex;align-items:center;gap:6px}
+.rate span{font-size:13px;font-weight:700;color:var(--sub);margin-right:2px}
+.rate button{min-width:52px;height:44px;border-radius:22px;border:1px solid var(--line2);background:var(--white);font-size:13px;font-weight:700}
+.rate button.on{border:2px solid var(--deep);background:var(--tint)}
+.recText .ck,.recText .sk{font-size:21px;line-height:1.9}
+/* recording */
+.count{position:absolute;inset:0;background:rgba(246,248,248,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:5}
+.count b{font-size:96px;line-height:1;color:var(--deep)}
+.rec{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800}
+.rec i{width:12px;height:12px;border-radius:50%;background:var(--deep);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+
+/* listening */
+.lbar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.lbar i{display:block;height:6px;background:var(--deep);width:0}
+
+/* result bar */
+.vbar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--line2)}
+.vbar i{display:block;height:12px;background:var(--main)}
+
+/* 청독 card (1080×1350, scaled) */
+.ncard{position:relative;overflow:hidden;flex-shrink:0;border-radius:4px;box-shadow:0 2px 10px rgba(31,127,119,.12)}
+.ncard-in{position:absolute;left:0;top:0;width:1080px;height:1350px;transform-origin:0 0;background:#F6F8F8;color:#2D2D2D;font-family:var(--font)}
+.np{position:absolute;inset:64px;background:#fff;border:2px solid #E3E9E8;border-radius:28px;padding:60px 68px;display:flex;flex-direction:column}
+.nmast{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:22px;border-bottom:4px solid #2D2D2D}
+.nhead{margin-top:52px;line-height:1.12;letter-spacing:-1.5px}
+.npills{display:flex;gap:16px;margin-top:36px;flex-wrap:wrap}
+.npills span{border:2px solid #2D2D2D;border-radius:999px;padding:10px 28px;font-size:28px;font-weight:700}
+.nbox{background:#E2F6F3;border-radius:24px;padding:44px 52px}
+.nstamp{position:absolute;width:300px;height:300px;opacity:.86;mix-blend-mode:multiply;pointer-events:none}
+
+/* overlay */
+.dim{position:absolute;inset:0;background:rgba(45,45,45,.45);z-index:20;animation:fade .2s}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:21;background:var(--white);border-radius:24px 24px 0 0;padding:12px 20px calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;animation:up .28s ease-out}
+.handle{align-self:center;width:40px;height:4px;border-radius:2px;background:var(--line2)}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+
+.toast{position:absolute;left:50%;bottom:100px;transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--white);font-size:14px;font-weight:700;padding:12px 18px;border-radius:12px;white-space:nowrap;animation:fade .2s}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <aside class="side" id="side">
+    <div>
+      <h1>새벽달 영어뉴스<br>수강생 화면 목업 v2</h1>
+      <p style="margin-top:6px">2026년 10월 9일 기준 앱 화면을 반영했어요. 버튼을 눌러 실제처럼 넘겨 볼 수 있어요. 기사는 지문 하나를 예시로 넣었고, 이름·날짜·숫자는 예시입니다. 음원은 회의용으로 8초짜리로 줄여 흉내 냅니다.</p>
+    </div>
+    <div class="note" id="note" aria-live="polite"></div>
+    <div class="grp" id="navList"></div>
+    <div class="grp">
+      <b>데모 설정</b>
+      <button class="reset" id="listen90">청독 90% 들은 걸로</button>
+      <label class="tg"><input type="checkbox" id="finTg">완주함 (내 기록 상단 카드)</label>
+      <label class="tg"><input type="checkbox" id="endTg">종강 다음 날 (뉴스북 PDF 열림)</label>
+      <label class="tg"><input type="checkbox" id="candTg">앵커 후보 상태</label>
+      <label>완주 단계
+        <select id="tierSel"><option value="on">제때 완주</option><option value="grace">유예 완주</option><option value="late">늦은 완주</option></select>
+      </label>
+      <label>마감 이후 홈
+        <select id="graceSel"><option value="g">유예 중</option><option value="after">유예 종료 후</option></select>
+      </label>
+      <button class="reset" id="resetBtn">처음 상태로 되돌리기</button>
+    </div>
+  </aside>
+  <main class="phone" id="phone" aria-live="polite"></main>
+</div>
+<button class="menuBtn" id="menuBtn">화면 목록</button>
+
+<script>
+/* ================= icons ================= */
+const svg=(d,s=22,stroke='currentColor',w=2)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const BUB='<path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-8l-4 3.5V17H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"></path>';
+const TXT=(t,fs)=>`<text x="12" y="13.6" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="${fs}" font-weight="800" fill="currentColor" stroke="none">${t}</text>`;
+const HEAD='<path d="M4 15v-3a8 8 0 0 1 16 0v3"></path><rect x="3" y="14" width="4.5" height="6.5" rx="1.8"></rect><rect x="16.5" y="14" width="4.5" height="6.5" rx="1.8"></rect>';
+const ACT={
+  LI:{name:'청독',short:'청독',d:HEAD,desc:'음원을 끝까지 들으면 1회, 카드를 인스타에 올려요'},
+  KR:{name:'한국어 기사 읽기',short:'한국어 읽기',d:BUB+TXT('가','8'),desc:'한글 해석을 소리 내어 읽고 녹음해요'},
+  EN:{name:'영어 기사 읽기',short:'영어 읽기',d:BUB+TXT('A','9'),desc:'음원을 듣고 영어로 읽어 녹음해요'},
+  VO:{name:'VOCA',short:'VOCA',d:'<rect x="3" y="7.5" width="13" height="13" rx="2"></rect><path d="M8 4h11a2 2 0 0 1 2 2v11"></path>',desc:'단어를 익히고 작성지 사진을 올려요'},
+  SU:{name:'기사 요약',short:'기사 요약',d:'<path d="M6.5 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M9 8h6M9 12h6M9 16h3.5"></path>',desc:'작성지 사진 1장을 올려요'},
+  DE:{name:'찬반토론',short:'찬반토론',d:'<path d="M12 4v15M8 20h8M5 7h14"></path><path d="M2 13a3 3 0 0 0 6 0L5 7z"></path><path d="M16 13a3 3 0 0 0 6 0L19 7z"></path>',desc:'작성지 사진 1장을 올려요'}
+};
+const aIcon=(k,s=22)=>svg(ACT[k].d,s);
+const I={
+  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M7 4l14 8-14 8z"></path></svg>',
+  pause:'<svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"></path></svg>',
+  check:svg('<path d="M5 12l5 5 9-10"></path>',18,'currentColor',3),
+  dl:svg('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path>',18,'currentColor',2.4),
+  home:svg('<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path>',24),
+  doc:svg('<path d="M6 3h9l4 4v14H6z"></path><path d="M14 3v5h5"></path>',24),
+  up:svg('<path d="M12 16V4M7 9l5-5 5 5M5 20h14"></path>',24),
+  book:svg('<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"></path><path d="M4 21V5M8 7h7M8 11h5"></path>',24),
+  head:svg(HEAD,22,'var(--deep)'),
+  down:svg('<path d="M6 9l6 6 6-6"></path>',20,'currentColor',2.4),
+  upc:svg('<path d="M6 15l6-6 6 6"></path>',20,'currentColor',2.4),
+  mic:svg('<rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path>',28,'var(--deep)'),
+  mark:svg('<path d="M6 3h12v18l-6-4-6 4z"></path>',20,'var(--deep)',2.2),
+  cam:svg('<path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle>',22),
+  img:svg('<rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M21 16l-5-5-9 9"></path>',22),
+  scan:svg('<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"></path><path d="M8 10h8M8 14h5"></path>',20),
+  star:svg('<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path>',22,'var(--deep)')
+};
+
+/* ================= sample content ================= */
+const ARTICLE={
+  title:'RM Opens His Art Collection to the World', level:'약 780L', week:4,
+  sents:[
+   [1,'What does a pop star collect?','팝 스타는 무엇을 모을까?'],
+   [1,'For RM of BTS, / the answer is art.','방탄소년단의 RM에게 그 답은 미술 작품이다.'],
+   [1,'For the first time, / RM is sharing his personal art collection / in a museum show.','RM은 처음으로 자신이 모은 미술 작품들을 미술관 전시에서 사람들에게 보여 주고 있다.'],
+   [1,'The exhibition, / "RM x SFMOMA: Between You and Me," / is at the San Francisco Museum of Modern Art, / also known as SFMOMA.','\'RM x SFMOMA: Between You and Me\'라는 이 전시는 SFMOMA라고도 불리는 샌프란시스코 현대미술관에서 열리고 있다.'],
+   [2,'The show has 178 artworks.','이 전시에는 작품 178점이 있다.'],
+   [2,'Of these, / 142 come from RM\'s own collection, / and 36 come from the museum.','그중 142점은 RM이 직접 모은 작품이고, 36점은 미술관이 가진 작품이다.'],
+   [2,'Half of the works are by Korean artists.','작품의 절반은 한국 작가들의 작품이다.'],
+   [2,'The other half / are by artists from other countries.','나머지 절반은 다른 나라 작가들의 작품이다.'],
+   [3,'RM did more than lend his art.','RM은 자신이 가진 작품을 빌려주기만 한 것이 아니다.'],
+   [3,'He helped choose the works / and wrote the texts on the walls.','전시할 작품을 고르는 일을 돕고, 벽에 걸린 설명 글도 직접 썼다.'],
+   [3,'He also recorded an audio guide / in Korean and English / and picked the background music.','또 한국어와 영어로 음성 안내를 녹음하고, 배경 음악도 골랐다.'],
+   [4,'"Few things show a person / as honestly as a collection / someone has built over a long time," / RM said.','RM은 "누군가 오랫동안 모아 온 컬렉션만큼 그 사람을 솔직하게 보여 주는 것은 거의 없어요"라고 말했다.'],
+   [4,'"This exhibition / is a long introduction of myself."','"이번 전시는 저를 길게 소개하는 자리예요."'],
+   [5,'The exhibition gives visitors a chance / to see another side of RM— / not just as a musician, / but also as an art lover and collector.','관람객들은 이 전시에서 음악가 RM뿐 아니라, 미술을 사랑하고 작품을 모으는 RM의 또 다른 모습도 볼 수 있다.']
+  ]
+};
+ARTICLE.chunks=ARTICLE.sents.map(x=>x[1].split(' / '));
+const wc=t=>t.replace(/—/g,' ').trim().split(/\s+/).length;
+ARTICLE.words=ARTICLE.chunks.flat().reduce((n,c)=>n+wc(c),0);
+/* 예시 시간 정보: 실제로는 음원 강제 정렬 결과를 씀. 영어 분당 150단어, 한국어 글자당 0.11초로 가정 */
+const T_EN=c=>wc(c)*0.4, T_KO=t=>t.replace(/\s/g,'').length*0.11;
+const fmtT=sec=>{sec=Math.round(sec);return sec>=60?`${Math.floor(sec/60)}분 ${sec%60}초`:`${sec}초`};
+const fmtMS=sec=>{sec=Math.floor(sec);return `${Math.floor(sec/60)}분 ${String(sec%60).padStart(2,'0')}초`};
+const fmtCard=sec=>{sec=Math.round(sec);return `${Math.floor(sec/60)}분 ${sec%60}초`};
+const fmtH=sec=>{const m=Math.round(sec/60);return m>=60?`${Math.floor(m/60)}시간 ${m%60}분`:`${m}분`};
+const EN_TOTAL=ARTICLE.chunks.flat().reduce((n,c)=>n+T_EN(c),0)+ARTICLE.sents.length*0.35;
+const KO_TOTAL=ARTICLE.sents.reduce((n,x)=>n+T_KO(x[2])+0.4,0);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+
+/* 뉴스북 예시: 주차별 기사와 지난 기록 */
+const BOOK={
+  1:{title:'Why Do Cats Sleep So Much?',dates:'9월 14일 – 20일'},
+  2:{title:'A Library Under the Open Sky',dates:'9월 21일 – 27일'},
+  3:{title:'Should Kids Have Phones at School?',dates:'9월 28일 – 10월 4일'},
+  4:{title:ARTICLE.title,dates:'10월 5일 – 11일'}
+};
+const OCR_SAMPLE='RM of BTS is sharing his art collection at SFMOMA. The show has 178 artworks, and half are by Korean artists. RM chose the works and wrote the wall texts himself.';
+const STAMP_SPOTS=[{sx:600,sy:470,rot:-14},{sx:150,sy:520,rot:9},{sx:520,sy:560,rot:-6},{sx:640,sy:430,rot:16},{sx:260,sy:450,rot:-20}];
+
+/* ================= state ================= */
+const INIT=()=>({
+  screen:'welcome', os:'ios', by:'2015', bm:'3', access:'yes', sent:false,
+  weeks:[['KR','VO','SU','DE','EN'],['EN','KR','VO'],['LI','KR','VO','SU','DE'],['LI','KR','SU','LI'],[],[],[],[],[],[],[],[]],
+  posted:15,
+  queue:[{id:1,t:'EN',week:2,meta:'2주차 · 9월 23일 녹음',kind:'video'},{id:2,t:'SU',week:4,meta:'4주차 · 10월 6일 · 작성지 사진',kind:'photo'}],
+  recOpen:false, selWeek:4, act:'EN', wsType:'SU', photo:false, enOnly:false,
+  playing:null, rate:1, slash:false, pacerOn:true, pacerPaused:false, firstShown:false, popup:null, submitUp:false, tier:'on', grace:'g',
+  certIssued:false, certName:'김지우', live:true, nextId:3,
+  // 청독
+  heard:{enAudio:0,krAudio:0}, lsec:0, loop:false, listenTotal:4320,
+  lastCard:{en:2,kr:1,sec:432,total:4320},
+  cards:{3:[{week:3,date:'9월 30일(수)',stampDate:'2026.09.30',en:1,kr:1,sec:540,total:2700}],
+         4:[{week:4,date:'10월 6일(화)',stampDate:'2026.10.06',en:2,kr:0,sec:300,total:3540},{week:4,date:'10월 8일(목)',stampDate:'2026.10.08',en:1,kr:1,sec:348,total:3888}]},
+  // 작성
+  memo:{title:'',text:'',ocr:'none',left:3}, vote:null, reason:'', ocrConsent:true,
+  notes:{1:{title:'Cats Are Energy Savers',text:'Cats sleep 12 to 16 hours a day. They save energy for hunting. Even pet cats still keep this habit.'},
+         3:{title:'Phones in the Backpack',text:'Some schools ask students to keep phones in their bags. People say it helps kids focus, but others worry about safety.'}},
+  opinions:{1:{side:'찬성',reason:'Pets need a quiet place to sleep at home.',pro:58,n:52},
+            3:{side:'반대',reason:'Parents should be able to call their kids after school.',pro:41,n:52}},
+  // 데모 토글
+  finished:false, afterEnd:false, anchorCand:false,
+  // 이달의 앵커
+  pick:null, agree:false, entryDone:false
+});
+let S=INIT();
+const NOW=4; // 현재 주차
+let timers=[];
+const clearTimers=()=>{timers.forEach(clearInterval);timers.forEach(clearTimeout);timers=[]};
+
+/* ================= helpers ================= */
+const learnedTotal=()=>S.weeks.reduce((n,w)=>n+w.length,0);
+const gapWeeks=()=>{const r=[];for(let i=0;i<NOW-1;i++){if(S.weeks[i].length<5)r.push(i+1)}return r};
+const backlog=()=>{const g=gapWeeks();return g.length?`${g[0]}주차 ${5-S.weeks[g[0]-1].length}회 남음`:''};
+const countOf=k=>S.weeks.flat().filter(x=>x===k).length;
+const gradeOf=(y)=>{const g=2026-Number(y)-6;if(g>=1&&g<=6)return `초등 ${g}학년`;if(g>=7&&g<=9)return `중학교 ${g-6}학년`;return '학년 확인 필요'};
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;phone.appendChild(t);setTimeout(()=>t.remove(),2200)}
+function addLearning(type,kind){
+  const w=S.selWeek-1;
+  if(S.weeks[w].length>=5){ // 꽉 찬 주차면 이번 주로
+    S.selWeek=NOW;
+  }
+  S.weeks[S.selWeek-1].push(type);
+  const meta=kind==='card'?`${S.selWeek}주차 · 10월 9일 · 청독 카드`:`${S.selWeek}주차 · 10월 9일${kind==='photo'?' · 작성지 사진':' 녹음'}`;
+  S.queue.push({id:S.nextId++,t:type,week:S.selWeek,meta,kind});
+}
+function tabbar(active,badge){
+  const n=badge??S.queue.length;
+  const t=(k,label,go,ic)=>`<button class="tab${active===k?' on':''}" data-go="${go}" ${active===k?'aria-current="page"':''}>${I[ic]}${k==='up'&&n?`<span class="badge">${n}</span>`:''}<span>${label}</span></button>`;
+  return `<nav class="tabs" aria-label="메뉴">${t('home','홈','home','home')}${t('doc','이번 주 자료','materials','doc')}${t('up','인스타 올리기','queue','up')}${t('rec','내 기록','record','book')}</nav>`;
+}
+const topBar=(go,label,right='')=>`<div class="topbar"><button class="back" data-go="${go}">‹ ${label}</button><div class="meta">${right}</div></div>`;
+const audioRow=(key,name,meta)=>`<div class="card row" style="padding:10px 14px"><button class="play" data-play="${key}" aria-label="${name} ${S.playing===key?'멈춤':'재생'}">${S.playing===key?I.pause:I.play}</button><div style="flex:1;font-size:15px;font-weight:800">${name}</div><div class="meta">${S.playing===key?'재생 중':meta}</div></div>`;
+const toListen=(sub)=>`<button class="card row" data-go="listen" style="width:100%;text-align:left;padding:12px 14px"><span class="ic">${I.head}</span><span class="stack" style="gap:2px;flex:1"><span style="font-size:15px;font-weight:800">음원은 청독에서 들어요</span><span class="meta">${sub}</span></span><span style="font-size:20px;font-weight:800">›</span></button>`;
+const voteBar=(pro,note)=>`<div class="stack" style="gap:6px"><div class="between" style="font-size:13px;font-weight:800"><span>찬성 ${pro}%</span><span style="color:var(--sub)">반대 ${100-pro}%</span></div><div class="vbar"><i style="width:${pro}%"></i></div>${note?`<div class="meta">${note}</div>`:''}</div>`;
+
+/* ================= 청독 카드 ================= */
+let stampN=0;
+function stampSVG(o){
+  const id='stp'+(++stampN);
+  return `<svg class="nstamp" style="left:${o.sx}px;top:${o.sy}px;transform:rotate(${o.rot}deg)" viewBox="0 0 300 300" aria-hidden="true">
+    <defs><filter id="${id}f" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="${stampN%9+1}" result="n"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap></filter>
+    <path id="${id}p" d="M150,150 m-103,0 a103,103 0 1,1 206,0 a103,103 0 1,1 -206,0"></path></defs>
+    <g filter="url(#${id}f)" fill="none" stroke="#1F7F77">
+      <circle cx="150" cy="150" r="140" stroke-width="8"></circle>
+      <circle cx="150" cy="150" r="124" stroke-width="2.5"></circle>
+      <circle cx="150" cy="150" r="80" stroke-width="2.5"></circle>
+      <text fill="#1F7F77" stroke="none" font-family="Pretendard, sans-serif" font-size="19" font-weight="800"><textPath href="#${id}p" startOffset="0" textLength="640" lengthAdjust="spacing">SAEBYEOKDAL ENGLISH NEWS ★ LISTENED ★</textPath></text>
+      <text x="150" y="158" text-anchor="middle" fill="#1F7F77" stroke="none" font-family="Noto Serif KR, serif" font-weight="900" font-size="52">청독</text>
+      <text x="150" y="196" text-anchor="middle" fill="#1F7F77" stroke="none" font-family="Pretendard, sans-serif" font-weight="800" font-size="20" letter-spacing="2">${o.stampDate}</text>
+    </g></svg>`;
+}
+function cardHTML(opts){
+  const o=Object.assign({w:358,style:'insta',rot:-14,week:4,date:'10월 9일(금)',stampDate:'2026.10.09',en:2,kr:1,sec:432,total:4320,headline:ARTICLE.title},opts);
+  const app=o.style==='app';
+  if(o.sx==null){o.sx=app?600:690;o.sy=app?450:556;o.rot=o.rot??-14}
+  const pills=[o.en?`<span>영어 기사 ${o.en}회</span>`:'',o.kr?`<span>한영 구간반복 ${o.kr}회</span>`:''].join('');
+  return `<div class="ncard" style="width:${o.w}px;height:${Math.round(o.w*1.25)}px" role="img" aria-label="청독 카드: ${o.week}주차 ${o.date}, 오늘 들은 시간 ${fmtCard(o.sec)}">
+  <div class="ncard-in" style="transform:scale(${o.w/1080})">
+    <div class="np">
+      <div class="nmast"><span class="serif" style="font-size:42px">새벽달 영어뉴스</span><span style="font-size:27px;color:#5A5A5A">1기 · ${o.week}주차 · ${o.date}</span></div>
+      <div class="serif nhead" style="font-size:${app?68:100}px">${o.headline}</div>
+      <div style="font-size:30px;color:#5A5A5A;margin-top:28px">새벽달 영어뉴스 기자 지우</div>
+      <div class="npills">${pills}</div>
+      <div style="flex:1"></div>
+      <div class="nbox">
+        <div style="font-size:30px;font-weight:700;color:#1F7F77">오늘 들은 시간</div>
+        <div style="font-size:112px;font-weight:900;line-height:1.1;letter-spacing:-2px">${fmtCard(o.sec)}</div>
+        <div style="height:2px;background:#76D4CC;margin:28px 0"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:32px;font-weight:700;color:#1F7F77">지금까지 누적</span><span style="font-size:56px;font-weight:900">${fmtH(o.total)}</span></div>
+      </div>
+    </div>
+    ${stampSVG(o)}
+  </div></div>`;
+}
+const cardW=()=>Math.min(358,(phone.clientWidth||390)-32);
+
+/* ================= screens ================= */
+const SCREENS={
+
+welcome(){
+  const step=(n,l)=>progress(n,l);
+  const r=(t)=>`<div style="padding:8px 0;border-bottom:1px solid var(--mute);font-size:14px;font-weight:700">${t}</div>`;
+  const ios=S.os==='ios';
+  return `<div class="scroll">${step(1,'정보 확인')}
+  <div class="pad stack" style="padding-top:22px;gap:20px">
+    <div class="stack" style="gap:8px"><span class="pill" style="align-self:flex-start">새벽달 영어뉴스 1기</span>
+      <h2 class="h1" style="font-size:26px">12주 챌린지에<br>오신 걸 환영해요</h2>
+      <div class="help">신청 정보를 확인하고 보호자 정보를 입력해 주세요.</div></div>
+    <div class="card lift"><div style="font-size:14px;font-weight:800;margin-bottom:4px">신청 정보</div>
+      ${kv('과정','새벽달 영어뉴스 1기')}${kv('기간','12주')}${kv('신청 연락처','010-****-1234')}
+      <button class="textbtn" style="font-size:13px;color:var(--sub)">정보가 다르면 문의하기</button></div>
+    <div class="card lift"><div style="font-size:14px;font-weight:800">제공 자료</div>
+      <div class="sec" style="color:var(--deep);font-size:13px;margin-top:10px">PDF 2종</div>${r('기사 PDF (원문 · 요약 작성지 · 토론 질문지)')}${r('VOCA 정리 PDF')}
+      <div class="sec" style="color:var(--deep);font-size:13px;margin-top:10px">음원 3종</div>${r('영어 기사 음원')}${r('새벽달 한영 구간반복')}${r('VOCA 구간반복')}
+      <div class="sec" style="color:var(--deep);font-size:13px;margin-top:10px">라이브</div>${r('새벽달 Zoom Live 2회')}
+      <div class="help" style="margin-top:10px">매주 월요일에 새 자료가 열려요.</div></div>
+    <div class="stack" style="gap:14px"><div style="font-size:14px;font-weight:800">보호자 정보</div>
+      <div class="stack" style="gap:6px"><label class="label" for="gname">보호자 이름</label><input class="input" id="gname" placeholder="이름 입력"></div>
+      <div class="stack" style="gap:6px"><label class="label" for="gphone">알림 받을 연락처</label><input class="input" id="gphone" value="010-****-1234" readonly style="background:var(--mute)"><div class="help">신청한 번호로 알림톡을 보내드려요.</div></div>
+      <label class="row" style="min-height:44px;font-size:14px;gap:10px"><input type="checkbox" checked style="width:22px;height:22px;accent-color:var(--deep)">학습 안내 알림톡 받기 (필수)</label></div>
+    <div style="padding:18px;border-radius:16px;background:var(--tint)" class="stack">
+      <div style="font-size:15px;font-weight:800">홈 화면에 추가해 두세요</div>
+      <div class="help" style="color:var(--ink)">매일 알림톡을 찾지 않아도 앱처럼 바로 열려요.</div>
+      <div class="row" style="gap:6px;padding:4px;border-radius:12px;background:var(--white)">
+        <button data-os="ios" style="flex:1;height:44px;border-radius:9px;border:0;font-size:14px;font-weight:700;background:${ios?'var(--main)':'var(--white)'}">아이폰</button>
+        <button data-os="and" style="flex:1;height:44px;border-radius:9px;border:0;font-size:14px;font-weight:700;background:${!ios?'var(--main)':'var(--white)'}">안드로이드</button></div>
+      <div class="stack" style="gap:8px;font-size:14px;line-height:1.5">${ios?'<div>1. Safari에서 이 페이지를 열어요</div><div>2. 아래쪽 공유 버튼을 눌러요</div><div>3. \'홈 화면에 추가\'를 눌러요</div>':'<div>1. Chrome에서 이 페이지를 열어요</div><div>2. 오른쪽 위 메뉴(점 3개)를 눌러요</div><div>3. \'홈 화면에 추가\'를 눌러요</div>'}</div>
+      <div class="help">카카오톡 안에서 열렸다면 오른쪽 위 메뉴에서 '다른 브라우저로 열기'를 먼저 눌러 주세요.</div></div>
+    <button class="cta" data-go="student">다음 · 학습자 등록</button>
+  </div></div>`;
+},
+
+student(){
+  const yrs=[2010,2011,2012,2013,2014,2015,2016,2017].map(y=>`<option ${S.by==y?'selected':''} value="${y}">${y}년</option>`).join('');
+  const mos=Array.from({length:12},(_,i)=>`<option ${S.bm==i+1?'selected':''} value="${i+1}">${i+1}월</option>`).join('');
+  return `<div class="scroll">${progress(2,'학습자 등록')}
+  <div class="pad stack" style="padding-top:22px;gap:22px">
+    <div class="stack" style="gap:8px"><h2 class="h1">함께할 학습자를<br>알려주세요</h2></div>
+    <div class="stack" style="gap:6px"><label class="label" for="sname">학습자 이름</label><input class="input" id="sname" placeholder="성과 이름 모두 (예: 김지우)">
+      <div class="help">완주 상장에 이 이름이 그대로 들어가요. 성과 이름을 모두 써 주세요.</div></div>
+    <div class="stack" style="gap:6px"><div class="label">출생 연월</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><select class="input" id="by" aria-label="출생 연도">${yrs}</select><select class="input" id="bm" aria-label="출생 월">${mos}</select></div>
+      <div class="between" style="padding:4px 4px 4px 12px;border-radius:12px;background:var(--tint);font-size:13px"><span>올해 <b>${gradeOf(S.by)}</b>으로 표시돼요</span><button style="min-height:44px;padding:0 12px;border-radius:10px;border:0;background:var(--white);font-size:13px;font-weight:700">학년이 다르면 바꾸기</button></div>
+      <div class="help">학년 표시와 보호자 동의 확인에만 써요. 생일은 받지 않아요.</div></div>
+    <div class="stack" style="gap:6px"><label class="label" for="ig">인증할 인스타그램 계정</label>
+      <div class="row" style="gap:4px;height:52px;border-radius:12px;border:1px solid var(--faint);background:var(--white);padding:0 14px"><span style="color:var(--sub)">@</span><input id="ig" placeholder="계정 아이디" style="flex:1;min-width:0;height:48px;border:0;font-size:16px;background:transparent"></div>
+      <div class="help">낭독 영상과 작성지를 올릴 계정이에요. 보호자 계정도 괜찮아요.</div></div>
+    <button class="btn2" style="border-style:dashed;height:52px">+ 형제·자매 함께 등록하기</button>
+    <div class="row" style="gap:10px"><button class="btn2" style="width:96px;height:56px" data-go="welcome">이전</button><button class="cta" data-go="access">다음</button></div>
+  </div></div>`;
+},
+
+access(){
+  const yes=S.access==='yes';
+  const opt=(k,t,d)=>{const on=S.access===k;return `<button data-access="${k}" style="display:flex;gap:12px;align-items:flex-start;width:100%;padding:16px;border-radius:14px;text-align:left;border:${on?'2px solid var(--deep)':'1px solid var(--line2)'};background:${on?'var(--tint)':'var(--white)'}"><span style="width:22px;height:22px;flex-shrink:0;border-radius:50%;margin-top:1px;border:${on?'7px solid var(--deep)':'2px solid var(--faint)'};background:var(--white)"></span><span class="stack" style="gap:4px"><span style="font-size:15px;font-weight:800">${t}</span><span class="help" style="font-size:13px">${d}</span></span></button>`};
+  return `<div class="scroll">${progress(3,'접속 방법과 동의')}
+  <div class="pad stack" style="padding-top:22px;gap:20px">
+    <h2 class="h1">지우가 본인 휴대폰으로<br>직접 진행하나요?</h2>
+    <div class="stack" style="gap:10px">${opt('yes','네, 지우 휴대폰으로 해요','지우에게 별도 접속 링크를 보내요. 보호자도 같은 기록을 볼 수 있어요.')}${opt('no','아니요, 보호자 휴대폰으로 해요','지금 이 휴대폰에서 함께 진행해요. 나중에 추가할 수 있어요.')}</div>
+    ${yes?`<div class="stack reveal" style="gap:6px"><label class="label" for="cphone">지우 연락처</label><input class="input" id="cphone" type="tel" placeholder="010-0000-0000"><div class="help">등록을 마치면 이 번호로 지우 전용 접속 링크를 보내드려요. 알림톡은 보호자와 지우 모두에게 가요.</div></div>`:''}
+    <div class="card lift"><label class="row" style="align-items:flex-start;gap:10px;font-size:14px;line-height:1.5"><input type="checkbox" style="width:22px;height:22px;margin-top:2px;accent-color:var(--deep)">자녀의 낭독 음성과 작성 이미지 수집·보관에 동의합니다 (필수, 만 14세 미만 보호자 동의)</label>
+      <button class="textbtn" style="font-size:13px;color:var(--sub)">보관 기간과 삭제 기준 보기</button></div>
+    <div class="row" style="gap:10px"><button class="btn2" style="width:96px;height:56px" data-go="student">이전</button><button class="cta" data-go="home">챌린지 시작하기</button></div>
+  </div></div>`;
+},
+
+reentry(){
+  return `<div class="scroll"><div class="pad stack" style="padding-top:48px;gap:22px">
+    <div class="stack" style="gap:8px"><h2 class="h1" style="font-size:26px">다시 들어가기</h2>
+      <div class="help" style="font-size:14px">알림톡 링크를 찾을 수 없거나 휴대폰을 바꿨나요?<br>등록한 번호로 새 접속 링크를 보내드려요.</div></div>
+    ${!S.sent?`<div class="stack" style="gap:14px"><div class="stack" style="gap:6px"><label class="label" for="rphone">등록한 휴대폰 번호</label><input class="input" id="rphone" type="tel" placeholder="010-0000-0000"><div class="help">보호자 번호와 자녀 번호 모두 사용할 수 있어요.</div></div><button class="cta" data-action="sendLink">접속 링크 받기</button></div>`
+    :`<div class="stack reveal" style="padding:20px;border-radius:16px;background:var(--tint);gap:10px"><div style="font-size:16px;font-weight:800">알림톡을 확인해 주세요</div><div style="font-size:14px;line-height:1.6">등록된 번호라면 1분 안에 새 접속 링크가 도착해요. 링크는 24시간 동안 쓸 수 있어요.</div><button class="btn2" style="width:auto;align-self:flex-start;padding:0 14px;height:44px" data-action="resetLink">다른 번호로 받기</button></div>`}
+  </div></div>
+  <div style="padding:20px;text-align:center"><div class="help">번호가 바뀌었거나 알림톡이 오지 않나요?</div><button class="textbtn">운영팀에 문의하기</button></div>`;
+},
+
+home(){
+  const w=S.weeks[NOW-1], learned=learnedTotal(), bl=backlog(), gaps=gapWeeks();
+  const dots=Array.from({length:5},(_,i)=>`<div class="dot${i<w.length?' done':''}">${i<w.length?I.check:''}</div>`).join('');
+  const pct=Math.round(S.posted/60*100);
+  let grid='';
+  if(S.recOpen){
+    const rows=S.weeks.map((acts,wi)=>{const n=wi+1;let b='';for(let i=0;i<5;i++){
+      if(i<acts.length)b+=`<div class="box done" role="img" aria-label="${ACT[acts[i]].short}">${aIcon(acts[i])}</div>`;
+      else if(n<NOW)b+=`<div class="box miss" role="img" aria-label="빈 칸"></div>`;
+      else if(n===NOW)b+=`<div class="box open" role="img" aria-label="빈 칸"></div>`;
+      else b+=`<div class="box future"></div>`;}
+      return `<div class="grow"><div class="wk${n>NOW?' future':''}">${n}주</div>${b}</div>`}).join('');
+    const lg=Object.keys(ACT).map(k=>`<span>${aIcon(k,18)}${ACT[k].short}</span>`).join('');
+    const readCnt=countOf('EN');
+    const fill=gaps.length?`<button class="textbtn" style="align-self:flex-start;text-decoration:none;color:var(--deep)" data-action="fillGap" data-w="${gaps[0]}">${gaps[0]}주차 빈칸 채우러 가기 ›</button>`:'';
+    grid=`<div class="stack reveal" style="padding:4px 0 12px"><div style="font-size:13px;font-weight:700">지금까지 소리 내어 읽은 영어 단어 <b style="color:var(--deep)">${(readCnt*ARTICLE.words).toLocaleString()}</b>개</div><div class="legend">${lg}</div><div class="grid">${rows}</div>${fill}</div>`;
+  }
+  return `<div class="scroll">
+    <div class="topbar"><div style="font-size:18px;font-weight:800">안녕, 지우!</div><button class="chip" style="border-radius:22px;min-height:44px">지우 · 초5 ▾</button></div>
+    ${S.live?`<button data-go="materials" class="row" style="margin:0 16px 12px;width:calc(100% - 32px);padding:12px 14px;border-radius:14px;border:0;background:var(--tint);text-align:left">
+      <span style="width:48px;height:48px;flex-shrink:0;border-radius:12px;background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:13px;font-weight:800;color:var(--deep);line-height:1.1">LIVE</span><span style="font-size:14px;font-weight:800">D-3</span></span>
+      <span class="stack" style="gap:2px;flex:1"><span style="font-size:14px;font-weight:800">새벽달 Zoom Live 1회차</span><span class="meta">10월 8일(목) 저녁 8시</span></span><span style="font-size:18px;font-weight:800">›</span></button>`:''}
+    <div class="pad"><div class="card lift stack" style="padding:20px">
+      <div class="between"><span class="pill">4주차</span><span class="meta">10월 5일 – 11일</span></div>
+      <div style="font-size:17px;font-weight:700;line-height:1.4">${ARTICLE.title}</div>
+      <div class="row" style="align-items:baseline;gap:8px"><span style="font-size:56px;font-weight:800;line-height:1">${Math.min(w.length,5)}</span><span style="font-size:20px;font-weight:700;color:var(--sub)">/ 5</span><span style="font-size:14px;color:var(--sub);margin-left:4px">이번 주 학습</span></div>
+      <div class="dots">${dots}</div></div></div>
+    <div class="pad" style="padding-top:12px"><button class="cta" data-go="activity">+ 오늘 학습하기</button></div>
+    <div class="pad" style="padding-top:12px"><div class="card stack" style="gap:10px">
+      <div class="between"><div style="font-size:17px;font-weight:800">종강 12월 6일(일)</div><span class="pill" style="border-radius:10px">9주 남음</span></div>
+      <div class="between" style="align-items:baseline"><div style="font-size:14px;font-weight:700;color:var(--sub)">완주까지 인스타 올리기</div><div style="font-size:16px;font-weight:800">${S.posted} <span style="font-weight:500;color:var(--sub)">/ 60</span></div></div>
+      <div class="bar"><i style="width:${pct}%"></i></div></div></div>
+    <div class="pad" style="padding-top:12px"><div class="card" style="padding:8px 16px">
+      <button class="recHead" data-action="toggleRec" aria-expanded="${S.recOpen}"><span class="stack" style="gap:3px"><span style="font-size:15px;font-weight:800">12주 기록</span><span class="meta">학습 ${learned} / 60${bl?' · '+bl:''}</span></span><span class="row" style="gap:4px;font-size:13px;font-weight:700">${S.recOpen?'접기'+I.upc:'펼쳐 보기'+I.down}</span></button>
+      ${grid}</div></div>
+  </div>${tabbar('home')}`;
+},
+
+activity(){
+  const w=S.weeks[S.selWeek-1];
+  const cnt=(k)=>w.filter(x=>x===k).length;
+  const chips=[NOW,...gapWeeks().reverse()].map(n=>{const left=5-S.weeks[n-1].length;return `<button class="chip${S.selWeek===n?' on':''}" data-week="${n}">${n}주차 · ${n===NOW?'이번 주':left+'회 남음'}</button>`}).join('');
+  const item=(k,tag='')=>`<button class="act" data-start="${k}"><span class="ic">${aIcon(k)}</span><span class="stack" style="gap:4px;flex:1"><span style="font-size:16px;font-weight:800">${ACT[k].name}${tag?`<span class="tag">${tag}</span>`:''}</span><span class="help" style="font-size:13px">${ACT[k].desc}</span></span><span class="meta" style="font-size:13px;font-weight:700;white-space:nowrap">${cnt(k)}회</span></button>`;
+  return `<div class="scroll">${topBar('home','홈',`${S.selWeek}주차 학습 ${Math.min(w.length,5)} / 5`)}
+  <div class="pad stack" style="gap:14px">
+    <h2 class="h1">오늘은 무엇을 할까요?</h2>
+    <div class="row" style="gap:8px;overflow-x:auto">${chips}</div>
+    <div class="stack" style="gap:10px">${item('LI')}${item('KR')}${item('EN')}${item('VO')}${item('SU')}${item('DE')}</div>
+    <div class="help">같은 활동을 여러 번 해도 매번 1회로 인정돼요.</div>
+  </div></div>`;
+},
+
+listen(){
+  const w=S.weeks[S.selWeek-1].length;
+  const heard=S.heard.enAudio+S.heard.krAudio;
+  const lrow=(key,name)=>{const n=S.heard[key];return `<div class="card stack" style="padding:12px 14px;gap:10px"><div class="row"><button class="play" data-play="${key}" aria-label="${name} ${S.playing===key?'멈춤':'재생'}">${S.playing===key?I.pause:I.play}</button><div style="flex:1;font-size:15px;font-weight:800">${name}</div><div class="meta" id="lm-${key}" style="${n?'color:var(--deep);font-weight:800':''}">${n?n+'회 들음':'아직 안 들음'}</div></div><div class="lbar"><i id="lp-${key}" style="width:${Math.round((L.pos[key]||0)*100)}%"></i></div></div>`};
+  return `<div class="scroll">${topBar('activity','청독',`${S.selWeek}주차 학습 ${Math.min(w,5)} / 5`)}
+  <div class="pad stack" style="gap:10px">
+    <h2 class="h1" style="font-size:20px">${ARTICLE.title}</h2>
+    <div class="help">음원 하나를 끝까지(90% 이상) 들으면 청독 완료를 누를 수 있어요. 여러 번 들을수록 청독 시간이 쌓여요.</div>
+    ${lrow('enAudio','영어 기사 음원')}${lrow('krAudio','새벽달 한영 구간반복')}
+    <div class="between" style="flex-wrap:wrap">${rateBar()}</div>
+    <label class="ckl"><input type="checkbox" data-action="loop" ${S.loop?'checked':''}>반복 재생</label>
+    <div class="tinted between"><span style="font-size:14px;font-weight:800;color:var(--deep)">이번 청독</span><span id="lsec" style="font-size:22px;font-weight:800;font-variant-numeric:tabular-nums">${fmtMS(S.lsec)}</span></div>
+    <div class="card stack" style="gap:12px">
+      <div class="between"><div style="font-size:13px;font-weight:800">기사 원문</div>
+        <button class="chip" style="border-radius:12px" data-action="enOnly">${S.enOnly?'함께 보기':'영어만 보기'}</button></div>
+      <label class="ckl"><input type="checkbox" data-action="slash" ${S.slash?'checked':''}>끊어 읽기 표시</label>
+      ${articleHTML(true,S.enOnly,false)}
+    </div>
+  </div></div>
+  <div class="pad" style="padding-top:12px;padding-bottom:20px" id="lctaWrap">${lCtaHTML()}</div>`;
+},
+
+listenDone(){
+  const c=S.lastCard, w=S.weeks[S.selWeek-1].length;
+  return `<div class="scroll"><div class="pad stack" style="padding-top:28px;gap:16px">
+    <h2 class="h1" style="font-size:28px">청독 완료!</h2>
+    <div style="font-size:15px;line-height:1.6">${S.selWeek}주차 학습 <b>${Math.min(w,5)} / 5</b>. 카드를 저장해서 인스타에 올리면 인증돼요.</div>
+    <div style="display:flex;justify-content:center">${cardHTML({w:cardW(),style:'insta',en:c.en,kr:c.kr,sec:c.sec,total:c.total,week:S.selWeek,sx:690,sy:556,rot:-14})}</div>
+  </div></div>
+  <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:10px">
+    <button class="cta" data-action="save" data-kind="card">${I.dl}&nbsp;카드 저장</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-go="queue">인스타 올리기</button><button class="btn2" data-go="home">홈으로</button></div></div>`;
+},
+
+reading(){
+  const en=S.act==='EN';
+  return `<div class="scroll" id="readScroll">${topBar('activity',ACT[S.act].name,`${S.selWeek}주차`)}
+  <div class="steps"><div class="on">1 듣기</div><div>2 낭독</div><div>3 확인</div></div>
+  <div class="pad stack" style="padding-top:14px;gap:10px">
+    <div class="tinted stack" style="gap:10px">
+      <div style="font-size:13px;font-weight:800;color:var(--deep)">듣기 전에 생각해 봐요</div>
+      <div style="font-size:16px;font-weight:700;line-height:1.55">내가 오랫동안 모아 온 물건이 있다면, 그 물건은 나에 대해 무엇을 말해 줄까요?</div>
+      <div class="between" style="padding-top:10px;border-top:1px solid rgba(31,127,119,.18)"><span style="font-size:14px;font-weight:800">기사 PDF</span><button class="get" style="background:var(--white)" data-action="pdf" data-name="기사 PDF">${I.dl}받기</button></div>
+    </div>
+    ${toListen('영어 기사 음원 · 한영 구간반복')}
+    ${rateBar()}
+    <div class="card stack" style="gap:12px">
+      <div class="between"><div style="font-size:13px;font-weight:800">${en?'기사 원문':'기사 해석'}</div>
+        <button class="chip" style="border-radius:12px" data-action="enOnly">${S.enOnly?'함께 보기':(en?'영어만 보기':'한글만 보기')}</button></div>
+      ${en?`<label class="ckl"><input type="checkbox" data-action="slash" ${S.slash?'checked':''}>끊어 읽기 표시</label>`:''}
+      ${articleHTML(en,S.enOnly,false)}
+    </div>
+  </div></div>
+  <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:6px"><div class="help" style="text-align:center" id="estTime">${S.rate}배로 읽으면 약 ${fmtT((en?EN_TOTAL:KO_TOTAL)/S.rate)} 걸려요 · 이어폰을 끼면 녹음이 더 깨끗해요</div><button class="cta" data-go="recording">낭독 시작</button></div>`;
+},
+
+recording(){
+  const en=S.act==='EN';
+  return `${topBar('reading','그만두기','')}
+  <div class="steps"><div>1 듣기</div><div class="on">2 낭독</div><div>3 확인</div></div>
+  <div class="pad stack" style="padding-top:14px;gap:10px">
+    <div class="between"><span class="rec"><i></i>녹음 중</span><span id="clock" style="font-size:18px;font-weight:800;font-variant-numeric:tabular-nums">${Math.floor((S._sec||0)/60)}:${String((S._sec||0)%60).padStart(2,"0")}</span></div>
+    <div class="between">${rateBar(true)}</div>
+    <div class="row" style="gap:6px">
+      <button class="chip" style="border-radius:12px" data-action="pacerToggle">${S.pacerOn?'하이라이트 끄기':'하이라이트 켜기'}</button>
+      ${S.pacerOn?`<button class="chip" style="border-radius:12px" data-action="pacerPause" id="pauseBtn">${S.pacerPaused?'다시 움직이기':'잠깐 멈추기'}</button>`:''}
+    </div>
+  </div>
+  <div class="scroll" id="recScroll"><div class="pad recText" style="padding-top:12px">${articleHTML(en,true,true)}</div></div>
+  <div class="pad" style="padding-bottom:20px"><button class="cta" data-go="review">다 읽었어요</button></div>
+  ${S._recStarted?'':'<div class="count" id="count"><b id="cnum">3</b><div style="font-size:15px;font-weight:700">곧 녹음이 시작돼요</div><div class="help">하이라이트를 따라 읽어 보세요</div></div>'}<span id="clockStore" hidden></span>`;
+},
+
+review(){
+  const h=[12,22,34,18,40,52,30,16,44,36,24,48,56,28,14,38,46,20,32,50,26,42,18,36,54,30,22,46,34,16,40,28,50,24,38,18,30,44,20,12];
+  const bars=h.map(v=>`<span style="flex:1;height:${v}px;border-radius:2px;background:${S.playing==='mine'?'var(--deep)':'var(--main)'}"></span>`).join('');
+  const w=S.weeks[S.selWeek-1].length;
+  return `<div class="scroll">${topBar('reading',ACT[S.act].name,`${S.selWeek}주차`)}
+  <div class="steps"><div>1 듣기</div><div>2 낭독</div><div class="on">3 확인</div></div>
+  <div class="pad stack" style="padding-top:28px;gap:18px">
+    <h2 class="h1" style="font-size:26px">끝까지 읽었어요!<br>한번 들어볼까요?</h2>
+    <div class="card lift stack" style="padding:20px;gap:16px"><div class="row" style="gap:3px;height:56px">${bars}</div>
+      <div class="between"><button class="play" style="width:56px;height:56px" data-play="mine" aria-label="내 낭독 재생">${S.playing==='mine'?I.pause:I.play}</button><div class="meta" style="font-size:14px">0:00 / 1:42</div></div></div>
+    <div class="card help" style="font-size:13px">완료하면 ${S.selWeek}주차 학습이 <b style="color:var(--ink)">${Math.min(w+1,5)} / 5</b>가 돼요. 인스타에는 나중에 몰아서 올려도 괜찮아요.</div>
+  </div></div>
+  <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:10px">
+    <button class="cta" data-action="complete">이대로 완료</button>
+    <button class="btn2" data-action="completeUp">완료하고 바로 올리기</button>
+    <button class="textbtn" style="text-decoration:none" data-go="reading">다시 읽기</button></div>`;
+},
+
+worksheet(){
+  const t=S.wsType, m=S.memo;
+  const d={SU:['기사 요약 쓰기','이번 주 기사 PDF','요약 작성지는 PDF 뒤쪽에 있어요','요약하기','기사의 핵심을 내 말로 3~5문장에 담아 보세요.'],
+           DE:['찬반토론 쓰기','이번 주 기사 PDF','토론 질문지는 PDF 맨 뒤에 있어요','내 입장 쓰기','찬성과 반대 중 하나를 고르고, 이유 두 가지를 기사에서 찾아 써 보세요.'],
+           VO:['VOCA 공부','VOCA 정리 PDF','출력하거나 공책에 써도 돼요','단어 익히기','음원을 들으며 단어와 뜻을 따라 써 보세요.']}[t];
+  const step=(n,title,inner)=>`<div class="card lift stack"><div class="row" style="gap:10px"><span style="width:28px;height:28px;border-radius:50%;background:var(--tint);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--deep)">${n}</span><span style="font-size:15px;font-weight:800">${title}</span></div>${inner}</div>`;
+  let step4='';
+  if(t==='SU'){
+    const ocrBox=m.ocr==='pending'
+      ?`<div class="tinted stack reveal" style="gap:10px"><div style="font-size:14px;font-weight:800">사진에서 읽은 글자예요. 내가 쓴 것과 같나요?</div>
+         <div style="padding:12px;border-radius:12px;background:var(--white);font-size:15px;line-height:1.6">${OCR_SAMPLE}</div>
+         <div class="help" style="color:var(--ink)">수정하실래요? 이대로 저장하실래요?</div>
+         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-action="ocrEdit">수정할게요</button><button class="cta" style="height:48px;font-size:15px" data-action="ocrSave">이대로 저장</button></div></div>`
+      :`<button class="btn2" data-action="ocr" ${m.left<=0||!S.ocrConsent?'disabled':''}>${I.scan}사진에서 글자 읽기 (${m.left}번 남음)</button>${!S.ocrConsent?'<div class="help">내 기록 › 설정에서 사진 글자 읽기에 동의하면 쓸 수 있어요.</div>':''}${m.ocr==='saved'?'<div class="help" style="color:var(--deep);font-weight:700">기자수첩에 저장했어요.</div>':''}`;
+    step4=step(4,'기자수첩 (선택)',`<div class="help">기사에 내 제목을 붙이고 요약을 옮겨 두면, 12주 뒤 내 영어 뉴스북으로 모아 드려요.</div>
+      <div class="stack" style="gap:6px"><label class="label" for="mtitle">내가 붙인 제목</label><input class="input" id="mtitle" data-bind="memoTitle" value="${esc(m.title)}" placeholder="예: RM's Long Self-Introduction"></div>
+      <textarea class="ta" id="mtext" data-bind="memoText" aria-label="요약" placeholder="요약을 입력하거나, 사진에서 글자를 읽어 오세요">${esc(m.text)}</textarea>
+      ${ocrBox}`);
+  }
+  if(t==='DE'){
+    const v=S.vote;
+    step4=step(4,'내 의견 (선택)',`<div class="help">이번 주 일요일 자정까지 낼 수 있어요. 내 의견을 고르면 지금까지의 찬반 결과를 볼 수 있어요.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="chip${v==='찬성'?' on':''}" data-vote="찬성" aria-pressed="${v==='찬성'}" style="border-radius:12px;min-height:48px;font-size:15px">찬성</button><button class="chip${v==='반대'?' on':''}" data-vote="반대" aria-pressed="${v==='반대'}" style="border-radius:12px;min-height:48px;font-size:15px">반대</button></div>
+      ${v?`<div class="stack reveal" style="gap:10px">${voteBar(62,`지금까지 48명 · 내 의견 ${v}`)}<input class="input" data-bind="reason" aria-label="이유" value="${esc(S.reason)}" placeholder="이유를 한 문장으로 써 주세요"></div>`:''}`);
+  }
+  const pending=t==='SU'&&m.ocr==='pending';
+  return `<div class="scroll">${topBar('activity','활동 선택',`${S.selWeek}주차`)}
+  <div class="pad stack">
+    <h2 class="h1">${d[0]}</h2>
+    ${step(1,'작성지 받기',`<div class="row"><div class="stack" style="gap:2px;flex:1"><span style="font-size:15px;font-weight:800">${d[1]}</span><span class="help" style="font-size:13px">${d[2]}</span></div><button class="get" data-action="pdf" data-name="${d[1]}">${I.dl}받기</button></div>
+      ${t==='VO'?`<div class="row" style="padding-top:10px;border-top:1px solid var(--mute)"><button class="play" data-play="voAudio" aria-label="VOCA 구간반복 재생">${S.playing==='voAudio'?I.pause:I.play}</button><span class="stack" style="gap:2px"><span style="font-size:14px;font-weight:800">VOCA 구간반복 음원</span><span class="help" style="font-size:13px">한국어–영어 3회</span></span></div>`:''}`)}
+    ${step(2,d[3],`<div class="help" style="font-size:13px">${d[4]}</div><button class="textbtn" style="align-self:flex-start;font-size:13px" data-action="readArticle">기사 원문 다시 보기</button>`)}
+    ${step(3,'사진 올리기', S.photo
+      ?`<div class="row reveal" style="padding:10px;border-radius:12px;background:var(--tint)"><span style="width:52px;height:64px;border-radius:8px;background:var(--white);border:1px solid var(--line);display:flex;align-items:center;justify-content:center">${I.img}</span><span class="stack" style="gap:2px;flex:1"><span style="font-size:14px;font-weight:800">작성지 사진 1장</span><span class="help" style="font-size:13px">10월 9일 촬영</span></span><button class="textbtn" style="font-size:13px" data-action="unphoto">바꾸기</button></div>`
+      :`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" style="height:72px;border-style:dashed;flex-direction:column;gap:4px;font-size:14px" data-action="photo">${I.cam}사진 찍기</button><button class="btn2" style="height:72px;border-style:dashed;flex-direction:column;gap:4px;font-size:14px" data-action="photo">${I.img}앨범에서 고르기</button></div>
+       ${t==='VO'?`<button class="textbtn" style="font-size:13px;align-self:flex-start" data-action="vocaRead">사진 대신 단어 낭독으로 하기</button>`:''}`)}
+    ${step4}
+  </div></div>
+  <div class="pad" style="padding-top:12px;padding-bottom:20px"><button class="cta" data-action="wsDone" ${S.photo&&!pending?'':'disabled'}>${pending?'읽은 글자를 먼저 확인해 주세요':S.photo?'완료하기':'사진을 올리면 완료할 수 있어요'}</button></div>`;
+},
+
+queue(){
+  const steps=['1. 저장하기','2. 인스타에<br>올리기','3. 링크<br>붙여넣기'].map(t=>`<div style="padding:10px;border-radius:12px;background:var(--tint);font-size:13px;font-weight:700;line-height:1.5">${t}</div>`).join('');
+  const items=S.queue.map(q=>`<div class="card stack" style="gap:12px">
+    <div class="between"><div class="row" style="gap:10px"><span class="ic" style="width:40px;height:40px;border-radius:10px">${aIcon(q.t)}</span><span class="stack" style="gap:3px"><span style="font-size:16px;font-weight:800">${ACT[q.t].name}</span><span class="meta">${q.meta}</span></span></div>
+      <button style="flex-shrink:0;min-height:44px;padding:0 14px;border-radius:12px;border:0;background:var(--ink);color:var(--white);font-size:14px;font-weight:800" data-action="save" data-kind="${q.kind}">${q.kind==='video'?'영상 저장':'사진 저장'}</button></div>
+    <label class="label" style="color:var(--sub)" for="u${q.id}">올린 게시물 링크</label>
+    <div class="row" style="gap:8px"><input class="input" style="height:48px;font-size:15px;min-width:0;flex:1" id="u${q.id}" placeholder="링크 붙여넣기"><button style="height:48px;padding:0 16px;border-radius:12px;border:0;background:var(--main);font-size:15px;font-weight:800;white-space:nowrap" data-action="verify" data-id="${q.id}">완료</button></div>
+  </div>`).join('');
+  return `<div class="scroll"><div class="pad stack" style="padding-top:22px">
+    <div class="between" style="align-items:baseline"><h2 class="h1">인스타 올리기</h2><span class="meta" style="font-size:14px">완주까지 ${S.posted} / 60</span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${steps}</div>
+    ${S.queue.length?`<div style="font-size:15px;font-weight:800;margin-top:4px">올릴 것 ${S.queue.length}개</div>${items}<div class="help">종강일 12월 6일(일)까지 모두 올려 주세요.</div>`
+      :`<div class="card stack" style="align-items:center;text-align:center;padding:28px 16px"><div style="font-size:16px;font-weight:800">지금은 올릴 것이 없어요</div><div class="help">오늘 학습하면 여기에 올릴 것이 생겨요.</div><button class="cta" data-go="activity" style="margin-top:6px">+ 오늘 학습하기</button></div>`}
+  </div></div>${tabbar('up')}`;
+},
+
+materials(){
+  const chip=(n)=>`<button class="chip${n===4?' on':''}">${n}주차</button>`;
+  const pdf=(name,sub='')=>`<div class="card row" style="padding:12px 14px"><div class="stack" style="gap:2px;flex:1"><span style="font-size:15px;font-weight:800">${name}</span>${sub?`<span class="meta">${sub}</span>`:''}</div><button class="get" data-action="pdf" data-name="${name}">${I.dl}받기</button></div>`;
+  return `<div class="scroll"><div class="pad stack" style="padding-top:22px;gap:10px">
+    <h2 class="h1">이번 주 자료</h2>
+    <div class="row" style="gap:8px;overflow-x:auto;padding-bottom:2px">${[4,3,2,1].map(chip).join('')}</div>
+    <div class="stack" style="gap:2px"><div style="font-size:15px;font-weight:700">${ARTICLE.title}</div><div class="meta" style="font-size:13px">난이도 ${ARTICLE.level} · 본문 ${ARTICLE.words}단어</div></div>
+    <div class="sec">PDF</div>${pdf('기사 PDF','원문 · 요약 작성지 · 토론 질문지')}${pdf('VOCA 정리 PDF')}
+    <div class="sec">음원</div>${audioRow('enAudio','영어 기사 음원','4:12')}${audioRow('krAudio','한영 구간반복','9:30')}${audioRow('voAudio','VOCA 구간반복','6:05')}
+    <div class="sec">라이브</div><div class="row" style="padding:12px 14px;border-radius:14px;background:var(--tint)"><span style="font-size:15px;font-weight:800;flex:1">새벽달 Zoom Live 1회차</span><span style="font-size:13px">10월 8일(목) 저녁 8시</span></div>
+  </div></div>${tabbar('doc')}`;
+},
+
+record(){
+  const learned=learnedTotal(), met=S.weeks.filter(w=>w.length>=5).length, pct=Math.round(S.posted/60*100);
+  const pages=[1,2,3,4].filter(n=>pageFilled(n)).length;
+  const tiles=['LI','KR','EN','VO','SU','DE'].map(k=>`<div class="stack" style="gap:4px;align-items:center;text-align:center;padding:12px 4px;border-radius:12px;background:var(--bg);border:1px solid var(--line)"><span style="display:flex;color:var(--deep)">${aIcon(k,22)}</span><span style="font-size:20px;font-weight:800;line-height:1.1">${countOf(k)}</span><span style="font-size:13px;color:var(--sub);line-height:1.3">${ACT[k].name}</span></div>`).join('');
+  return `<div class="scroll">
+    <div class="topbar"><div style="font-size:18px;font-weight:800">내 기록</div><button class="chip" style="border-radius:22px;min-height:44px">지우 · 초5 ▾</button></div>
+    <div class="pad stack">
+      ${S.finished?`<button data-go="finish" class="tinted row" style="border:0;width:100%;text-align:left;min-height:64px"><span style="flex:1;font-size:15px;font-weight:800;line-height:1.5">12주 완주! 완주 화면에서 첫·마지막 낭독과 상장을 확인해요 ›</span></button>`:''}
+      <div class="card lift stack" style="padding:20px">
+        <div class="meta" style="font-weight:700">새벽달 영어뉴스 1기 · 이번 기수 기록</div>
+        <div class="row" style="align-items:baseline;gap:8px"><span style="font-size:44px;font-weight:800;line-height:1">${S.posted}</span><span style="font-size:18px;font-weight:700;color:var(--sub)">/ 60</span><span style="font-size:14px;color:var(--sub);margin-left:2px">인스타 올리기</span></div>
+        <div class="bar"><i style="width:${pct}%"></i></div>
+        <div class="help">학습 완료 ${learned}회 · 주간 목표 12주 중 ${met}주 달성</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${tiles}</div>
+        <div class="stack" style="gap:8px;padding:12px 14px;border-radius:12px;background:var(--mute)">
+          <div class="between" style="font-size:14px"><span>지금까지 소리 내어 읽은 영어 단어</span><b style="color:var(--deep)">${(countOf('EN')*ARTICLE.words).toLocaleString()}개</b></div>
+          <div class="between" style="font-size:14px"><span>지금까지 청독한 시간</span><b style="color:var(--deep)">${fmtH(S.listenTotal)}</b></div>
+        </div>
+      </div>
+      <div class="tinted stack" style="padding:20px">
+        <div class="serif" style="font-size:20px">지우의 영어 뉴스북</div>
+        <div style="font-size:14px;line-height:1.6"><b>기사 ${pages} / 12 실림</b> · 청독, 기사 요약, 찬반토론을 하면 한 쪽씩 채워져요</div>
+        <button class="cta" data-go="book">뉴스북 보기</button>
+        <div class="help" style="text-align:center">${S.afterEnd?'지금 PDF로 받을 수 있어요':'PDF는 12월 7일(월)부터 받을 수 있어요'}</div>
+      </div>
+      ${anchorCard()}
+      <div class="sec">설정</div>
+      <div class="card stack" style="gap:10px">
+        <div style="font-size:15px;font-weight:800">사진 글자 읽기 (외부 AI)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="chip${S.ocrConsent?' on':''}" data-consent="1" aria-pressed="${S.ocrConsent}" style="border-radius:12px">동의함</button><button class="chip${!S.ocrConsent?' on':''}" data-consent="0" aria-pressed="${!S.ocrConsent}" style="border-radius:12px">동의 안 함</button></div>
+        <div class="help">기자수첩에서 '사진에서 글자 읽기'를 누르면 작성지 사진이 외부 AI로 보내져 글자를 읽어 와요. 동의하지 않아도 요약은 직접 입력할 수 있어요.</div>
+      </div>
+    </div>
+  </div>${tabbar('rec')}`;
+},
+
+book(){
+  const page=(n)=>{
+    const b=BOOK[n], note=S.notes[n], op=S.opinions[n], cards=S.cards[n]||[];
+    const head=`<div class="between"><span class="pill">${n}주차</span><span class="meta">${b.dates}</span></div><div style="font-size:16px;font-weight:800;line-height:1.4">${b.title}</div>`;
+    if(!pageFilled(n))return `<div class="card stack" style="gap:10px">${head}<div class="help" style="padding:18px 14px;border-radius:12px;border:2px dashed var(--line2);text-align:center">아직 비어 있어요. 청독, 기사 요약, 찬반토론을 하면 이 쪽이 채워져요.</div></div>`;
+    return `<div class="card lift stack" style="gap:10px">${head}
+      ${note?`<div class="sec" style="margin-top:2px">뉴스 카드</div><div class="row" style="align-items:flex-start;padding:14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)"><div class="stack" style="gap:6px;flex:1"><div style="font-size:16px;font-weight:800">${esc(note.title||'(제목 없음)')}</div><div style="font-size:14px;line-height:1.6">${esc(note.text)}</div><div class="meta">기자 지우</div></div><span title="손글씨 작성지 사진" style="width:40px;height:52px;flex-shrink:0;border-radius:6px;background:var(--white);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--faint)">${svg('<path d="M5 7h14M5 11h10M5 15h12"></path>',18)}</span></div>`:''}
+      ${op?`<div class="sec" style="margin-top:2px">의견 카드</div><div class="stack" style="gap:8px;padding:14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)"><div style="font-size:14px">내 입장: <b>${op.side}</b></div><div style="font-size:14px;line-height:1.6">${esc(op.reason)}</div>${op.n?voteBar(op.pro,`최종 결과 ${op.n}명`):''}</div>`:''}
+      ${cards.length?`<div class="sec" style="margin-top:2px">청독 카드 ${cards.length}장</div><div style="display:grid;grid-template-columns:repeat(4,70px);gap:8px;justify-content:start">${cards.map((c,i)=>cardHTML(Object.assign({},c,{w:70,style:'app'},STAMP_SPOTS[(i+n)%STAMP_SPOTS.length]))).join('')}</div>`:''}
+    </div>`;
+  };
+  const titles=[1,2,3,4].filter(n=>S.notes[n]&&S.notes[n].title).map(n=>`<div class="between" style="padding:10px 0;border-bottom:1px solid var(--mute);font-size:14px"><span style="color:var(--sub)">${n}주차</span><span style="font-weight:800;text-align:right">${esc(S.notes[n].title)}</span></div>`).join('');
+  return `<div class="scroll">${topBar('record','내 기록','')}
+  <div class="pad stack">
+    <div class="stack" style="gap:6px;padding:28px 22px;border-radius:16px;background:var(--tint)">
+      <div style="font-size:13px;font-weight:800;color:var(--deep)">새벽달 영어뉴스 1기</div>
+      <div class="serif" style="font-size:24px;margin-top:6px">지우의</div>
+      <div class="serif" style="font-size:36px;line-height:1.2">영어 뉴스북</div>
+      <div class="meta" style="margin-top:8px">9월 14일(월) – 12월 6일(일) · 읽은 기사 ${NOW}편</div>
+    </div>
+    ${[1,2,3,4].map(page).join('')}
+    <div class="card stack" style="gap:2px"><div style="font-size:15px;font-weight:800;margin-bottom:4px">지우가 붙인 제목</div>${titles||'<div class="help">아직 붙인 제목이 없어요.</div>'}</div>
+  </div></div>
+  <div class="pad" style="padding-top:12px;padding-bottom:20px">${S.afterEnd?`<button class="cta" data-action="pdf" data-name="영어 뉴스북 PDF">${I.dl}&nbsp;PDF로 받기</button>`:'<button class="cta" disabled>PDF는 12월 7일(월)부터 받을 수 있어요</button>'}</div>`;
+},
+
+anchorInfo(){
+  const r=(n,t,d)=>`<div class="rule"><b class="n">${n}</b><span class="stack" style="gap:3px"><span style="font-size:15px;font-weight:800">${t}</span><span class="help" style="font-size:14px">${d}</span></span></div>`;
+  const per=(w,d,on)=>`<div class="stack" style="gap:2px;align-items:center;text-align:center;padding:10px 4px;border-radius:12px;background:${on?'var(--tint)':'var(--bg)'};border:${on?'2px solid var(--deep)':'1px solid var(--line)'}"><span style="font-size:15px;font-weight:800">${w}</span><span class="meta">${d}</span></div>`;
+  return `<div class="scroll">${topBar('record','내 기록','')}
+  <div class="pad stack" style="gap:16px">
+    <div class="row" style="gap:10px"><span style="width:48px;height:48px;border-radius:50%;background:var(--tint);display:flex;align-items:center;justify-content:center">${I.star}</span><h2 class="h1">이달의 앵커란?</h2></div>
+    <div style="font-size:15px;line-height:1.7">4주마다 꾸준히 학습하고 영어 낭독을 낸 친구 중에서, 가장 멋진 영어 낭독을 뽑아 모두에게 들려줘요.</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${per('1~4주차','9.14–10.11',true)}${per('5~8주차','10.12–11.8')}${per('9~12주차','11.9–12.6')}</div>
+    <div class="card stack" style="gap:16px">
+      ${r(1,'앵커 후보 되기','4주 중 3주 이상 주간 목표(학습 5회)를 채우고, 영어 기사 읽기를 3번 이상 내면 후보가 돼요.')}
+      ${r(2,'출품하기','후보가 되면 그 4주 동안 낸 영어 낭독 중 하나를 골라 출품해요. 보호자 동의가 필요해요.')}
+      ${r(3,'수상작 발표','운영팀이 출품작 중에서 수상작을 골라요. 수상작은 내 기록에서 모두 들을 수 있어요.')}
+    </div>
+    <div class="help">후보가 되지 않아도 완주와 상장에는 영향이 없어요.</div>
+    <div class="stack" style="gap:2px"><div style="font-size:13px;color:var(--faint)">회의에서 결정: 수상작 수·선정 방법, 이름 표시, 수상 혜택</div></div>
+  </div></div>
+  <div class="pad" style="padding-top:12px;padding-bottom:20px"><button class="cta" data-go="record">내 기록으로</button></div>`;
+},
+
+anchorEntry(){
+  const R=[{w:'1주차 · 9월 18일',t:'1:38'},{w:'2주차 · 9월 23일',t:'1:45'},{w:'4주차 · 10월 8일',t:'1:42'}];
+  if(S.entryDone){const r=R[S.pick??2];return `<div class="scroll">${topBar('record','내 기록','')}
+    <div class="pad stack" style="padding-top:12px;gap:16px">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--tint);display:flex;align-items:center;justify-content:center">${I.star}</div>
+      <h2 class="h1" style="font-size:26px">출품했어요!</h2>
+      <div class="card row"><span class="ic">${aIcon('EN')}</span><span class="stack" style="gap:2px;flex:1"><span style="font-size:15px;font-weight:800">영어 기사 읽기</span><span class="meta">${r.w} · ${r.t}</span></span></div>
+      <div class="help" style="font-size:14px">수상작은 운영팀이 골라요.</div>
+    </div></div>
+    <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:10px"><button class="cta" data-go="record">내 기록으로</button><button class="btn2" data-go="anchorWin">지난 수상작 보기</button></div>`}
+  const item=(r,i)=>{const on=S.pick===i,key='en'+i;return `<div class="row" style="padding:10px 12px;border-radius:14px;border:${on?'2px solid var(--deep)':'1px solid var(--line2)'};background:${on?'var(--tint)':'var(--white)'}">
+    <button class="play" data-play="${key}" aria-label="${r.w} 낭독 ${S.playing===key?'멈춤':'재생'}">${S.playing===key?I.pause:I.play}</button>
+    <button data-pick="${i}" role="radio" aria-checked="${on}" style="flex:1;display:flex;align-items:center;gap:10px;min-height:48px;border:0;background:transparent;text-align:left;padding:0">
+      <span class="stack" style="gap:2px;flex:1"><span style="font-size:15px;font-weight:800">${r.w}</span><span class="meta">영어 기사 읽기 · ${r.t}</span></span>
+      <span style="width:22px;height:22px;flex-shrink:0;border-radius:50%;border:${on?'7px solid var(--deep)':'2px solid var(--faint)'};background:var(--white)"></span></button></div>`};
+  return `<div class="scroll">${topBar('record','이달의 앵커','1~4주차')}
+  <div class="pad stack" style="gap:14px">
+    <h2 class="h1">출품할 영어 낭독을<br>골라 주세요</h2>
+    <div class="help">이번 4주(1~4주차) 동안 낸 영어 기사 읽기 중에서 하나를 골라요.</div>
+    <div class="stack" style="gap:8px" role="radiogroup" aria-label="출품할 낭독">${R.map(item).join('')}</div>
+    <div class="card"><label class="row" style="align-items:flex-start;gap:10px;font-size:14px;line-height:1.5;min-height:44px"><input type="checkbox" data-action="agree" ${S.agree?'checked':''} style="width:22px;height:22px;margin-top:2px;flex-shrink:0;accent-color:var(--deep)">보호자: 이 낭독을 다른 수강생에게 들려주는 데 동의합니다 (필수)</label></div>
+  </div></div>
+  <div class="pad" style="padding-top:12px;padding-bottom:20px"><button class="cta" data-action="enter" ${S.pick!=null&&S.agree?'':'disabled'}>이 낭독으로 출품하기</button></div>`;
+},
+
+anchorWin(){
+  const W=[{n:'서윤 (초4)',w:'3주차 영어 기사 읽기',t:'1:51'},{n:'민준 (초6)',w:'2주차 영어 기사 읽기',t:'1:36'},{n:'하린 (중1)',w:'4주차 영어 기사 읽기',t:'1:29'}];
+  const c=(x,i)=>{const key='win'+i;return `<div class="card lift row" style="padding:14px"><button class="play" style="width:48px;height:48px" data-play="${key}" aria-label="${x.n} 낭독 ${S.playing===key?'멈춤':'재생'}">${S.playing===key?I.pause:I.play}</button><span class="stack" style="gap:2px;flex:1"><span style="font-size:16px;font-weight:800">${x.n}</span><span class="meta">${x.w} · ${x.t}</span></span><span style="display:flex">${I.star}</span></div>`};
+  return `<div class="scroll">${topBar('record','내 기록','')}
+  <div class="pad stack" style="gap:14px">
+    <h2 class="h1">이달의 앵커 · 1~4주차</h2>
+    <div class="help">이번 4주 동안 뽑힌 영어 낭독이에요. 눌러서 들어 보세요.</div>
+    <div class="stack" style="gap:10px">${W.map(c).join('')}</div>
+    <div class="stack" style="gap:2px"><div style="font-size:13px;color:var(--faint)">이름 표시 방식은 회의에서 결정</div><div style="font-size:13px;color:var(--faint)">수상작은 운영팀이 골라요</div></div>
+  </div></div>`;
+},
+
+finish(){
+  const t=S.tier, stats={LI:14,EN:24,KR:10,VO:12,SU:8,DE:6};
+  const st=['LI','KR','EN','VO','SU','DE'].map(k=>`<div style="padding:10px 4px;border-radius:12px;background:var(--white);border:1px solid var(--line);text-align:center" class="stack"><span style="display:flex;justify-content:center">${aIcon(k,20)}</span><span style="font-size:18px;font-weight:800">${stats[k]}</span><span style="font-size:13px;color:var(--sub)">${ACT[k].short}</span></div>`).join('');
+  const clip=(key,t1,t2)=>`<div class="card row" style="padding:12px"><button class="play" style="width:48px;height:48px;background:var(--ink)" data-play="${key}" aria-label="${t1} 재생">${S.playing===key?I.pause:I.play}</button><span class="stack" style="gap:2px;flex:1"><span style="font-size:15px;font-weight:800">${t1}</span><span class="meta">${t2}</span></span><button class="textbtn" style="text-decoration:none;font-size:13px" data-action="insta">인스타 ›</button></div>`;
+  return `<div class="scroll"><div class="pad stack" style="padding-top:28px;gap:18px">
+    ${t==='on'?'<span class="pill" style="align-self:flex-start;background:var(--main);font-size:14px;letter-spacing:1px;padding:8px 16px">COMPLETE!</span>':''}
+    <h2 class="h1" style="font-size:30px;line-height:1.3">12주 완주,<br>정말 해냈어요</h2>
+    <div class="row" style="align-items:baseline;gap:8px"><span style="font-size:64px;font-weight:800;line-height:1">60</span><span style="font-size:18px;color:var(--sub)">/ 60 인증</span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${st}</div>
+    <div class="card stack" style="font-size:14px;line-height:1.6;gap:6px"><div>12주 동안 소리 내어 읽은 영어 단어 <b style="color:var(--deep)">${(stats.EN*ARTICLE.words).toLocaleString()}</b>개</div><div>12주 동안 청독한 시간 <b style="color:var(--deep)">6시간 40분</b></div></div>
+    ${t!=='late'?`<div class="stack" style="gap:10px"><div style="font-size:15px;font-weight:800">처음과 지금, 들어볼까요?</div>${clip('first','첫 낭독','1주차 · 9월 15일')}${clip('last','마지막 낭독','12주차 · 12월 4일')}</div>`:''}
+  </div></div>
+  <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:10px">
+    <button class="btn2" data-go="book">${I.book}내 영어 뉴스북 보기</button>
+    <button class="cta" data-go="cert">${S.certIssued?'상장 이름 바꾸기':'완주 상장 받기'}</button></div>`;
+},
+
+cert(){
+  return `<div class="scroll">${topBar('finish','완주','')}
+  <div class="pad stack" style="gap:18px;padding:0 20px">
+    <h2 class="h1">상장에 들어갈 이름을<br>확인해 주세요</h2>
+    <div class="stack" style="align-items:center;text-align:center;gap:10px;padding:24px 20px;border-radius:16px;background:var(--white);border:2px solid var(--main)">
+      <div style="font-size:13px;font-weight:800;letter-spacing:6px;color:var(--deep)">완 주 상</div>
+      <div id="certPreview" style="font-size:30px;font-weight:800;letter-spacing:2px;min-height:40px">${esc(S.certName)}</div>
+      <div style="font-size:14px;font-weight:700">새벽달 영어뉴스 1기</div>
+      <div class="meta">12주 과정</div>
+      <div class="help">12주 동안 60번의 학습을<br>모두 마쳤기에 이 상장을 드립니다.</div>
+      <div class="meta" style="font-size:13px">2026년 12월 6일 · 새벽달</div></div>
+    <div class="stack" style="gap:6px"><label class="label" for="cname">이름</label><input class="input" id="cname" value="${esc(S.certName)}"></div>
+  </div></div>
+  <div style="padding:16px 20px 24px"><button class="cta" data-action="issue">이 이름으로 상장 받기</button></div>`;
+},
+
+grace(){
+  const g=S.grace==='g';
+  return `<div class="scroll">
+    <div class="topbar"><div style="font-size:18px;font-weight:800">안녕, 지우!</div><div class="meta">${g?'12월 8일(화)':'12월 20일(일)'}</div></div>
+    <div class="pad"><div class="stack" style="padding:20px;border-radius:16px;background:var(--tint);gap:10px">
+      <div style="font-size:20px;font-weight:800;line-height:1.4">${g?'12주 챌린지가 끝났어요. 조금만 더 하면 완주예요!':'아직 완주할 수 있어요'}</div>
+      <div style="font-size:14px;line-height:1.6">${g?'12월 13일(일)까지 남은 8개를 올리면 완주 상장과 함께 첫 낭독 다시 듣기를 받을 수 있어요.':'남은 8개를 올리면 완주 상장을 받아요. 아직 올리지 않은 녹음은 3월 6일까지 보관돼요.'}</div></div></div>
+    <div class="pad" style="padding-top:12px"><div class="card stack" style="gap:10px">
+      <div class="between" style="align-items:baseline"><div style="font-size:14px;font-weight:700;color:var(--sub)">완주까지 인스타 올리기</div><div style="font-size:16px;font-weight:800">52 <span style="font-weight:500;color:var(--sub)">/ 60</span></div></div>
+      <div class="bar"><i style="width:87%"></i></div><div class="help">학습 완료 57회 · 남은 올리기 8개</div></div></div>
+    <div class="pad stack" style="padding-top:12px;gap:10px"><button class="cta" data-go="queue">올릴 것 5개 올리기</button><button class="btn2" data-go="activity">+ 학습하기</button></div>
+    <div class="pad" style="padding-top:12px"><div class="card" style="padding:8px 16px"><button class="recHead" data-go="home"><span class="stack" style="gap:3px"><span style="font-size:15px;font-weight:800">12주 기록</span><span class="meta">학습 57 / 60 · 남은 칸 3개</span></span><span class="row" style="gap:4px;font-size:13px;font-weight:700">펼쳐 보기${I.down}</span></button></div></div>
+  </div>${tabbar('home',5)}`;
+}
+};
+
+/* 이달의 앵커 카드 (기획 중) */
+function anchorCard(){
+  const c=S.anchorCand;
+  const line=(label,val,ok,pct)=>`<div class="stack" style="gap:6px"><div class="between" style="font-size:14px"><span style="font-weight:700">${label}</span><b style="color:${ok?'var(--deep)':'var(--ink)'}">${val}</b></div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  return `<div class="card lift stack" id="anchorCard">
+    <div class="between"><div class="row" style="gap:8px"><span style="display:flex">${I.star}</span><span style="font-size:16px;font-weight:800">이달의 앵커 · 1~4주차</span></div></div>
+    <div class="help">4주 중 3주 이상 주간 목표(학습 5회)를 채우고, 영어 기사 읽기를 3번 이상 내면 앵커 후보가 돼요.</div>
+    ${line('주간 목표','3 / 3주 ✓',true,100)}
+    ${line('영어 낭독',c?'3 / 3회 ✓':'2 / 3회',c,c?100:67)}
+    ${c?`<div class="tinted stack reveal" style="gap:10px"><div style="font-size:15px;font-weight:800;line-height:1.5">앵커 후보가 됐어요! 이번 4주의 영어 낭독 중 하나를 골라 출품해 보세요</div><button class="cta" data-go="anchorEntry">출품하기</button></div>`
+      :`<div class="help" style="color:var(--deep);font-weight:700">영어 기사 읽기를 1번 더 제출하면 앵커 후보가 돼요</div>`}
+    <div class="row" style="gap:16px"><button class="textbtn" style="font-size:13px" data-go="anchorInfo">이달의 앵커란?</button><button class="textbtn" style="font-size:13px" data-go="anchorWin">지난 수상작 보기</button></div>
+  </div>`;
+}
+function pageFilled(n){return !!(S.notes[n]||S.opinions[n]||(S.cards[n]||[]).length)}
+
+function rateBar(compact){
+  return `<div class="rate" role="group" aria-label="속도">${compact?'':'<span>속도</span>'}${[0.5,0.8,1,1.2].map(r=>`<button class="${S.rate===r?'on':''}" data-rate="${r}" aria-pressed="${S.rate===r}">${r}배</button>`).join('')}</div>`;
+}
+function articleHTML(en,single,rec){
+  const enS=(si)=>ARTICLE.chunks[si].map((c,ci)=>`<span class="ck" id="e-${si}-${ci}">${c}</span>`).join(S.slash&&!rec?'<span class="sl">/</span>':' ');
+  const koS=(si)=>`<span class="sk" id="k-${si}">${ARTICLE.sents[si][2]}</span>`;
+  const paras=[...new Set(ARTICLE.sents.map(x=>x[0]))];
+  return `<div class="txt${en?'':' koMain'}">`+paras.map(pn=>{
+    const idx=ARTICLE.sents.map((x,i)=>x[0]===pn?i:-1).filter(i=>i>=0);
+    const E=`<div class="en">${idx.map(enS).join(' ')}</div>`, K=`<div class="ko">${idx.map(koS).join(' ')}</div>`;
+    if(single) return `<div style="margin-bottom:${rec?18:14}px">${en?E:K}</div>`;
+    return en?E+K:K+E;
+  }).join('')+'</div>';
+}
+/* 하이라이트 순서 만들기 */
+function seqFor(kind){
+  const q=[];
+  if(kind==='en') ARTICLE.chunks.forEach((cs,si)=>cs.forEach((c,ci)=>q.push({ids:[`e-${si}-${ci}`],d:T_EN(c)+(ci===cs.length-1?0.35:0)})));
+  if(kind==='ko') ARTICLE.sents.forEach((x,si)=>q.push({ids:[`k-${si}`],d:T_KO(x[2])+0.4}));
+  if(kind==='kren') ARTICLE.sents.forEach((x,si)=>{const all=ARTICLE.chunks[si].map((c,ci)=>`e-${si}-${ci}`),d=ARTICLE.chunks[si].reduce((n,c)=>n+T_EN(c),0)+0.4;
+    q.push({ids:[`k-${si}`],d:T_KO(x[2])+0.4});q.push({ids:all,d});q.push({ids:all,d});});
+  return q;
+}
+const P={seq:null,i:0,t:null,key:null,onEnd:null};
+function hl(ids){phone.querySelectorAll('.hl').forEach(e=>e.classList.remove('hl'));(ids||[]).forEach(id=>{const e=document.getElementById(id);if(e)e.classList.add('hl')});
+  const f=ids&&document.getElementById(ids[0]);const sc=f&&f.closest('.scroll');
+  if(f&&sc){const r=f.getBoundingClientRect(),b=sc.getBoundingClientRect();if(r.top<b.top+60||r.bottom>b.bottom-60)sc.scrollTo({top:sc.scrollTop+r.top-b.top-b.height/3,behavior:'smooth'})}}
+function pStep(){clearTimeout(P.t);if(!P.seq)return;if(P.i>=P.seq.length){const k=P.key,cb=P.onEnd;pStop(true);if(cb)cb(k);return}
+  const it=P.seq[P.i];hl(it.ids);P.t=setTimeout(()=>{P.i++;pStep()},it.d*1000/S.rate)}
+function pStart(key,kind,onEnd){pStop();P.seq=seqFor(kind);P.i=0;P.key=key;P.onEnd=onEnd;pStep()}
+function pStop(clear){clearTimeout(P.t);P.t=null;P.seq=null;P.key=null;if(clear!==false)hl([])}
+function setPlayBtn(key,on){document.querySelectorAll(`[data-play="${key}"]`).forEach(b=>{b.innerHTML=on?I.pause:I.play;b.setAttribute('aria-label',on?'멈춤':'재생')})}
+
+/* ================= 청독 재생 흉내 =================
+   실제 음원 대신 8초(1배 기준)로 줄여 재생. 하이라이트는 실제 길이 비율대로 나눠 움직임.
+   90% 이상 들으면 1회 들음으로 셈. 청독 시간은 실제 음원 길이 기준으로 쌓임. */
+const SIM=8;
+const L={pos:{enAudio:0,krAudio:0},counted:{enAudio:false,krAudio:false},int:null,idx:-1,seq:null};
+const realDur=k=>k==='enAudio'?EN_TOTAL:(KO_TOTAL+EN_TOTAL*2);
+function lSeq(k){const q=seqFor(k==='enAudio'?'en':'kren');const tot=q.reduce((n,x)=>n+x.d,0);let c=0;return q.map(x=>{c+=x.d/tot;return {ids:x.ids,end:c}})}
+function lCtaHTML(){const ok=S.heard.enAudio+S.heard.krAudio>0;return `<button class="cta" id="lcta" data-action="listenDone" ${ok?'':'disabled'}>${ok?'청독 완료':'음원을 끝까지 들으면 완료할 수 있어요'}</button>`}
+function lStop(){clearInterval(L.int);L.int=null;if(S.playing)setPlayBtn(S.playing,false);S.playing=null;hl([])}
+function lToggle(k){
+  if(S.playing===k){lStop();return}
+  lStop();S.playing=k;setPlayBtn(k,true);L.seq=lSeq(k);L.idx=-1;
+  L.int=setInterval(()=>lTick(k),100);timers.push(L.int);
+}
+function lTick(k){
+  L.pos[k]+=0.1*S.rate/SIM; S.lsec+=0.1*realDur(k)/SIM;
+  if(!L.counted[k]&&L.pos[k]>=0.9){L.counted[k]=true;S.heard[k]++;const m=document.getElementById('lm-'+k);if(m){m.textContent=S.heard[k]+'회 들음';m.style.color='var(--deep)';m.style.fontWeight='800'}const w=document.getElementById('lctaWrap');if(w)w.innerHTML=lCtaHTML()}
+  if(L.pos[k]>=1){L.pos[k]=0;L.counted[k]=false;
+    if(!S.loop){const p=document.getElementById('lp-'+k);if(p)p.style.width='100%';lStop();lTime();return}
+    L.idx=-1}
+  const i=L.seq.findIndex(x=>L.pos[k]<x.end);
+  if(i!==L.idx){L.idx=i;hl(L.seq[i]?L.seq[i].ids:[])}
+  const p=document.getElementById('lp-'+k);if(p)p.style.width=Math.round(L.pos[k]*100)+'%';
+  lTime();
+}
+function lTime(){const e=document.getElementById('lsec');if(e)e.textContent=fmtMS(S.lsec)}
+
+function readPlay(key){
+  if(S.playing===key){S.playing=null;setPlayBtn(key,false);pStop();return}
+  if(S.playing)setPlayBtn(S.playing,false);
+  S.playing=key;setPlayBtn(key,true);
+  pStart(key,key==='enAudio'?'en':'kren',k=>{S.playing=null;setPlayBtn(k,false)});
+}
+
+function kv(k,v){return `<div class="between" style="padding:9px 0;border-bottom:1px solid var(--mute);font-size:14px"><span style="color:var(--sub)">${k}</span><span style="font-weight:700;text-align:right">${v}</span></div>`}
+function progress(n,label){
+  const bars=[1,2,3].map(i=>`<span style="flex:1;height:4px;border-radius:2px;background:${i<=n?'var(--main)':'var(--line)'}"></span>`).join('');
+  return `<div style="padding:20px 20px 0" class="stack"><div class="row" style="gap:6px">${bars}</div><div class="meta" style="font-size:13px;font-weight:700">${n} / 3 · ${label}</div></div>`;
+}
+function popupHTML(){
+  if(S.popup==='submit')return `<div class="dim" data-action="closeSheet"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="제출 확인">
+    <div class="handle"></div>
+    <h2 class="h1" style="font-size:22px">이 낭독으로 제출할까요?</h2>
+    <div style="font-size:15px;line-height:1.7">제출하면 ${S.selWeek}주차 학습 1회로 기록돼요. 다시 읽고 싶으면 '다시 읽기'를 눌러 주세요.</div>
+    <div class="stack" style="gap:10px"><button class="cta" data-action="submitGo">제출하기</button><button class="btn2" data-action="closeSheet">한 번 더 들어볼게요</button></div></div>`;
+  if(S.popup!=='first')return '';
+  return `<div class="dim" data-action="closePopup"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="첫 영어 낭독 안내">
+    <div class="handle"></div>
+    <div style="width:56px;height:56px;border-radius:50%;background:var(--tint);display:flex;align-items:center;justify-content:center">${I.mic}</div>
+    <h2 class="h1" style="font-size:22px">첫 영어 낭독을<br>기억해 둘게요</h2>
+    <div style="font-size:15px;line-height:1.7">인스타에 올리면 그 게시물을 첫 낭독으로 기억해 둬요. 종강일 12월 6일(일)까지 완주하면 마지막 낭독과 나란히 들려드려요.</div>
+    <div class="row" style="padding:14px;border-radius:14px;background:var(--bg);border:1px solid var(--line)"><span style="width:40px;height:40px;flex-shrink:0;border-radius:10px;background:var(--tint);display:flex;align-items:center;justify-content:center">${I.mark}</span><span class="stack" style="gap:2px"><span style="font-size:15px;font-weight:800">지우의 첫 낭독 · 1:42</span><span class="meta">10월 9일 · 완주하면 함께 들어요</span></span></div>
+    <button class="cta" data-action="closePopup">좋아요</button></div>`;
+}
+
+/* ================= navigation ================= */
+const NAV=[
+  ['첫 접속',[['welcome','1. 환영 · 정보 확인'],['student','2. 학습자 등록'],['access','3. 접속 방법 · 동의'],['reentry','다시 들어가기']]],
+  ['학습',[['home','홈 (하단 탭)'],['activity','학습 고르기'],['listen','청독'],['listenDone','청독 완료 · 카드'],['reading','기사 읽기 · 듣기'],['recording','기사 읽기 · 녹음 중'],['review','기사 읽기 · 확인'],['materials','이번 주 자료 (하단 탭)']]],
+  ['작성',[['worksheet:SU','기사 요약 · 기자수첩'],['worksheet:DE','찬반토론 · 의견'],['worksheet:VO','VOCA']]],
+  ['인스타 올리기',[['queue','인스타 올리기 (하단 탭)']]],
+  ['내 기록 · 뉴스북',[['record','내 기록 (하단 탭)'],['book','뉴스북 보기']]],
+  ['이달의 앵커',[['record:anchor','내 기록 · 앵커 카드'],['anchorInfo','이달의 앵커란?'],['anchorEntry','출품하기'],['anchorWin','수상작']],'기획 중'],
+  ['완주 · 마감',[['finish','완주'],['cert','상장 이름 확인'],['grace','마감 이후 홈']]]
+];
+/* 화면별 설명 (회의용, 왼쪽 위 상자). st: 'live' 운영 반영 / 'plan' 기획 중 */
+const NOTES={
+  welcome:{t:'첫 접속 1 · 정보 확인',st:'live',b:['알림톡 링크로만 들어와요. 로그인 화면이 없어요','신청 정보·제공 자료를 확인하고 보호자 이름을 넣어요','홈 화면에 추가하는 방법을 아이폰/안드로이드로 나눠 안내']},
+  student:{t:'첫 접속 2 · 학습자 등록',st:'live',b:['학습자 이름(상장에 그대로 들어감), 출생 연월 → 학년 자동 표시','인증할 인스타 계정(보호자 계정도 가능)','형제·자매는 한 번에 최대 4명까지 등록']},
+  access:{t:'첫 접속 3 · 접속 방법과 동의',st:'live',b:['아이 휴대폰으로 할지 보호자 휴대폰으로 할지 고름. 아이 휴대폰이면 아이 전용 링크를 보냄','음성·작성 이미지 수집 동의(필수), 사진 글자 읽기 외부 AI 동의(선택)']},
+  reentry:{t:'다시 들어가기',st:'live',b:['링크를 잃어버렸거나 휴대폰을 바꿨을 때 등록 번호로 새 접속 링크를 받아요','인증번호 없이 알림톡으로 링크만 보냄']},
+  home:{t:'홈',st:'live',b:['이번 주 학습 n / 5(학습 완료 기준)와 오늘 학습하기','완주 진행은 인스타 올리기 n / 60 기준(학습 완료와 따로 셈)','12주 기록: 칸마다 한 활동 아이콘, 지난 주 빈칸을 누르면 그 주차로 가서 채움','라이브가 있으면 맨 위에 D-day 카드'],q:'진도는 요일이 아니라 횟수(주 5회). 활동·순서 자유, 반복 허용'},
+  activity:{t:'학습 고르기',st:'live',b:['활동 6가지: 청독·한국어/영어 기사 읽기·VOCA·기사 요약·찬반토론','밀린 주차가 있으면 위의 주차 버튼으로 지난 주차를 골라 채움','같은 활동을 여러 번 해도 매번 1회']},
+  listen:{t:'청독',st:'live',b:['영어 기사 음원·한영 구간반복을 들으며 지문 하이라이트를 따라감(영어는 끊어 읽기 구, 한영은 한국어 → 영어 2회)','음원 하나를 90% 이상 들으면 "청독 완료"가 켜짐 → 학습 1회','반복·배속까지 실제 들은 시간을 청독량으로 쌓음','목업은 음원을 8초로 줄임. 왼쪽 "청독 90% 들은 걸로"로 바로 완료 가능'],q:'VOCA 구간반복은 문장이 아니라 청독에서 뺌(VOCA 탭에 있음)'},
+  listenDone:{t:'청독 완료 · 청독 카드',st:'live',b:['청독 미션 인증 카드: 기사 스크랩 + "청독" 도장','오늘 들은 시간·지금까지 누적, 들은 음원 횟수, 기자 이름','이 화면과 인스타 올리기는 인스타용(제목 크게), 뉴스북에는 앱용(제목 작게) 4열','도장은 카드마다 자리·각도가 조금씩 다름'],q:'카드를 저장해서 인스타에 올리면 인증 1회'},
+  reading:{t:'기사 읽기 · 1 듣기',st:'live',b:['듣기 전 질문 카드(콘텐츠 시트에서 기사마다 1개)와 기사 PDF','음원은 청독에서 들어요 → 청독 화면으로 연결','지문 보기: 함께 보기 / 영어만(한글만), 끊어 읽기 표시, 속도 0.5~1.2배']},
+  recording:{t:'기사 읽기 · 2 낭독',st:'live',b:['3초 카운트다운 뒤 녹음 시작','하이라이트가 읽을 속도로 움직임(끄기·잠깐 멈추기)','최대 5분 자동 정지(임시)']},
+  review:{t:'기사 읽기 · 3 확인',st:'live',b:['내 낭독을 다시 듣고 "이 낭독으로 제출할까요?" 확인','제출한 낭독만 학습 1회','첫 영어 낭독은 기억해 뒀다가 완주 때 마지막 낭독과 함께 들려줌']},
+  materials:{t:'이번 주 자료 (하단 탭)',st:'live',b:['주차별 PDF·음원·라이브. 매주 월요일 0시에 열림','여기서 들은 기사 음원도 청독 시간에 들어감']},
+  'worksheet:SU':{t:'기사 요약 · 기자수첩',st:'live',b:['작성지 사진 1장 올리면 학습 완료','기자수첩(선택): 내가 붙인 제목 + 요약 → 뉴스북 뉴스 카드','"사진에서 글자 읽기": 외부 AI가 손글씨를 글자로(활동마다 3번), "수정하실래요? 이대로 저장하실래요?"']},
+  'worksheet:DE':{t:'찬반토론 · 의견',st:'live',b:['작성지 사진 1장 올리면 학습 완료','찬성/반대 + 이유 한 문장(선택). 고른 학생에게만 지금까지 결과가 보임','그 주 일요일 자정 마감, 결과는 뉴스북 의견 카드에']},
+  'worksheet:VO':{t:'VOCA',st:'live',b:['VOCA 정리 PDF와 VOCA 구간반복 음원','작성지 사진 또는 단어 낭독 녹음으로 완료']},
+  queue:{t:'인스타 올리기 (하단 탭)',st:'live',b:['학습한 것이 "올릴 것"으로 쌓임: 저장 → 인스타에 올리기 → 게시물 링크 붙여넣기','링크를 붙이면 인증 1회 → 완주 n / 60','청독은 청독 카드, 낭독은 영상(2단계), 작성은 사진']},
+  record:{t:'내 기록 (하단 탭)',st:'live',b:['이번 기수 기록: 인스타 올리기 n / 60, 활동별 횟수, 읽은 영어 단어, 청독 시간','내 영어 뉴스북 카드','이달의 앵커 카드(기획 중)','설정: 사진 글자 읽기 동의(보호자만 바꿈)']},
+  'record:anchor':{t:'이달의 앵커 · 앵커 카드',st:'plan',b:['4주 묶음(1~4, 5~8, 9~12주차)마다 후보 조건 진행을 보여 줌','조건: 주간 목표 3주 이상 + 영어 기사 읽기 3번 이상, 둘 다','후보가 되면 "출품하기" 버튼이 나타남','왼쪽 "앵커 후보 상태"를 켜고 끄며 전·후 비교'],q:'목적: 청독만으로도 완주되니, 영어 낭독은 앵커 도전으로 동기를 줌'},
+  anchorInfo:{t:'이달의 앵커란? (학생 안내)',st:'plan',b:['학생·보호자에게 규칙을 한 화면으로 설명','후보 되기 → 출품하기 → 수상작 발표 3단계','후보가 아니어도 완주·상장에는 영향 없음']},
+  anchorEntry:{t:'이달의 앵커 · 출품하기',st:'plan',b:['그 4주 동안 낸 영어 낭독 목록에서 들어 보고 하나 고름','보호자 공개 동의(필수) 후 출품','출품은 4주 묶음마다 1개'],q:'회의: 음성 공개 동의 문구(법률 검토)'},
+  anchorWin:{t:'이달의 앵커 · 수상작',st:'plan',b:['운영팀이 고른 수상작을 모두가 들을 수 있음','관리자 화면 전에는 운영팀 요청 → 개발 담당이 표시'],q:'회의: 수상작 수·선정 방법, 이름 표시(전체 / 부르는 이름 / 가림), 수상 혜택'},
+  book:{t:'뉴스북 보기',st:'live',b:['기수별 1권(12주). 진도 중간에는 화면으로 보고, 종강 다음 날부터 PDF','주차 쪽: 뉴스 카드(내 제목·요약), 의견 카드·찬반 결과, 청독 카드 4열','마지막: 내가 붙인 제목 모아보기','왼쪽 "종강 다음 날"을 켜면 PDF 버튼이 열림']},
+  finish:{t:'완주',st:'live',b:['60번째 인증 직후 이동. COMPLETE!는 제때 완주만','활동별 횟수, 읽은 영어 단어, 청독 시간','첫·마지막 영어 낭독 비교(제때·유예 완주만)','왼쪽 "완주 단계"로 제때/유예/늦은 완주 비교']},
+  cert:{t:'상장 이름 확인',st:'live',b:['상장에 들어갈 이름을 확인·수정 후 받기','서버에서 PDF로 만들어 휴대폰에서 받음, 발급 기관 "새벽달"(임시)'],q:'상장 디자인은 보완 예정'},
+  grace:{t:'마감 이후 홈',st:'live',b:['종강일이 지났는데 완주 전이면 홈이 바뀜','유예 중(종강 후 1주): 남은 개수와 유예 마감일','유예 끝: 늦은 완주 가능, 녹음 보관 기한 안내']}
+};
+function noteHTML(){
+  const n=NOTES[navKey]||NOTES[S.screen];if(!n)return '';
+  return `<div class="nt">${n.t}<span class="st${n.st==='plan'?' plan':''}">${n.st==='plan'?'기획 중':'운영 반영'}</span></div><ul>${n.b.map(x=>`<li>${x}</li>`).join('')}</ul>${n.q?`<div class="q">${n.q}</div>`:''}`;
+}
+const phone=document.getElementById('phone');
+let navKey='welcome';
+function go(name){clearTimers();clearInterval(L.int);L.int=null;pStop(false);S.playing=null;S.pacerPaused=false;S._sec=0;S.popup=null;S.screen=name;navKey=name;render();phone.querySelector('.scroll')?.scrollTo(0,0)}
+function render(){
+  phone.innerHTML=`<div class="screen">${SCREENS[S.screen]()}</div>${popupHTML()}`;
+  document.getElementById('navList').innerHTML=NAV.map(([g,items,tag])=>`<div class="grp"><b>${g}${tag?`<span class="ptag">${tag}</span>`:''}</b>${items.map(([k,l])=>`<button class="nav${navKey===k?' on':''}" data-nav="${k}">${l}</button>`).join('')}</div>`).join('');
+  document.getElementById('note').innerHTML=noteHTML();
+  if(S.screen==='recording'&&!S._recStarted){S._recStarted=true;startRecording()}
+  if(S.screen!=='recording')S._recStarted=false;
+  if(S.screen==='listen')L.idx=-1;
+  if(S.screen==='cert'){const i=document.getElementById('cname');i.addEventListener('input',()=>{document.getElementById('certPreview').textContent=i.value||' '})}
+  if(S.screen==='student'){document.getElementById('by').addEventListener('change',e=>{S.by=e.target.value;render()});document.getElementById('bm').addEventListener('change',e=>{S.bm=e.target.value})}
+}
+function startRecording(){
+  let n=3;const cnum=document.getElementById('cnum'),box=document.getElementById('count');
+  const t=setInterval(()=>{n--;if(n<=0){clearInterval(t);box.remove();S._sec=0;
+    timers.push(setInterval(()=>{S._sec++;const c=document.getElementById('clock');if(c)c.textContent=`${Math.floor(S._sec/60)}:${String(S._sec%60).padStart(2,'0')}`},1000));
+    if(S.pacerOn)pStart('pacer',S.act==='EN'?'en':'ko',()=>{});
+  }else cnum.textContent=n},1000);
+  timers.push(t);
+}
+function finishLearning(goUp){
+  addLearning(S.act,'video');
+  const firstEN=S.act==='EN'&&!S.firstShown;
+  S.popup=null;
+  if(goUp){S.screen='queue';navKey='queue'}else{S.screen='home';navKey='home'}
+  if(firstEN){S.firstShown=true;S.popup='first'}
+  render();
+  if(!firstEN)toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);
+}
+function listenComplete(){
+  addLearning('LI','card');
+  const sec=Math.max(1,Math.round(S.lsec));
+  S.listenTotal+=sec;
+  S.lastCard={en:S.heard.enAudio,kr:S.heard.krAudio,sec,total:S.listenTotal};
+  (S.cards[S.selWeek]=S.cards[S.selWeek]||[]).push({week:S.selWeek,date:'10월 9일(금)',stampDate:'2026.10.09',en:S.lastCard.en,kr:S.lastCard.kr,sec,total:S.listenTotal});
+  S.heard={enAudio:0,krAudio:0};S.lsec=0;L.pos={enAudio:0,krAudio:0};L.counted={enAudio:false,krAudio:false};
+  go('listenDone');
+}
+
+document.addEventListener('input',e=>{
+  const b=e.target.dataset&&e.target.dataset.bind;if(!b)return;
+  if(b==='memoTitle')S.memo.title=e.target.value;
+  if(b==='memoText')S.memo.text=e.target.value;
+  if(b==='reason')S.reason=e.target.value;
+});
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-go],[data-nav],[data-action],[data-os],[data-access],[data-week],[data-start],[data-play],[data-rate],[data-vote],[data-consent],[data-pick]');
+  if(!el)return;
+  const d=el.dataset;
+  if(d.nav){const [scr,arg]=d.nav.split(':');
+    if(scr==='worksheet'){S.wsType=arg;S.photo=false}
+    go(scr);navKey=d.nav;render();
+    if(arg==='anchor'){const a=document.getElementById('anchorCard');if(a)a.scrollIntoView({block:'start'})}
+    document.getElementById('side').classList.remove('open');return}
+  if(d.go){go(d.go);return}
+  if(d.os){S.os=d.os;render();return}
+  if(d.access){S.access=d.access;render();return}
+  if(d.week){S.selWeek=Number(d.week);render();return}
+  if(d.vote){S.vote=d.vote;render();return}
+  if(d.consent){S.ocrConsent=d.consent==='1';render();return}
+  if(d.pick){S.pick=Number(d.pick);render();return}
+  if(d.start){const k=d.start;if(k==='KR'||k==='EN'){S.act=k;go('reading')}else if(k==='LI'){go('listen')}else{S.wsType=k;S.photo=false;go('worksheet');navKey='worksheet:'+k;render()}return}
+  if(d.play){if(S.screen==='listen'){lToggle(d.play);return}if(S.screen==='reading'){readPlay(d.play);return}S.playing=S.playing===d.play?null:d.play;render();return}
+  if(d.rate){S.rate=Number(d.rate);document.querySelectorAll('[data-rate]').forEach(b=>{const on=Number(b.dataset.rate)===S.rate;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const e=document.getElementById('estTime');if(e)e.textContent=`${S.rate}배로 읽으면 약 ${fmtT((S.act==='EN'?EN_TOTAL:KO_TOTAL)/S.rate)} 걸려요 · 이어폰을 끼면 녹음이 더 깨끗해요`;return}
+  switch(d.action){
+    case 'toggleRec':S.recOpen=!S.recOpen;render();break;
+    case 'fillGap':S.selWeek=Number(d.w);go('activity');break;
+    case 'sendLink':S.sent=true;render();break;
+    case 'resetLink':S.sent=false;render();break;
+    case 'enOnly':if(S.screen==='listen'){S.enOnly=!S.enOnly;render();break}pStop(false);if(S.playing){setPlayBtn(S.playing,false);S.playing=null}S.enOnly=!S.enOnly;render();break;
+    case 'slash':if(S.screen==='listen'){S.slash=!S.slash;render();break}pStop(false);if(S.playing)S.playing=null;S.slash=!S.slash;render();break;
+    case 'loop':S.loop=el.checked;break;
+    case 'listenDone':listenComplete();break;
+    case 'pacerToggle':S.pacerOn=!S.pacerOn;S.pacerPaused=false;if(S.pacerOn){render();pStart('pacer',S.act==='EN'?'en':'ko',()=>{});}else{pStop();render();}break;
+    case 'pacerPause':if(S.pacerPaused){S.pacerPaused=false;if(P.seq)pStep();else pStart('pacer',S.act==='EN'?'en':'ko',()=>{});}else{S.pacerPaused=true;clearTimeout(P.t);}document.getElementById('pauseBtn').textContent=S.pacerPaused?'다시 움직이기':'잠깐 멈추기';break;
+    case 'pdf':toast(`${d.name}를 내려받아요 (목업)`);break;
+    case 'complete':S.submitUp=false;S.popup='submit';render();break;
+    case 'completeUp':S.submitUp=true;S.popup='submit';render();break;
+    case 'submitGo':finishLearning(S.submitUp);break;
+    case 'closeSheet':S.popup=null;render();break;
+    case 'photo':S.photo=true;render();break;
+    case 'unphoto':S.photo=false;if(S.memo.ocr==='pending')S.memo.ocr='none';render();break;
+    case 'ocr':if(!S.photo){toast('먼저 3번에서 작성지 사진을 올려 주세요');break}if(S.memo.left<=0)break;S.memo.left--;S.memo.ocr='pending';render();break;
+    case 'ocrEdit':S.memo.text=OCR_SAMPLE;S.memo.ocr='none';render();{const t=document.getElementById('mtext');if(t){t.focus();t.scrollIntoView({block:'center'})}}break;
+    case 'ocrSave':S.memo.text=OCR_SAMPLE;S.memo.ocr='saved';render();toast('기자수첩에 저장했어요');break;
+    case 'vocaRead':S.act='EN';toast('단어 낭독 녹음 화면으로 이어져요 (목업)');break;
+    case 'readArticle':S.act='EN';go('reading');break;
+    case 'wsDone':{const t=S.wsType;addLearning(t,'photo');
+      if(t==='SU'&&(S.memo.title||S.memo.text))S.notes[S.selWeek]={title:S.memo.title,text:S.memo.text};
+      if(t==='DE'&&S.vote)S.opinions[S.selWeek]={side:S.vote,reason:S.reason||'(이유 없음)'};
+      S.photo=false;S.memo.ocr='none';go('home');toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);break}
+    case 'save':toast(d.kind==='video'?'사진첩에 영상을 저장했어요 (목업)':d.kind==='card'?'사진첩에 청독 카드를 저장했어요 (목업)':'사진첩에 사진을 저장했어요 (목업)');break;
+    case 'verify':{const id=Number(d.id);S.queue=S.queue.filter(q=>q.id!==id);S.posted=Math.min(60,S.posted+1);render();toast(`올리기 완료! 완주까지 ${S.posted} / 60`);break}
+    case 'closePopup':S.popup=null;render();toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);break;
+    case 'insta':toast('인스타그램 게시물로 이동해요 (목업)');break;
+    case 'agree':S.agree=el.checked;render();break;
+    case 'enter':if(S.pick==null||!S.agree)break;S.entryDone=true;render();phone.querySelector('.scroll')?.scrollTo(0,0);break;
+    case 'issue':{const v=document.getElementById('cname').value.trim();if(!v){toast('이름을 입력해 주세요');return}S.certName=v;S.certIssued=true;go('finish');toast(`'${v}' 이름으로 상장을 보냈어요`);break}
+  }
+});
+document.getElementById('tierSel').addEventListener('change',e=>{S.tier=e.target.value;go('finish')});
+document.getElementById('graceSel').addEventListener('change',e=>{S.grace=e.target.value;go('grace')});
+document.getElementById('finTg').addEventListener('change',e=>{S.finished=e.target.checked;go('record')});
+document.getElementById('endTg').addEventListener('change',e=>{S.afterEnd=e.target.checked;if(S.screen!=='book'&&S.screen!=='record')go('book');else render()});
+document.getElementById('candTg').addEventListener('change',e=>{S.anchorCand=e.target.checked;go('record');navKey='record:anchor';render();const a=document.getElementById('anchorCard');if(a)a.scrollIntoView({block:'start'})});
+document.getElementById('listen90').addEventListener('click',()=>{
+  if(S.screen!=='listen')go('listen');
+  lStop();S.heard.enAudio++;S.lsec+=EN_TOTAL*0.9;L.pos.enAudio=0.9;render();toast('영어 기사 음원을 90% 들었어요 (데모)');
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{clearTimers();clearInterval(L.int);L.int=null;L.pos={enAudio:0,krAudio:0};L.counted={enAudio:false,krAudio:false};S=INIT();navKey='welcome';
+  ['finTg','endTg','candTg'].forEach(id=>document.getElementById(id).checked=false);
+  document.getElementById('tierSel').value='on';document.getElementById('graceSel').value='g';render()});
+document.getElementById('menuBtn').addEventListener('click',()=>document.getElementById('side').classList.toggle('open'));
+render();
+</script>
+</body>
+</html>
