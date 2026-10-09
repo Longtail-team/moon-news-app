@@ -51,6 +51,7 @@ export async function getMaterial(
   };
 }
 
+export type Tally = { agree: number; disagree: number; mine: "agree" | "disagree" };
 export type Note = { title: string | null; body: string | null; stance: "agree" | "disagree" | null; reason: string | null; ocr_left: number };
 
 export type WorkMaterial = {
@@ -59,6 +60,7 @@ export type WorkMaterial = {
   deadline: string;
   vote_open: boolean; // 찬반토론 의견은 그 주차 일요일 자정까지만
   ocr_consent: boolean; // 보호자가 사진 글자 읽기(외부 AI)에 동의함
+  tally: Tally | null; // 찬반 결과: 이 주차에 내 의견을 골랐을 때만
   week_completed: number;
   title: string;
   vocab: { no: number; word: string; meaning: string }[];
@@ -85,6 +87,7 @@ export async function getWorkMaterial(studentId: string, week: number, type: Act
     deadline: m.deadline,
     vote_open: m.vote_open,
     ocr_consent: m.ocr_consent,
+    tally: m.tally ?? null,
     week_completed: m.week_completed,
     title: m.title,
     vocab: m.vocab,

@@ -109,25 +109,29 @@ describe("의견·찬반 투표", () => {
     });
   });
 
-  it("찬반 비율: 마감 전에 완료한 것만, 학습자마다 마지막 입장 1개", async () => {
+  it("찬반 결과: 마감 전에 저장된 의견, 학습자마다 마지막 1개 (고르지 않음으로 바꾸면 빠진다)", async () => {
     await db.transaction(async (tx) => {
-      // 박서연: 찬성 → 나중에 반대로 다시 함 (마지막 = 반대)
-      for (const [s, stance, at] of [
-        ["S-0002", "agree", "2026-10-06T10:00:00+09:00"],
-        ["S-0002", "disagree", "2026-10-08T10:00:00+09:00"],
-        ["S-0001", "agree", "2026-10-09T10:00:00+09:00"],
-        ["S-0003", "agree", "2026-10-12T09:00:00+09:00"], // 마감 뒤 완료 → 세지 않음
-      ] as const) {
-        const id = await act(tx, s, 4, "DEBATE", at);
-        await tx.query("insert into activity_notes (activity_id, stance) values ($1, $2)", [id, stance]);
-      }
-      const t = (
-        await tx.query<Row>(
-          "select * from app.debate_tally((select cohort_id from cohorts where cohort_no = 1), 4)",
-        )
-      ).rows[0];
+      const note = async (s: string, stance: string | null, at: string) => {
+        const id = await act(tx, s, 4, "DEBATE");
+        await tx.query("insert into activity_notes (activity_id, stance, updated_at) values ($1, $2, $3)", [id, stance, at]);
+      };
+      await note("S-0002", "agree", "2026-10-06T10:00:00+09:00");
+      await note("S-0002", "disagree", "2026-10-08T10:00:00+09:00"); // 박서연 마지막 = 반대
+      await note("S-0001", "agree", "2026-10-09T10:00:00+09:00");
+      await note("S-0003", "agree", "2026-10-07T10:00:00+09:00");
+      await note("S-0003", null, "2026-10-08T10:00:00+09:00"); // 이도윤은 고르지 않음으로 바꿈
+      const t = (await tx.query<Row>("select * from app.debate_tally((select cohort_id from cohorts where cohort_no = 1), 4)")).rows[0];
       expect(t).toEqual({ agree: 1, disagree: 1 });
+
+      // 결과는 의견을 고른 학습자에게만
+      const my = async (s: string) => (await tx.query<Row>("select public.my_debate_tally($1, 4, $2) as j", [s, NOW])).rows[0].j as any;
+      expect(await my("S-0002")).toEqual({ agree: 1, disagree: 1, mine: "disagree" });
+      expect(await my("S-0003")).toBeNull();
+      expect(await my("S-0007")).toBeNull();
+      const wm = (await tx.query<Row>("select public.work_material('S-0001', 4, 'DEBATE', $1) as j", [NOW])).rows[0].j as any;
+      expect(wm.tally).toMatchObject({ mine: "agree" });
       await tx.rollback();
     });
   });
+
 });
