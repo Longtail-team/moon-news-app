@@ -34,6 +34,30 @@ export function timeline(sentences: Sentence[], kind: "en" | "ko"): Step[] {
 
 export const totalSec = (steps: Step[]) => steps.reduce((n, s) => n + s.d, 0);
 
+// 한영 구간반복 음원의 하이라이트 순서: 한국어 문장 → 영어 문장 2회 (spec 8장)
+export function krEnTimeline(sentences: Sentence[]): Step[] {
+  const ko = timeline(sentences, "ko");
+  const en = timeline(sentences, "en");
+  const q: Step[] = [];
+  sentences.forEach((s, si) => {
+    const ids = chunksOf(s).map((_, ci) => enId(si, ci));
+    const d = en.filter((x) => x.ids[0].startsWith(`e-${si}-`)).reduce((n, x) => n + x.d, 0) + 0.4;
+    q.push(ko[si], { ids, d }, { ids, d });
+  });
+  return q;
+}
+
+/** 진행 비율(0~1)에 해당하는 조각 */
+export function stepAt(steps: Step[], ratio: number): Step | undefined {
+  const total = totalSec(steps);
+  let t = ratio * total;
+  for (const s of steps) {
+    if (t < s.d) return s;
+    t -= s.d;
+  }
+  return undefined;
+}
+
 export function fmtDuration(sec: number): string {
   const s = Math.round(sec);
   return s >= 60 ? `${Math.floor(s / 60)}분 ${s % 60}초` : `${s}초`;

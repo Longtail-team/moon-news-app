@@ -36,10 +36,8 @@ export default async function ReadPage({ params }: { params: Promise<{ week: str
     material = m;
     articlePdf = m.articlePdf;
     preQuestion = m.preQuestion;
-    audios = [
-      ...(kind === "en" ? [{ key: "article", label: "영어 기사 음원", src: m.article, highlight: "en" as const }] : []),
-      { key: "krEn", label: "새벽달 한영 구간반복", src: m.krEn, highlight: "kren" as const },
-    ];
+    // 영어 기사 음원·한영 구간반복은 청독에서만 듣는다(2026-10-09). 읽기 화면에는 청독으로 가는 링크만
+    audios = [];
   }
 
   return (
