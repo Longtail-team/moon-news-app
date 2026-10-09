@@ -1,10 +1,11 @@
 // 작성지 사진 글자 읽기 (기자수첩). Claude API로 손글씨를 글자로 옮긴다. 결과는 학생이 확인·수정한 뒤 저장한다.
-// 비용 상한: 활동마다 3번(DB ocr_take). 모델은 OCR_MODEL 환경변수로 바꿀 수 있다(정확도 시험 후 확정).
+// 비용 상한: 활동마다 3번(DB ocr_take). 모델은 가장 싼 Haiku로 시작(2026-10-09 결정), OCR_MODEL 환경변수로 바꿀 수 있다.
+// 정확도는 수강생 제출이 쌓인 뒤 판단한다. 그 전까지는 학생이 읽은 글자를 보고 "이대로 저장 / 수정"을 고른다.
 // 사진은 이 요청에만 보내고 서버에 따로 남기지 않는다. 보호자 동의 문구에 외부 AI 전송을 적어야 한다.
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 
-const MODEL = process.env.OCR_MODEL || "claude-opus-5-5";
+const MODEL = process.env.OCR_MODEL || "claude-haiku-5-5";
 const TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 type ImageType = (typeof TYPES)[number];
 
@@ -30,12 +31,10 @@ export async function readHandwriting(image: Blob): Promise<string> {
   const data = Buffer.from(await image.arrayBuffer()).toString("base64");
   client ??= new Anthropic();
   try {
-    const res = await client.beta.messages.create({
+    const res = await client.messages.create({
       model: MODEL,
       max_tokens: 4000,
       output_config: { effort: "low" },
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
       messages: [
         {
           role: "user",

@@ -55,7 +55,7 @@ npm run build
 `.env.local` (git에 올리지 않음, 값은 담당자에게 받거나 대시보드에서 확인)
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`: 서버 전용. Vercel Production·Preview, GitHub Secrets에도 같은 이름으로 등록돼 있다
 - `SUPABASE_DB_PASSWORD`: 마이그레이션 적용용. 모르면 Supabase 대시보드에서 재설정
-- `ANTHROPIC_API_KEY`: 작성지 사진 글자 읽기(기자수첩). 없으면 버튼이 숨겨진다. `OCR_MODEL`(선택)로 모델을 바꾼다(기본 claude-opus-5-5)
+- `ANTHROPIC_API_KEY`: 작성지 사진 글자 읽기(기자수첩). 없으면 버튼이 숨겨진다. `OCR_MODEL`(선택)로 모델을 바꾼다(기본 claude-haiku-5-5). 키는 Claude Console 서비스 계정 moon-news-app, 이름 moon-news-ocr
 
 DB 변경
 ```

@@ -75,6 +75,9 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
   const [ocrLeft, setOcrLeft] = useState(note?.ocr_left ?? 3);
   const [reading, setReading] = useState(false);
   const [ocrMsg, setOcrMsg] = useState<string | null>(null);
+  // 사진에서 읽은 글자: 학생이 "이대로 저장 / 수정"을 고르기 전까지 여기 둔다
+  const [ocrText, setOcrText] = useState<string | null>(null);
+  const bodyRef = useRef<HTMLTextAreaElement | null>(null);
   const camRef = useRef<HTMLInputElement | null>(null);
   const albumRef = useRef<HTMLInputElement | null>(null);
 
@@ -108,10 +111,7 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
       const r = await post<{ text: string }>("/api/activity/ocr", { activityId });
       setOcrLeft((n) => n - 1);
       if (!r.text) setOcrMsg("글자를 찾지 못했어요. 사진을 밝게 다시 찍거나 직접 입력해 주세요.");
-      else {
-        setBody(r.text);
-        setOcrMsg("읽은 글자를 확인하고 틀린 곳을 고쳐 주세요.");
-      }
+      else setOcrText(r.text);
     } catch (e) {
       const code = (e as { code?: string }).code ?? "";
       if (code === "limit") setOcrLeft(0);
@@ -120,6 +120,29 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
     } finally {
       setReading(false);
     }
+  }
+
+  // 읽은 글자 그대로: 요약에 넣고 바로 저장한다
+  async function acceptOcr() {
+    if (ocrText === null || !activityId) return;
+    const text = ocrText;
+    setBody(text);
+    setOcrText(null);
+    try {
+      await post("/api/activity/note", { activityId, title, body: text });
+      setOcrMsg("저장했어요. 완료하기를 누르면 이번 학습이 끝나요.");
+    } catch {
+      setOcrMsg("저장하지 못했어요. 완료하기를 누를 때 다시 저장할게요.");
+    }
+  }
+
+  // 수정: 요약 칸에 넣고 고치게 한다(완료할 때 저장)
+  function editOcr() {
+    if (ocrText === null) return;
+    setBody(ocrText);
+    setOcrText(null);
+    setOcrMsg("틀린 곳을 고쳐 주세요. 완료하기를 누르면 고친 내용으로 저장돼요.");
+    setTimeout(() => bodyRef.current?.focus(), 0);
   }
 
   // 선택 입력이 있으면 학습 완료 직전에 저장한다
@@ -310,7 +333,26 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
                   기사에 내 제목을 붙이고 요약을 옮겨 두면, 12주 뒤 내 영어 뉴스북으로 모아 드려요.
                 </div>
                 <input style={input} value={title} maxLength={60} placeholder="내가 붙인 제목" aria-label="내가 붙인 제목" onChange={(e) => setTitle(e.target.value)} />
+                {ocrText !== null && (
+                  <div className="stack" style={{ gap: 10, padding: 14, borderRadius: 12, background: "var(--tint)" }}>
+                    <span style={{ fontSize: 14, fontWeight: 800 }}>사진에서 읽은 글자예요. 내가 쓴 것과 같나요?</span>
+                    <div style={{ fontSize: 15, lineHeight: 1.6, whiteSpace: "pre-wrap", background: "var(--white)", borderRadius: 10, padding: 12 }}>{ocrText}</div>
+                    <span className="help" style={{ fontSize: 13 }}>
+                      수정하실래요? 이대로 저장하실래요?
+                    </span>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                      <button className="btn2" onClick={editOcr}>
+                        수정할게요
+                      </button>
+                      <button className="cta" onClick={() => void acceptOcr()}>
+                        이대로 저장
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <textarea
+                  ref={bodyRef}
+                  hidden={ocrText !== null}
                   style={{ ...input, minHeight: 120, resize: "vertical", lineHeight: 1.6 }}
                   value={body}
                   maxLength={2000}
@@ -323,7 +365,7 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
                     사진 글자 읽기는 보호자가 AI 글자 읽기에 동의해야 쓸 수 있어요. 요약은 직접 입력해 주세요.
                   </div>
                 )}
-                {ocr && material.ocr_consent && photo && activityId && (
+                {ocr && material.ocr_consent && photo && activityId && ocrText === null && (
                   <button className="btn2" disabled={reading || ocrLeft <= 0 || !!busy} onClick={() => void readPhoto()}>
                     {reading ? "사진에서 글자를 읽는 중…" : ocrLeft > 0 ? `사진에서 글자 읽기 (${ocrLeft}번 남음)` : "글자 읽기를 다 썼어요"}
                   </button>
@@ -361,8 +403,8 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
         </div>
       </div>
       <div className="bottom">
-        <button className="cta" disabled={!photo || !!busy} onClick={() => void complete()}>
-          {busy === "complete" ? "완료하는 중…" : photo ? "완료하기" : "사진을 올리면 완료할 수 있어요"}
+        <button className="cta" disabled={!photo || !!busy || ocrText !== null} onClick={() => void complete()}>
+          {busy === "complete" ? "완료하는 중…" : !photo ? "사진을 올리면 완료할 수 있어요" : ocrText !== null ? "읽은 글자를 먼저 확인해 주세요" : "완료하기"}
         </button>
       </div>
     </div>
