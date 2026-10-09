@@ -49,12 +49,12 @@ export function MaterialsView({
   const refs = useRef<Record<string, HTMLAudioElement | null>>({});
   const s = m.selected;
 
-  // 청독량: 여기서 들은 시간도 쌓는다(2026-10-09)
+  // 청독량: 여기서 영어 기사 음원·한영 구간반복을 들은 시간도 쌓는다(VOCA는 청독이 아니라서 빼고)
   useEffect(() => {
     if (!s) return;
     const ts = s.audios.flatMap((a) => {
       const el = refs.current[a.type];
-      return el && isAudioType(a.type) ? [trackListening(el, { week: s.week_no, type: a.type })] : [];
+      return el && isAudioType(a.type) && a.type !== "voca_repeat_audio" ? [trackListening(el, { week: s.week_no, type: a.type })] : [];
     });
     return () => ts.forEach((t) => t.detach());
   }, [s]);

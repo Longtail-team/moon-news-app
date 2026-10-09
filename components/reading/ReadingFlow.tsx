@@ -9,10 +9,7 @@ import type { AudioSrc, Material } from "@/lib/server/reading";
 import { chunksOf, clock, enId, fmtDuration, koId, paragraphs, timeline, totalSec, type Sentence, type Step } from "@/lib/reading/text";
 import { micErrorText, openRecorder, type Recorder } from "@/lib/reading/recorder";
 import { post, uploadMedia } from "@/lib/client-api";
-import { trackListening, type AudioType as ListenType } from "@/lib/listening";
 
-// 청독량: 읽기 화면 음원으로 들은 시간도 쌓는다(2026-10-09)
-const LISTEN_TYPE: Record<string, ListenType> = { article: "article_audio", krEn: "kr_en_repeat_audio", voca: "voca_repeat_audio" };
 
 type Kind = "en" | "kr" | "voca";
 type Phase = "listen" | "count" | "record" | "review";
@@ -119,15 +116,6 @@ export function ReadingFlow({
   const startedAt = useRef(0);
   const audioRefs = useRef<Record<AudioKey, HTMLAudioElement | null>>({});
   const stopRef = useRef<() => void>(() => {});
-
-  useEffect(() => {
-    const ts = audios.flatMap((a) => {
-      const el = audioRefs.current[a.key];
-      const type = LISTEN_TYPE[a.key];
-      return el && type ? [trackListening(el, { week: material.week_no, type })] : [];
-    });
-    return () => ts.forEach((t) => t.detach());
-  }, [audios, material.week_no, phase]);
 
   // 속도 기억
   useEffect(() => {
@@ -595,6 +583,16 @@ export function ReadingFlow({
           {audios.map((a) => (
             <div key={a.key}>{audioRow(a.key, a.label, a.src)}</div>
           ))}
+          {kind !== "voca" && (
+            // 영어 기사 음원·한영 구간반복은 청독에서 (2026-10-09)
+            <Link className="card row" href={`/listen/${material.week_no}`} style={{ padding: "12px 16px" }}>
+              <span className="stack" style={{ gap: 2, flex: 1 }}>
+                <span style={{ fontSize: 15, fontWeight: 800 }}>음원은 청독에서 들어요</span>
+                <span className="meta">영어 기사 음원 · 한영 구간반복</span>
+              </span>
+              <span style={{ fontSize: 18, fontWeight: 800 }}>›</span>
+            </Link>
+          )}
           {rateBar()}
           <div className="card stack" style={{ gap: 12 }}>
             <div className="between">
