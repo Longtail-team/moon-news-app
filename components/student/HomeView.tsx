@@ -28,6 +28,9 @@ export function HomeView({
   const week = weeks.find((w) => w.week_no === cw);
   const weeksLeft = cw >= 1 && cw <= totalWeeks ? totalWeeks - cw + 1 : cw === 0 ? totalWeeks : 0;
   const pct = Math.min(100, Math.round((progress.verified_count / cohort.total_target) * 100));
+  const completed = progress.verified_count >= cohort.total_target;
+  const afterCourse = cw > totalWeeks;
+  const remain = Math.max(0, cohort.total_target - progress.verified_count);
   const first = givenName(learner.name);
   const liveStart = live ? Date.parse(live.starts_at) : 0;
   const liveDays = live ? Math.ceil((liveStart - now) / 864e5) : 0;
@@ -52,7 +55,15 @@ export function HomeView({
         </div>
 
         {live && (
-          <div className="row" style={{ margin: "0 16px 12px", padding: "12px 14px", borderRadius: 14, background: "var(--tint)" }}>
+          <div
+            className="row"
+            style={{
+              margin: "0 16px 12px",
+              padding: "12px 14px",
+              borderRadius: 14,
+              background: "var(--tint)",
+            }}
+          >
             <span
               style={{
                 width: 48,
@@ -74,87 +85,220 @@ export function HomeView({
               <span className="meta">{fmtLive(live.starts_at)}</span>
             </span>
             {liveOpen ? (
-              <a className="chip" style={{ background: "var(--main)", border: 0, borderRadius: 12, fontWeight: 800 }} href={`/live/${live.session_id}`}>
+              <a
+                className="chip"
+                style={{
+                  background: "var(--main)",
+                  border: 0,
+                  borderRadius: 12,
+                  fontWeight: 800,
+                }}
+                href={`/live/${live.session_id}`}
+              >
                 입장
               </a>
             ) : (
-              <Link href="/materials" aria-label="이번 주 자료에서 라이브 보기" style={{ fontSize: 18, fontWeight: 800, minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Link
+                href="/materials"
+                aria-label="이번 주 자료에서 라이브 보기"
+                style={{
+                  fontSize: 18,
+                  fontWeight: 800,
+                  minWidth: 44,
+                  minHeight: 44,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 ›
               </Link>
             )}
           </div>
         )}
 
-        <div className="pad">
-          <div className="card lift stack" style={{ padding: 20 }}>
-            {week ? (
-              <>
-                <div className="between">
-                  <span className="pill">{week.week_no}주차</span>
-                  <span className="meta">{fmtWeekRange(week.starts_at, week.ends_at)}</span>
-                </div>
-                <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>{week.title ?? "이번 주 기사를 준비하고 있어요"}</div>
-                <div className="row" style={{ alignItems: "baseline", gap: 8 }}>
-                  <span style={{ fontSize: 56, fontWeight: 800, lineHeight: 1 }}>{progress.this_week_completed}</span>
-                  <span style={{ fontSize: 20, fontWeight: 700, color: "var(--sub)" }}>/ {cohort.weekly_target}</span>
-                  <span style={{ fontSize: 14, color: "var(--sub)", marginLeft: 4 }}>이번 주 학습</span>
-                </div>
-                <div className="dots">
-                  {Array.from({ length: cohort.weekly_target }, (_, i) => (
-                    <div key={i} className={`dot${i < progress.this_week_completed ? " done" : ""}`}>
-                      {i < progress.this_week_completed ? <CheckIcon /> : null}
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <>
-                <span className="pill" style={{ alignSelf: "flex-start" }}>
-                  {cohort.course_title} {cohort.cohort_no}기
-                </span>
-                <div style={{ fontSize: 17, fontWeight: 700 }}>
-                  {cw === 0 ? `${fmtDay(cohort.start_date)}에 시작해요` : "12주 과정이 끝났어요"}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {cw >= 1 && (
-          <div className="pad" style={{ paddingTop: 12 }}>
-            <Link className="cta" href="/activity">
-              + 오늘 학습하기
+        {completed && (
+          <div className="pad" style={{ paddingBottom: 12 }}>
+            <Link
+              href="/finish"
+              className="card lift stack"
+              style={{
+                gap: 6,
+                background: "var(--tint)",
+                border: 0,
+                padding: 20,
+              }}
+            >
+              <span style={{ fontSize: 20, fontWeight: 800 }}>12주 완주, 정말 해냈어요!</span>
+              <span
+                className="row"
+                style={{
+                  justifyContent: "space-between",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "var(--deep)",
+                }}
+              >
+                완주 화면에서 상장 받기
+                <span style={{ fontSize: 18 }}>›</span>
+              </span>
             </Link>
-            {cw === totalWeeks && (
-              // 마지막 주차에는 마지막 영어 낭독을 권한다(강제 아님, spec 9장)
-              <div className="help" style={{ textAlign: "center", marginTop: 8 }}>
-                마지막 주예요. 영어 기사 읽기로 12주를 마무리해 보세요.
-              </div>
-            )}
           </div>
         )}
-
-        <div className="pad" style={{ paddingTop: 12 }}>
-          <div className="card stack" style={{ gap: 10 }}>
-            <div className="between">
-              <div style={{ fontSize: 17, fontWeight: 800 }}>종강 {fmtDay(cohort.deadline)}</div>
-              {weeksLeft > 0 && (
-                <span className="pill" style={{ borderRadius: 10 }}>
-                  {weeksLeft}주 남음
-                </span>
-              )}
-            </div>
-            <div className="between" style={{ alignItems: "baseline" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--sub)" }}>완주까지 인스타 올리기</div>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>
-                {progress.verified_count} <span style={{ fontWeight: 500, color: "var(--sub)" }}>/ {cohort.total_target}</span>
+        {afterCourse && !completed ? (
+          // 마감 이후 홈 (spec 7장): 유예 중 / 유예 끝. 유예는 미리 알리지 않고 종강일이 지난 학습자에게만 보인다
+          <>
+            <div className="pad">
+              <div
+                className="stack"
+                style={{
+                  padding: 20,
+                  borderRadius: 16,
+                  background: "var(--tint)",
+                  gap: 10,
+                }}
+              >
+                <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1.4 }}>
+                  {cohort.grace_open ? "12주 챌린지가 끝났어요. 조금만 더 하면 완주예요!" : "아직 완주할 수 있어요"}
+                </div>
+                <div style={{ fontSize: 14, lineHeight: 1.6 }}>
+                  {cohort.grace_open
+                    ? `${fmtDay(cohort.grace_until)}까지 남은 ${remain}개를 올리면 완주 상장과 함께 첫 낭독 다시 듣기를 받을 수 있어요.`
+                    : `남은 ${remain}개를 올리면 완주 상장을 받아요. 아직 올리지 않은 녹음은 ${fmtDay(cohort.retention_until)}까지 보관돼요.`}
+                </div>
               </div>
             </div>
-            <div className="bar">
-              <i style={{ width: `${pct}%` }} />
+            <div className="pad" style={{ paddingTop: 12 }}>
+              <div className="card stack" style={{ gap: 10 }}>
+                <div className="between" style={{ alignItems: "baseline" }}>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: "var(--sub)",
+                    }}
+                  >
+                    완주까지 인스타 올리기
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 800 }}>
+                    {progress.verified_count} <span style={{ fontWeight: 500, color: "var(--sub)" }}>/ {cohort.total_target}</span>
+                  </div>
+                </div>
+                <div className="bar">
+                  <i style={{ width: `${pct}%` }} />
+                </div>
+                <div className="help">
+                  학습 완료 {progress.total_completed}회 · 남은 올리기 {remain}개
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+            <div className="pad stack" style={{ paddingTop: 12, gap: 10 }}>
+              {progress.pending_post_count > 0 && (
+                <Link className="cta" href="/upload">
+                  올릴 것 {progress.pending_post_count}개 올리기
+                </Link>
+              )}
+              <Link className={progress.pending_post_count > 0 ? "btn2" : "cta"} href="/activity">
+                + 학습하기
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="pad">
+              <div className="card lift stack" style={{ padding: 20 }}>
+                {week ? (
+                  <>
+                    <div className="between">
+                      <span className="pill">{week.week_no}주차</span>
+                      <span className="meta">{fmtWeekRange(week.starts_at, week.ends_at)}</span>
+                    </div>
+                    <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1.4 }}>{week.title ?? "이번 주 기사를 준비하고 있어요"}</div>
+                    <div className="row" style={{ alignItems: "baseline", gap: 8 }}>
+                      <span style={{ fontSize: 56, fontWeight: 800, lineHeight: 1 }}>{progress.this_week_completed}</span>
+                      <span
+                        style={{
+                          fontSize: 20,
+                          fontWeight: 700,
+                          color: "var(--sub)",
+                        }}
+                      >
+                        / {cohort.weekly_target}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 14,
+                          color: "var(--sub)",
+                          marginLeft: 4,
+                        }}
+                      >
+                        이번 주 학습
+                      </span>
+                    </div>
+                    <div className="dots">
+                      {Array.from({ length: cohort.weekly_target }, (_, i) => (
+                        <div key={i} className={`dot${i < progress.this_week_completed ? " done" : ""}`}>
+                          {i < progress.this_week_completed ? <CheckIcon /> : null}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className="pill" style={{ alignSelf: "flex-start" }}>
+                      {cohort.course_title} {cohort.cohort_no}기
+                    </span>
+                    <div style={{ fontSize: 17, fontWeight: 700 }}>{cw === 0 ? `${fmtDay(cohort.start_date)}에 시작해요` : "12주 과정이 끝났어요"}</div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {cw >= 1 && (
+              <div className="pad" style={{ paddingTop: 12 }}>
+                <Link className="cta" href="/activity">
+                  + 오늘 학습하기
+                </Link>
+                {cw === totalWeeks && (
+                  // 마지막 주차에는 마지막 영어 낭독을 권한다(강제 아님, spec 9장)
+                  <div className="help" style={{ textAlign: "center", marginTop: 8 }}>
+                    마지막 주예요. 영어 기사 읽기로 12주를 마무리해 보세요.
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="pad" style={{ paddingTop: 12 }}>
+              <div className="card stack" style={{ gap: 10 }}>
+                <div className="between">
+                  <div style={{ fontSize: 17, fontWeight: 800 }}>종강 {fmtDay(cohort.deadline)}</div>
+                  {weeksLeft > 0 && (
+                    <span className="pill" style={{ borderRadius: 10 }}>
+                      {weeksLeft}주 남음
+                    </span>
+                  )}
+                </div>
+                <div className="between" style={{ alignItems: "baseline" }}>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: "var(--sub)",
+                    }}
+                  >
+                    완주까지 인스타 올리기
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 800 }}>
+                    {progress.verified_count} <span style={{ fontWeight: 500, color: "var(--sub)" }}>/ {cohort.total_target}</span>
+                  </div>
+                </div>
+                <div className="bar">
+                  <i style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         <div className="pad" style={{ paddingTop: 12 }}>
           <RecordCard

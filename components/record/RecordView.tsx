@@ -59,6 +59,15 @@ export function RecordView({ b, profileLabel, canSwitch, isGuardian }: { b: News
           )}
         </div>
         <div className="pad stack" style={{ gap: 12 }}>
+          {st.verified >= target && (
+            <Link href={`/finish${b.is_current ? "" : `?e=${b.enrollment_id}`}`} className="card lift row" style={{ background: "var(--tint)", border: 0, padding: 18 }}>
+              <span className="stack" style={{ gap: 2, flex: 1 }}>
+                <b style={{ fontSize: 17 }}>12주 완주!</b>
+                <span className="meta">완주 화면에서 첫·마지막 낭독과 상장을 확인해요</span>
+              </span>
+              <span style={{ fontSize: 18, fontWeight: 800 }}>›</span>
+            </Link>
+          )}
           {/* 이번 기수 기록: 완주 화면과 같은 모양(진행 중 버전). 첫·마지막 낭독 비교와 상장은 완주 뒤 완주 화면에서 */}
           <div className="card lift stack" style={{ gap: 14 }}>
             <span className="meta" style={{ fontWeight: 700 }}>
