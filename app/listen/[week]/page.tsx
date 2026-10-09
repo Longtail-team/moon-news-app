@@ -13,5 +13,5 @@ export default async function ListenPage({ params }: { params: Promise<{ week: s
   const audios: ListenAudio[] = [];
   if (m.article) audios.push({ type: "article_audio", label: "영어 기사 음원", src: m.article });
   if (m.krEn) audios.push({ type: "kr_en_repeat_audio", label: "새벽달 한영 구간반복", src: m.krEn });
-  return <ListenView week={week} title={m.title} audios={audios} weeklyTarget={m.weekly_target} weekCompleted={m.week_completed} />;
+  return <ListenView week={week} title={m.title} sentences={m.sentences} audios={audios} weeklyTarget={m.weekly_target} weekCompleted={m.week_completed} />;
 }

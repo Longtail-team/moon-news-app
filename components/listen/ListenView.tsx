@@ -3,6 +3,8 @@
 // 청독 (2026-10-09 결정): 영어 기사 음원·한영 구간반복을 원하는 만큼 듣고(VOCA 구간반복은 VOCA 탭에),
 // 하나라도 90% 이상 들으면 "청독 완료"가 켜진다. 완료하면 카드(1080×1350)를 그려 올리고 학습 1회로 센다.
 // 듣는 동안의 실제 재생 시간은 청독량으로 모두 쌓인다(반복 포함).
+// 지문과 청독 하이라이트(spec 8장): 음원 재생 위치에 맞춰 지금 읽는 덩어리를 칠한다. 영어 기사 음원은 끊어 읽기 구,
+// 한영 구간반복은 한국어 문장 → 영어 문장 2회. 시간 정보 파일이 생기기 전까지는 예상 시간 비율로 맞춘다.
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -11,6 +13,8 @@ import { fmtListen, trackListening, type AudioType } from "@/lib/listening";
 import { drawListeningCard, type CardData } from "@/lib/listening-card";
 import { saveFile } from "@/lib/video";
 import { givenName } from "@/lib/format";
+import { krEnTimeline, stepAt, timeline, type Sentence } from "@/lib/reading/text";
+import { ArticleText } from "@/components/reading/ArticleText";
 
 export type ListenAudio = { type: AudioType; label: string; src: string };
 
@@ -28,7 +32,21 @@ const PauseIcon = () => (
   </svg>
 );
 
-export function ListenView({ week, title, audios, weeklyTarget, weekCompleted }: { week: number; title: string; audios: ListenAudio[]; weeklyTarget: number; weekCompleted: number }) {
+export function ListenView({
+  week,
+  title,
+  sentences,
+  audios,
+  weeklyTarget,
+  weekCompleted,
+}: {
+  week: number;
+  title: string;
+  sentences: Sentence[];
+  audios: ListenAudio[];
+  weeklyTarget: number;
+  weekCompleted: number;
+}) {
   const router = useRouter();
   const els = useRef<Partial<Record<AudioType, HTMLAudioElement | null>>>({});
   const trackers = useRef<{ flush: () => Promise<void>; detach: () => void }[]>([]);
@@ -42,6 +60,35 @@ export function ListenView({ week, title, audios, weeklyTarget, weekCompleted }:
   const [error, setError] = useState<string | null>(null);
   // 청독 완료 화면: 저장·인스타에 올릴 인스타용 카드(제목 100px)를 그대로 미리 보여 주고 저장한다. 앱·뉴스북용(68/58px)은 서버에 보관
   const [done, setDone] = useState<{ url: string; file: File; weekCompleted: number } | null>(null);
+  const [hl, setHl] = useState<string[]>([]);
+  const [slash, setSlash] = useState(false); // 끊어 읽기 표시(기본 꺼짐)
+  const [single, setSingle] = useState(false); // 영어만 보기
+
+  // 청독 하이라이트: 재생 중인 음원 위치에 맞춰 칠하기
+  useEffect(() => {
+    if (!playing) {
+      setHl([]);
+      return;
+    }
+    const el = els.current[playing];
+    const steps = playing === "kr_en_repeat_audio" ? krEnTimeline(sentences) : timeline(sentences, "en");
+    let raf = 0;
+    const loop = () => {
+      if (el && el.duration > 0) setHl(stepAt(steps, el.currentTime / el.duration)?.ids ?? []);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [playing, sentences]);
+
+  // 칠한 조각이 화면 밖이면 보이게
+  useEffect(() => {
+    if (!hl[0]) return;
+    const el = document.getElementById(hl[0]);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    if (r.top < 120 || r.bottom > window.innerHeight - 140) el.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [hl]);
 
   // 재생 시간 재기와 90% 들은 횟수
   useEffect(() => {
@@ -215,6 +262,21 @@ export function ListenView({ week, title, audios, weeklyTarget, weekCompleted }:
             <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: "var(--deep)" }}>이번 청독</span>
             <b style={{ fontSize: 20 }}>{fmtListen(session)}</b>
           </div>
+          {sentences.length > 0 && (
+            <div className="card stack" style={{ gap: 12 }}>
+              <div className="between">
+                <div style={{ fontSize: 13, fontWeight: 800 }}>기사 원문</div>
+                <button className="chip" style={{ minHeight: 44, borderRadius: 12, fontSize: 12 }} onClick={() => setSingle(!single)}>
+                  {single ? "함께 보기" : "영어만 보기"}
+                </button>
+              </div>
+              <label className="row" style={{ gap: 8, fontSize: 13, fontWeight: 700, color: "var(--sub)", minHeight: 32 }}>
+                <input type="checkbox" checked={slash} onChange={(e) => setSlash(e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--deep)" }} />
+                끊어 읽기 표시
+              </label>
+              <ArticleText sentences={sentences} hl={hl} en slash={slash} onlyMain={single} />
+            </div>
+          )}
           {error && <div className="err">{error}</div>}
         </div>
       </div>

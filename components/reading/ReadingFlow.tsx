@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AudioSrc, Material } from "@/lib/server/reading";
-import { chunksOf, clock, enId, fmtDuration, koId, paragraphs, timeline, totalSec, type Sentence, type Step } from "@/lib/reading/text";
+import { clock, fmtDuration, krEnTimeline, stepAt, timeline, totalSec } from "@/lib/reading/text";
+import { ArticleText } from "./ArticleText";
 import { micErrorText, openRecorder, type Recorder } from "@/lib/reading/recorder";
 import { post, uploadMedia } from "@/lib/client-api";
 
@@ -41,30 +42,6 @@ const MicIcon = () => (
     <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
   </svg>
 );
-
-// 한영 구간반복 음원의 하이라이트 순서: 한국어 문장 → 영어 문장 2회 (spec 8장)
-function krEnTimeline(sentences: Sentence[]): Step[] {
-  const ko = timeline(sentences, "ko");
-  const en = timeline(sentences, "en");
-  const q: Step[] = [];
-  sentences.forEach((s, si) => {
-    const ids = chunksOf(s).map((_, ci) => enId(si, ci));
-    const d = en.filter((x) => x.ids[0].startsWith(`e-${si}-`)).reduce((n, x) => n + x.d, 0) + 0.4;
-    q.push(ko[si], { ids, d }, { ids, d });
-  });
-  return q;
-}
-
-/** 진행 비율(0~1)에 해당하는 조각 */
-function stepAt(steps: Step[], ratio: number): Step | undefined {
-  const total = totalSec(steps);
-  let t = ratio * total;
-  for (const s of steps) {
-    if (t < s.d) return s;
-    t -= s.d;
-  }
-  return undefined;
-}
 
 export function ReadingFlow({
   kind,
@@ -315,41 +292,7 @@ export function ReadingFlow({
     </div>
   );
 
-  const text = (onlyMain: boolean, rec: boolean) => (
-    <div className={`txt${en ? "" : " koMain"}`}>
-      {paragraphs(sentences).map((idx, pi) => {
-        const E = (
-          <div className="en" key="e">
-            {idx.map((si) => (
-              <span key={si}>
-                {chunksOf(sentences[si]).map((c, ci, all) => (
-                  <span key={ci}>
-                    <span id={enId(si, ci)} className={`ck${hl.includes(enId(si, ci)) ? " hl" : ""}`}>
-                      {c}
-                    </span>
-                    {ci < all.length - 1 ? slash && !rec ? <span className="sl">/</span> : " " : null}
-                  </span>
-                ))}{" "}
-              </span>
-            ))}
-          </div>
-        );
-        const K = (
-          <div className="ko" key="k">
-            {idx.map((si) => (
-              <span key={si}>
-                <span id={koId(si)} className={`sk${hl.includes(koId(si)) ? " hl" : ""}`}>
-                  {sentences[si].ko}
-                </span>{" "}
-              </span>
-            ))}
-          </div>
-        );
-        if (onlyMain) return <div key={pi} style={{ marginBottom: rec ? 18 : 14 }}>{en ? E : K}</div>;
-        return <div key={pi}>{en ? [E, K] : [K, E]}</div>;
-      })}
-    </div>
-  );
+  const text = (onlyMain: boolean, rec: boolean) => <ArticleText sentences={sentences} hl={hl} en={en} slash={slash && !rec} onlyMain={onlyMain} gap={rec ? 18 : 14} />;
 
   const audioRow = (key: string, name: string, src: string | null) => (
     <div className="card row" style={{ padding: "10px 14px" }}>
