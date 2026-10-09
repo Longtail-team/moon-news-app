@@ -1,7 +1,7 @@
 // 청독 카드 그리기 (2026-10-09 확정 시안 C: 기사 스크랩 + 도장). 휴대폰에서 1080×1350(인스타 4:5) PNG로 그린다.
 // - 들은 음원만 표시, 오늘 들은 시간·누적 시간을 크게
-// - 제목: 2줄 안이면 68px, 3줄이면 58px, 더 길면 50px
-// - 도장: 음원 표시와 시간 칸 사이 빈 곳의 아무 자리 + 각도 -25°~+25° (빈 곳이 좁으면 오른쪽 위), 기록 id로 정해서 다시 그려도 같은 모양
+// - 제목: 인스타 4:5에서 읽히게 100px(3줄까지), 넘치면 84px(3줄) → 68px(4줄) → 58px
+// - 도장: 음원 표시와 시간 칸 사이 빈 곳의 아무 자리 + 각도 -25°~+25° (빈 곳이 좁으면 시간 칸 오른쪽 위 모서리), 기록 id로 정해서 다시 그려도 같은 모양
 import { fmtListen, type AudioType } from "./listening";
 
 export type CardData = {
@@ -167,21 +167,27 @@ export async function drawListeningCard(d: CardData): Promise<Blob> {
   ctx.fillRect(x0, y, maxW, 4);
   y += 4 + 22;
 
-  // 제목: 2줄 안이면 68, 3줄이면 58, 더 길면 50
+  // 제목: 100px(3줄까지) → 84px(3줄) → 68px(4줄) → 58px
   ctx.textAlign = "left";
-  let size = 68;
+  let size = 100;
   let lines: string[] = [];
-  for (const s of [68, 58, 50]) {
+  for (const [s, max] of [
+    [100, 3],
+    [84, 3],
+    [68, 4],
+    [58, 99],
+  ]) {
     size = s;
     ctx.font = `900 ${s}px ${SERIF}`;
     lines = wrap(ctx, title, maxW);
-    if ((s === 68 && lines.length <= 2) || (s === 58 && lines.length <= 3)) break;
+    if (lines.length <= max) break;
   }
   ctx.fillStyle = C.ink;
   for (const l of lines) {
     y += size * 1.2;
     ctx.fillText(l, x0, y - size * 0.22);
   }
+  const titleBottom = y;
   y += 22;
   ctx.font = `400 30px ${SANS}`;
   ctx.fillStyle = C.sub;
@@ -241,14 +247,14 @@ export async function drawListeningCard(d: CardData): Promise<Blob> {
   ctx.fillText(fmtListen(d.total_seconds), x0 + maxW - 40, boxY + 290);
   ctx.textAlign = "left";
 
-  // 도장: 음원 표시 아래 ~ 시간 칸 위의 빈 곳(조금 겹쳐도 됨), 좁으면 오른쪽 위 날짜 자리
+  // 도장: 제목 아래 ~ 시간 칸 위(기자 이름·음원 표시와는 겹쳐도 됨, 제목·시간 숫자는 가리지 않게), 좁으면 시간 칸 오른쪽 위 모서리
   const rand = rng(d.activity_id);
-  const top = rowY + 66 - 30;
-  const bottom = boxY + 30 - STAMP;
+  const top = titleBottom - 10;
+  const bottom = boxY + 40 - STAMP;
   const spot =
     bottom >= top
       ? { x: x0 - 40 + rand() * (maxW + 80 - STAMP), y: top + rand() * (bottom - top) }
-      : { x: W - 64 - STAMP + 10, y: 70 };
+      : { x: W - 64 - STAMP + 20, y: boxY - 150 }; // 빈 곳이 좁으면 시간 칸 오른쪽 위 모서리에 걸쳐서
   const angle = ((rand() * 50 - 25) * Math.PI) / 180;
   const stamp = drawStamp(rand, d.date);
   ctx.save();
