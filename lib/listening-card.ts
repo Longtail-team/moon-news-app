@@ -1,7 +1,7 @@
 // 청독 카드 그리기 (2026-10-09 확정 시안 C: 기사 스크랩 + 도장). 휴대폰에서 1080×1350(인스타 4:5) PNG로 그린다.
 // - 들은 음원만 표시, 오늘 들은 시간·누적 시간을 크게
 // - 제목: 2줄 안이면 68px, 3줄이면 58px, 더 길면 50px
-// - 도장: 정해 둔 자리 중 하나 + 각도 -25°~+25°, 기록 id로 정해서 다시 그려도 같은 모양
+// - 도장: 음원 표시와 시간 칸 사이 빈 곳의 아무 자리 + 각도 -25°~+25° (빈 곳이 좁으면 오른쪽 위), 기록 id로 정해서 다시 그려도 같은 모양
 import { fmtListen, type AudioType } from "./listening";
 
 export type CardData = {
@@ -25,14 +25,7 @@ const SERIF = "'Noto Serif KR', serif";
 const LABEL: Record<AudioType, string> = { article_audio: "영어 기사", kr_en_repeat_audio: "한영 구간반복", voca_repeat_audio: "VOCA 구간반복" };
 const ORDER: AudioType[] = ["article_audio", "kr_en_repeat_audio", "voca_repeat_audio"];
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
-// 도장 자리(왼쪽 위 좌표, 300px 도장) — 제목과 시간 칸을 가리지 않는 곳: 오른쪽 위 날짜 자리, 가운데 빈 곳
-const SPOTS = [
-  { x: 700, y: 120 },
-  { x: 700, y: 560 },
-  { x: 420, y: 590 },
-  { x: 150, y: 600 },
-  { x: 560, y: 510 },
-];
+const STAMP = 300; // 도장 크기(px)
 
 // 같은 id면 같은 값 (FNV-1a → mulberry32)
 function rng(seedText: string) {
@@ -248,15 +241,20 @@ export async function drawListeningCard(d: CardData): Promise<Blob> {
   ctx.fillText(fmtListen(d.total_seconds), x0 + maxW - 40, boxY + 290);
   ctx.textAlign = "left";
 
-  // 도장
+  // 도장: 음원 표시 아래 ~ 시간 칸 위의 빈 곳(조금 겹쳐도 됨), 좁으면 오른쪽 위 날짜 자리
   const rand = rng(d.activity_id);
-  const spot = SPOTS[Math.floor(rand() * SPOTS.length)];
+  const top = rowY + 66 - 30;
+  const bottom = boxY + 30 - STAMP;
+  const spot =
+    bottom >= top
+      ? { x: x0 - 40 + rand() * (maxW + 80 - STAMP), y: top + rand() * (bottom - top) }
+      : { x: W - 64 - STAMP + 10, y: 70 };
   const angle = ((rand() * 50 - 25) * Math.PI) / 180;
   const stamp = drawStamp(rand, d.date);
   ctx.save();
   ctx.globalAlpha = 0.86;
   ctx.globalCompositeOperation = "multiply";
-  ctx.translate(spot.x + 150, spot.y + 150);
+  ctx.translate(spot.x + STAMP / 2, spot.y + STAMP / 2);
   ctx.rotate(angle);
   ctx.drawImage(stamp, -150, -150);
   ctx.restore();
