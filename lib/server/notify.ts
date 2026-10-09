@@ -16,6 +16,9 @@ export type Outgoing = {
 
 export const devOutbox = () => process.env.DEV_OUTBOX === "1";
 
+/** 시험 번호(01000000000~01000009999, scripts/test-order.mjs·샘플 데이터). 미리보기도 운영 DB를 쓰므로 실제 번호의 링크는 화면에 보이지 않게 한다 */
+export const isTestPhone = (phone: string) => /^0100000\d{4}$/.test(phone);
+
 /** 보내고(지금은 기록만) 미리보기에서는 링크를 돌려준다 */
 export async function sendAlimtalk(m: Outgoing): Promise<{ devLink?: string }> {
   const sent = false; // TODO(솔라피 연결): 버튼은 '외부 브라우저로 열기', 링크는 변수 #{링크}
@@ -28,5 +31,5 @@ export async function sendAlimtalk(m: Outgoing): Promise<{ devLink?: string }> {
     result: sent ? "sent" : "not_sent(솔라피 미연결)",
   });
   if (error) throw error;
-  return devOutbox() ? { devLink: m.link } : {};
+  return devOutbox() && isTestPhone(m.to) ? { devLink: m.link } : {};
 }

@@ -29,7 +29,10 @@ export function HomeView({
   const weeksLeft = cw >= 1 && cw <= totalWeeks ? totalWeeks - cw + 1 : cw === 0 ? totalWeeks : 0;
   const pct = Math.min(100, Math.round((progress.verified_count / cohort.total_target) * 100));
   const first = givenName(learner.name);
-  const liveDays = live ? Math.ceil((Date.parse(live.starts_at) - now) / 864e5) : 0;
+  const liveStart = live ? Date.parse(live.starts_at) : 0;
+  const liveDays = live ? Math.ceil((liveStart - now) / 864e5) : 0;
+  // 입장 버튼: 시작 10분 전 ~ 시작 3시간 뒤 (spec 13장, 서버 live_click과 같은 기준)
+  const liveOpen = !!live?.has_zoom && now >= liveStart - 10 * 60e3 && now <= liveStart + 3 * 3600e3;
   const profileLabel = `${first}${learner.grade ? ` · ${learner.grade}` : ""}`;
 
   return (
@@ -49,7 +52,7 @@ export function HomeView({
         </div>
 
         {live && (
-          <Link href="/materials" className="row" style={{ margin: "0 16px 12px", padding: "12px 14px", borderRadius: 14, background: "var(--tint)" }}>
+          <div className="row" style={{ margin: "0 16px 12px", padding: "12px 14px", borderRadius: 14, background: "var(--tint)" }}>
             <span
               style={{
                 width: 48,
@@ -70,8 +73,16 @@ export function HomeView({
               <span style={{ fontSize: 14, fontWeight: 800 }}>새벽달 Zoom Live {live.session_no}회차</span>
               <span className="meta">{fmtLive(live.starts_at)}</span>
             </span>
-            <span style={{ fontSize: 18, fontWeight: 800 }}>›</span>
-          </Link>
+            {liveOpen ? (
+              <a className="chip" style={{ background: "var(--main)", border: 0, borderRadius: 12, fontWeight: 800 }} href={`/live/${live.session_id}`}>
+                입장
+              </a>
+            ) : (
+              <Link href="/materials" aria-label="이번 주 자료에서 라이브 보기" style={{ fontSize: 18, fontWeight: 800, minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                ›
+              </Link>
+            )}
+          </div>
         )}
 
         <div className="pad">
@@ -114,6 +125,12 @@ export function HomeView({
             <Link className="cta" href="/activity">
               + 오늘 학습하기
             </Link>
+            {cw === totalWeeks && (
+              // 마지막 주차에는 마지막 영어 낭독을 권한다(강제 아님, spec 9장)
+              <div className="help" style={{ textAlign: "center", marginTop: 8 }}>
+                마지막 주예요. 영어 기사 읽기로 12주를 마무리해 보세요.
+              </div>
+            )}
           </div>
         )}
 

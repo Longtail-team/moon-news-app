@@ -2,7 +2,7 @@
 // 활동·순서 자유, 반복 허용. 요일 추천은 안내일 뿐 체크리스트가 아니다.
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { currentLearner, getSession } from "@/lib/server/session";
+import { pageLearner } from "@/lib/server/learner";
 import { getPicker } from "@/lib/server/reading";
 import { ACT, ActIcon, type ActType } from "@/components/student/icons";
 import "../student.css";
@@ -25,10 +25,7 @@ function kstDow(): number {
 }
 
 export default async function ActivityPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
-  const session = await getSession();
-  if (!session) redirect("/");
-  const learner = await currentLearner(session);
-  if (!learner) redirect("/profiles");
+  const { learner } = await pageLearner();
   const picker = await getPicker(learner.student_id);
   if (!picker || picker.weeks.length === 0) redirect("/");
 

@@ -20,6 +20,7 @@ describe("이번 주 자료", () => {
     expect(r.next_open.week_no).toBe(5);
     expect(new Date(r.next_open.starts_at).toISOString()).toBe(new Date("2026-10-12T00:00:00+09:00").toISOString());
     expect(r.selected.week_no).toBe(4);
+    expect(r.pending_post_count).toBe(2);
   });
 
   it("월요일 0시가 되면 그 주차가 열린다", async () => {
@@ -47,17 +48,20 @@ describe("이번 주 자료", () => {
     expect(r.selected).toBeNull();
   });
 
-  it("라이브: 입장 누름은 기록되고 줌 주소를 돌려준다, 다시보기 주소가 없으면 null", async () => {
+  it("라이브: 시작 10분 전부터 입장 누름은 기록되고 줌 주소를 돌려준다, 다시보기 주소가 없으면 null", async () => {
     const r = await m("S-0001", null, "2026-10-07T12:00:00+09:00");
     expect(r.live).toHaveLength(1);
     expect(r.live[0]).toMatchObject({ session_no: 1, has_zoom: true, has_replay: false });
     await db.transaction(async (tx) => {
-      const url = (await tx.query<Row>("select public.live_click('S-0001', $1, false) as u", [r.live[0].session_id])).rows[0].u;
-      expect(url).toBe("https://zoom.example/sample");
+      const at = (t: string) => tx.query<Row>("select public.live_click('S-0001', $1, false, $2) as u", [r.live[0].session_id, t]).then((x) => x.rows[0].u);
+      // 시작 10분 전보다 이르거나 시작 3시간 뒤면 줌 주소를 주지 않고 기록도 남기지 않는다
+      expect(await at("2026-10-24T19:49:00+09:00")).toBeNull();
+      expect(await at("2026-10-24T23:01:00+09:00")).toBeNull();
+      expect(await at("2026-10-24T19:50:00+09:00")).toBe("https://zoom.example/sample");
       expect((await tx.query<Row>("select count(*)::int as n from live_clicks where student_id = 'S-0001'")).rows[0].n).toBe(1);
       expect((await tx.query<Row>("select public.live_click('S-0001', $1, true) as u", [r.live[0].session_id])).rows[0].u).toBeNull();
       // 다른 기수 학습자는 이 라이브에 들어갈 수 없다
-      expect((await tx.query<Row>("select public.live_click('S-0005', $1, false) as u", [r.live[0].session_id])).rows[0].u).toBeNull();
+      expect((await tx.query<Row>("select public.live_click('S-0005', $1, false, '2026-10-24T20:00:00+09:00') as u", [r.live[0].session_id])).rows[0].u).toBeNull();
       await tx.rollback();
     });
   });

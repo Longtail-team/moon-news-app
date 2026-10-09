@@ -16,7 +16,7 @@ type AudioKey = string; // 음원 key 또는 "mine"(내 낭독)
 
 const RATES = [0.5, 0.8, 1, 1.2];
 const RATE_KEY = "nd_rate"; // 고른 속도를 이 기기에 기억 (spec 8장)
-const NAME: Record<Kind, string> = { en: "영어 기사 낭독", kr: "한국어 기사 낭독", voca: "VOCA 단어 낭독" };
+const NAME: Record<Kind, string> = { en: "영어 기사 읽기", kr: "한국어 기사 읽기", voca: "VOCA 단어 낭독" };
 const TYPE: Record<Kind, string> = { en: "EN_READING", kr: "KR_READING", voca: "VOCA" };
 
 const PlayIcon = () => (
@@ -27,6 +27,11 @@ const PlayIcon = () => (
 const PauseIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
     <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
+  </svg>
+);
+const DlIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
   </svg>
 );
 const MicIcon = () => (
@@ -67,6 +72,7 @@ export function ReadingFlow({
   maxSec,
   learnerName,
   deadline,
+  articlePdf = null,
 }: {
   kind: Kind;
   material: Material;
@@ -74,6 +80,7 @@ export function ReadingFlow({
   maxSec: number;
   learnerName: string;
   deadline: string;
+  articlePdf?: string | null; // 기사 PDF 받기 (spec 17장: 낭독 화면 원문 카드)
 }) {
   const router = useRouter();
   const en = kind !== "kr"; // 영어가 주인 화면 (영어 낭독, VOCA 단어)
@@ -95,6 +102,8 @@ export function ReadingFlow({
   const [result, setResult] = useState<{ blob: Blob; url: string; mime: string; sec: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [popupTo, setPopupTo] = useState<string | null>(null);
+  // 제출 확인: 고른 낭독만 학습 1회로 센다 (2026-10-09 결정). 값은 "완료하고 바로 올리기"를 눌렀는지
+  const [confirmUp, setConfirmUp] = useState<boolean | null>(null);
 
   const recRef = useRef<Recorder | null>(null);
   const activityRef = useRef<Promise<string> | null>(null);
@@ -275,6 +284,7 @@ export function ReadingFlow({
   // ───────── 3 확인: 올리고 학습 완료 ─────────
   async function complete(goUp: boolean) {
     if (!result || saving) return;
+    setConfirmUp(null);
     setSaving(true);
     setError(null);
     try {
@@ -475,16 +485,36 @@ export function ReadingFlow({
           </div>
         </div>
         <div className="bottom stack" style={{ gap: 10 }}>
-          <button className="cta" disabled={saving} onClick={() => void complete(false)}>
+          <button className="cta" disabled={saving} onClick={() => setConfirmUp(false)}>
             {saving ? "저장하는 중…" : "이대로 완료"}
           </button>
-          <button className="btn2" disabled={saving} onClick={() => void complete(true)}>
+          <button className="btn2" disabled={saving} onClick={() => setConfirmUp(true)}>
             완료하고 바로 올리기
           </button>
           <button className="textbtn" style={{ textDecoration: "none" }} disabled={saving} onClick={readAgain}>
             다시 읽기
           </button>
         </div>
+        {confirmUp !== null && (
+          <>
+            <div className="dim" onClick={() => setConfirmUp(null)} />
+            <div className="sheet" role="dialog" aria-modal="true" aria-label="낭독 제출 확인">
+              <div className="handle" />
+              <h2 className="h1" style={{ fontSize: 22 }}>
+                이 낭독으로 제출할까요?
+              </h2>
+              <div style={{ fontSize: 15, lineHeight: 1.7 }}>
+                제출하면 {material.week_no}주차 학습 1회로 기록돼요. 다시 읽고 싶으면 &apos;다시 읽기&apos;를 눌러 주세요.
+              </div>
+              <button className="cta" onClick={() => void complete(confirmUp)}>
+                제출하기
+              </button>
+              <button className="btn2" onClick={() => setConfirmUp(null)}>
+                한 번 더 들어볼게요
+              </button>
+            </div>
+          </>
+        )}
         {popupTo && (
           <>
             <div className="dim" />
@@ -532,6 +562,15 @@ export function ReadingFlow({
         </div>
         {steps(1)}
         <div className="pad stack" style={{ paddingTop: 14, gap: 10 }}>
+          {articlePdf && (
+            <div className="card row" style={{ padding: "12px 16px" }}>
+              <span style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>기사 PDF</span>
+              <a className="chip" style={{ background: "var(--tint)", border: 0, gap: 4, borderRadius: 12, fontWeight: 800 }} href={articlePdf} target="_blank" rel="noopener">
+                <DlIcon />
+                받기
+              </a>
+            </div>
+          )}
           {audios.map((a) => (
             <div key={a.key}>{audioRow(a.key, a.label, a.src)}</div>
           ))}

@@ -163,7 +163,7 @@ export function MaterialsView({
               {sec("라이브")}
               {m.live.map((l) => {
                 const start = Date.parse(l.starts_at);
-                const open = l.has_zoom && now >= start - 10 * 60e3 && now <= start + 2 * 3600e3; // 시작 10분 전 ~ 시작 후 2시간(가정)
+                const open = l.has_zoom && now >= start - 10 * 60e3 && now <= start + 3 * 3600e3; // 시작 10분 전 ~ 시작 후 3시간 (서버 live_click과 같은 기준)
                 const replay = l.has_replay && now > start;
                 return (
                   <div key={l.session_id} className="row" style={{ padding: "12px 14px", borderRadius: 14, background: "var(--tint)" }}>
