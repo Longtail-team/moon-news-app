@@ -9,10 +9,10 @@ const MODEL = process.env.OCR_MODEL || "claude-haiku-5-5";
 const TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 type ImageType = (typeof TYPES)[number];
 
-const PROMPT = `This is a photo of a student's handwritten English news summary worksheet (the student is 10-15 years old).
-Transcribe only the student's handwriting, exactly as written: keep their spelling, grammar and line breaks, do not correct or improve anything.
-Skip printed text on the worksheet (titles, instructions, labels).
-If a word is unreadable, write [?] in its place. If there is no handwriting, reply with nothing.
+const PROMPT = `This photo shows a student's English news summary worksheet (the student is 10-15 years old).
+Transcribe the student's written answer exactly as written: keep their spelling, grammar and line breaks. Do not correct or improve anything.
+Leave out the worksheet's own printed headings, labels and instructions (for example "Summary", "Name", "Date").
+If a word is unreadable, write [?] in its place. If the answer area is blank, reply with nothing.
 Reply with the transcription only, no comments.`;
 
 export const ocrEnabled = () => !!process.env.ANTHROPIC_API_KEY;
@@ -46,11 +46,13 @@ export async function readHandwriting(image: Blob): Promise<string> {
       ],
     });
     if (res.stop_reason === "refusal") throw new OcrError("refused");
-    return res.content
+    const text = res.content
       .flatMap((b) => (b.type === "text" ? [b.text] : []))
       .join("")
       .trim()
       .slice(0, 2000);
+    if (!text) console.warn("ocr empty", MODEL, res.stop_reason, res.content.map((b) => b.type).join(","));
+    return text;
   } catch (e) {
     if (e instanceof OcrError) throw e;
     if (e instanceof Anthropic.APIError) console.error("ocr", e.status, e.message);
