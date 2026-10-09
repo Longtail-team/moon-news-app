@@ -81,6 +81,12 @@ export const UpIcon = () => (
     <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
   </Svg>
 );
+export const BookIcon = () => (
+  <Svg size={24}>
+    <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z" />
+    <path d="M4 21V5M8 7h7M8 11h5" />
+  </Svg>
+);
 export const DownIcon = () => (
   <Svg size={20} width={2.4}>
     <path d="M6 9l6 6 6-6" />

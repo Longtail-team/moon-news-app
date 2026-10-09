@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { DocIcon, HomeIcon, UpIcon } from "./icons";
+import { BookIcon, DocIcon, HomeIcon, UpIcon } from "./icons";
 
-type Tab = "home" | "materials" | "upload";
+export type Tab = "home" | "materials" | "upload" | "record";
 
 // 누르는 즉시 그 탭을 켜 보여 준다(다음 화면을 불러오는 동안에도 눌렸다는 걸 알 수 있게)
 export function TabBar({ active, uploadCount }: { active: Tab | null; uploadCount?: number }) {
@@ -26,6 +26,7 @@ export function TabBar({ active, uploadCount }: { active: Tab | null; uploadCoun
       {item("home", "/", "홈", <HomeIcon />)}
       {item("materials", "/materials", "이번 주 자료", <DocIcon />)}
       {item("upload", "/upload", "인스타 올리기", <UpIcon />, uploadCount)}
+      {item("record", "/record", "내 기록", <BookIcon />)}
     </nav>
   );
 }

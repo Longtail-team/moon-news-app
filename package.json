@@ -16,6 +16,7 @@
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "@mediabunny/aac-encoder": "^1.61.3",
+    "@react-pdf/renderer": "^4.9.0",
     "@supabase/supabase-js": "^2.117.2",
     "mediabunny": "^1.61.3",
     "next": "^16.3.8",
