@@ -1,6 +1,8 @@
 "use client";
 
 // 12주 기록: 기본은 접힌 한 줄, 누르면 12주 × 5칸 (spec.md 7장)
+// 지난 주차 빈칸(점선)과 이번 주 빈칸을 누르면 그 주차가 고른 활동 선택 화면으로 간다(지난 주차 소급)
+import Link from "next/link";
 import { useState } from "react";
 import { ACT, ACT_ORDER, ActIcon, DownIcon, UpChevronIcon, type ActType } from "./icons";
 
@@ -49,6 +51,15 @@ export function RecordCard({
           )}
         </span>
       </button>
+      {backlogWeek && (
+        <Link
+          className="textbtn"
+          style={{ display: "flex", alignItems: "center", minHeight: 44, fontSize: 13, fontWeight: 700, color: "var(--deep)", textDecoration: "none" }}
+          href={`/activity?week=${backlogWeek.week_no}`}
+        >
+          {backlogWeek.week_no}주차 빈칸 채우러 가기 ›
+        </Link>
+      )}
       {open && (
         <div className="stack reveal" style={{ padding: "4px 0 12px" }}>
           <div style={{ fontSize: 13, fontWeight: 700 }}>
@@ -74,8 +85,15 @@ export function RecordCard({
                         <ActIcon type={act} />
                       </div>
                     );
-                  if (w.week_no < currentWeek) return <div key={i} className="box miss" role="img" aria-label="빈 칸" />;
-                  if (w.week_no === currentWeek) return <div key={i} className="box open" role="img" aria-label="빈 칸" />;
+                  if (w.week_no <= currentWeek)
+                    return (
+                      <Link
+                        key={i}
+                        className={`box ${w.week_no < currentWeek ? "miss" : "open"}`}
+                        href={`/activity?week=${w.week_no}`}
+                        aria-label={`${w.week_no}주차 빈 칸, 채우러 가기`}
+                      />
+                    );
                   return <div key={i} className="box future" />;
                 })}
               </div>
