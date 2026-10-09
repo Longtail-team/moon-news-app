@@ -84,7 +84,7 @@ function Item({ item, onVerified, onMessage }: { item: QueueItem; onVerified: (v
             <span style={{ fontSize: 16, fontWeight: 800 }}>{ACT[item.activity_type].name}</span>
             <span className="meta">
               {item.week_no}주차 · {fmtMonthDay(item.completed_at)}
-              {photo ? " · 작성지 사진" : " 녹음"}
+              {item.activity_type === "LISTENING" ? " · 청독 카드" : photo ? " · 작성지 사진" : " 녹음"}
             </span>
           </span>
         </div>
