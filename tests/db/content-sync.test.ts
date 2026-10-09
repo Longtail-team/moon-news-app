@@ -82,3 +82,19 @@ describe("sync_week", () => {
     expect(r).toEqual([{ session_no: 1, zoom_url: "https://zoom.us/j/9" }, { session_no: 2, zoom_url: null }]);
   });
 });
+
+describe("듣기 전 질문", () => {
+  it("시트의 질문이 기사에 반영되고 낭독 자료에 실린다, 비우면 지운다", async () => {
+    await db.transaction(async (tx) => {
+      const c1 = (await tx.query<Row>("select cohort_id from cohorts where cohort_no = 1")).rows[0].cohort_id;
+      const p = { title_en: "RM Opens His Art Collection to the World", status: "published", sentences: [{ para_no: 1, sent_no: 1, en: "Hi.", ko: "안녕." }] };
+      await tx.query("select public.sync_week($1, 1, $2)", [c1, JSON.stringify({ ...p, pre_question: " 내가 가장 아끼는 물건은? " })]);
+      const q = async () =>
+        ((await tx.query<Row>("select public.reading_material('S-0001', 1, '2026-10-07T12:00:00+09:00') as j")).rows[0].j as any).pre_question;
+      expect(await q()).toBe("내가 가장 아끼는 물건은?");
+      await tx.query("select public.sync_week($1, 1, $2)", [c1, JSON.stringify({ ...p, pre_question: "" })]);
+      expect(await q()).toBeNull();
+      await tx.rollback();
+    });
+  });
+});

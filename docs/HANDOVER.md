@@ -48,13 +48,14 @@ node --env-file=.env.local scripts/delete-test-order.mjs 01000009001       # 시
 ```
 npm install
 npm run dev        # http://localhost:3000  (predev가 ffmpeg 워커를 public/ffmpeg로 복사)
-npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 111개
+npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 117개
 npm run build
 ```
 
 `.env.local` (git에 올리지 않음, 값은 담당자에게 받거나 대시보드에서 확인)
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`: 서버 전용. Vercel Production·Preview, GitHub Secrets에도 같은 이름으로 등록돼 있다
 - `SUPABASE_DB_PASSWORD`: 마이그레이션 적용용. 모르면 Supabase 대시보드에서 재설정
+- `ANTHROPIC_API_KEY`: 작성지 사진 글자 읽기(기자수첩). 없으면 버튼이 숨겨진다. `OCR_MODEL`(선택)로 모델을 바꾼다(기본 claude-opus-5-5)
 
 DB 변경
 ```
@@ -89,7 +90,7 @@ app/
   lab/                   T01 기기 검증 페이지
 components/student|reading|work|upload|materials|onboarding/
 lib/
-  server/                서버 전용(db, session, home, reading, media, learner, guardian, onboarding, notify, materials)
+  server/                서버 전용(db, session, home, reading, media, learner, guardian, onboarding, notify, materials, ocr)
                          learner.ts: API용 requireLearner, 화면용 pageLearner(세션·학습자 없으면 이동)
   client-api.ts          브라우저 → 서버 API, 파일 직접 업로드
   format.ts phone.ts korean.ts insta.ts image.ts   날짜·이름 표시, 번호 정리·가리기, 조사·학년, 인스타 링크 정리, 사진 줄이기
@@ -100,7 +101,7 @@ lib/
 scripts/sync-content.mjs 콘텐츠 반영 (GitHub Actions에서 실행)
 .github/workflows/content-sync.yml
 supabase/
-  migrations/            15개
+  migrations/            17개
   seed.sql               샘플 데이터
   sample-cleanup.sql     개강 전 샘플 지우기
 tests/db/ tests/unit/

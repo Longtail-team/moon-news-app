@@ -2,6 +2,7 @@
 
 // 작성 활동 (spec.md 6장, 목업 worksheet): 1 작성지 받기 → 2 쓰기 안내 → 3 사진 올리기 → 완료하기
 // 사진은 고르자마자 줄여서 Storage 비공개 버킷에 올리고 붙여 둔다(작성 중). 나갔다 와도 이어서 할 수 있다.
+// 기사 요약은 기자수첩(내가 붙인 제목·요약, 사진 글자 읽기), 찬반토론은 내 의견(입장·이유, 일요일 자정까지). 모두 선택 입력.
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
@@ -37,6 +38,14 @@ const CamIcon = () =>
       <circle cx="12" cy="13" r="3.5" />
     </>,
   );
+const input: React.CSSProperties = { width: "100%", minHeight: 48, borderRadius: 12, border: "1px solid var(--faint)", background: "var(--white)", padding: "12px 14px", fontSize: 16, font: "inherit" };
+
+const OCR_ERR: Record<string, string> = {
+  limit: "글자 읽기는 3번까지 할 수 있어요. 직접 고쳐 주세요.",
+  unsupported: "이 사진 형식은 읽을 수 없어요. 직접 입력해 주세요.",
+  unavailable: "지금은 글자 읽기를 쓸 수 없어요. 직접 입력해 주세요.",
+};
+
 const ImgIcon = () =>
   svg(
     <>
@@ -46,7 +55,7 @@ const ImgIcon = () =>
     </>,
   );
 
-export function WorksheetFlow({ kind, material }: { kind: Kind; material: WorkMaterial }) {
+export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: WorkMaterial; ocr: boolean }) {
   const router = useRouter();
   const t = TEXT[kind];
   const pdfUrl = kind === "voca" ? material.vocaPdf : material.articlePdf;
@@ -56,6 +65,15 @@ export function WorksheetFlow({ kind, material }: { kind: Kind; material: WorkMa
   const [error, setError] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const note = material.draft?.note;
+  const [title, setTitle] = useState(note?.title ?? "");
+  const [body, setBody] = useState(note?.body ?? "");
+  const [stance, setStance] = useState<"agree" | "disagree" | null>(note?.stance ?? null);
+  const [reason, setReason] = useState(note?.reason ?? "");
+  const [voteOpen, setVoteOpen] = useState(material.vote_open);
+  const [ocrLeft, setOcrLeft] = useState(note?.ocr_left ?? 3);
+  const [reading, setReading] = useState(false);
+  const [ocrMsg, setOcrMsg] = useState<string | null>(null);
   const camRef = useRef<HTMLInputElement | null>(null);
   const albumRef = useRef<HTMLInputElement | null>(null);
 
@@ -81,11 +99,50 @@ export function WorksheetFlow({ kind, material }: { kind: Kind; material: WorkMa
     }
   }
 
+  async function readPhoto() {
+    if (!activityId || reading) return;
+    setReading(true);
+    setOcrMsg(null);
+    try {
+      const r = await post<{ text: string }>("/api/activity/ocr", { activityId });
+      setOcrLeft((n) => n - 1);
+      if (!r.text) setOcrMsg("글자를 찾지 못했어요. 사진을 밝게 다시 찍거나 직접 입력해 주세요.");
+      else {
+        setBody(r.text);
+        setOcrMsg("읽은 글자를 확인하고 틀린 곳을 고쳐 주세요.");
+      }
+    } catch (e) {
+      const code = (e as { code?: string }).code ?? "";
+      if (code === "limit") setOcrLeft(0);
+      else if (code !== "unavailable" && code !== "unsupported") setOcrLeft((n) => Math.max(0, n - 1));
+      setOcrMsg(OCR_ERR[code] ?? "글자를 읽지 못했어요. 잠시 뒤 다시 누르거나 직접 입력해 주세요.");
+    } finally {
+      setReading(false);
+    }
+  }
+
+  // 선택 입력이 있으면 학습 완료 직전에 저장한다
+  async function saveNote(id: string) {
+    if (kind === "summary" && (title.trim() || body.trim() || note)) await post("/api/activity/note", { activityId: id, title, body });
+    if (kind === "debate" && voteOpen && (stance || note?.stance)) await post("/api/activity/note", { activityId: id, stance, reason: stance ? reason : "" });
+  }
+
   async function complete() {
     if (!activityId || !photo || busy) return;
     setBusy("complete");
     setError(null);
     try {
+      try {
+        await saveNote(activityId);
+      } catch (e) {
+        if ((e as { code?: string }).code === "vote_closed") {
+          setVoteOpen(false);
+          setStance(null);
+          setError("이번 주 의견 받기가 끝났어요. 의견 없이 완료할 수 있어요.");
+        } else setError("기록을 저장하지 못했어요. 다시 눌러 주세요.");
+        setBusy(null);
+        return;
+      }
       const c = await post<{ weekNo: number; weekCompleted: number }>("/api/activity/complete", { activityId });
       router.push(`/?done=${c.weekNo}-${c.weekCompleted}`);
     } catch {
@@ -243,6 +300,57 @@ export function WorksheetFlow({ kind, material }: { kind: Kind; material: WorkMa
               <input ref={albumRef} type="file" accept="image/*" hidden onChange={(e) => void onPick(e)} />
             </>,
           )}
+          {kind === "summary" &&
+            step(
+              4,
+              "기자수첩 (선택)",
+              <>
+                <div className="help" style={{ fontSize: 13 }}>
+                  기사에 내 제목을 붙이고 요약을 옮겨 두면, 12주 뒤 내 영어 뉴스북으로 모아 드려요.
+                </div>
+                <input style={input} value={title} maxLength={60} placeholder="내가 붙인 제목" aria-label="내가 붙인 제목" onChange={(e) => setTitle(e.target.value)} />
+                <textarea
+                  style={{ ...input, minHeight: 120, resize: "vertical", lineHeight: 1.6 }}
+                  value={body}
+                  maxLength={2000}
+                  placeholder="요약을 입력하거나, 사진에서 글자를 읽어 오세요"
+                  aria-label="요약"
+                  onChange={(e) => setBody(e.target.value)}
+                />
+                {ocr && photo && activityId && (
+                  <button className="btn2" disabled={reading || ocrLeft <= 0 || !!busy} onClick={() => void readPhoto()}>
+                    {reading ? "사진에서 글자를 읽는 중…" : ocrLeft > 0 ? `사진에서 글자 읽기 (${ocrLeft}번 남음)` : "글자 읽기를 다 썼어요"}
+                  </button>
+                )}
+                {ocrMsg && <div className="help" style={{ fontSize: 13 }}>{ocrMsg}</div>}
+              </>,
+            )}
+          {kind === "debate" &&
+            step(
+              4,
+              "내 의견 (선택)",
+              voteOpen ? (
+                <>
+                  <div className="help" style={{ fontSize: 13 }}>
+                    이번 주 일요일 자정까지 낼 수 있어요. 마감 뒤에 모두의 찬반 결과를 모아요.
+                  </div>
+                  <div className="row" style={{ gap: 8 }} role="group" aria-label="내 입장">
+                    {(["agree", "disagree"] as const).map((v) => (
+                      <button key={v} className={`chip${stance === v ? " on" : ""}`} style={{ flex: 1, justifyContent: "center" }} aria-pressed={stance === v} onClick={() => setStance(stance === v ? null : v)}>
+                        {v === "agree" ? "찬성" : "반대"}
+                      </button>
+                    ))}
+                  </div>
+                  {stance && (
+                    <input style={input} value={reason} maxLength={300} placeholder="이유를 한 문장으로 써 주세요" aria-label="이유" onChange={(e) => setReason(e.target.value)} />
+                  )}
+                </>
+              ) : (
+                <div className="help" style={{ fontSize: 13 }}>
+                  이번 주 의견 받기는 끝났어요. 작성지 사진으로 학습은 그대로 할 수 있어요.
+                </div>
+              ),
+            )}
           {error && <div className="err">{error}</div>}
         </div>
       </div>
