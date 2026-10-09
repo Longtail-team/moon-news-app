@@ -44,6 +44,7 @@ const OCR_ERR: Record<string, string> = {
   limit: "글자 읽기는 3번까지 할 수 있어요. 직접 고쳐 주세요.",
   unsupported: "이 사진 형식은 읽을 수 없어요. 직접 입력해 주세요.",
   unavailable: "지금은 글자 읽기를 쓸 수 없어요. 직접 입력해 주세요.",
+  no_consent: "보호자가 AI 글자 읽기에 동의해야 쓸 수 있어요. 직접 입력해 주세요.",
 };
 
 const ImgIcon = () =>
@@ -317,7 +318,12 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
                   aria-label="요약"
                   onChange={(e) => setBody(e.target.value)}
                 />
-                {ocr && photo && activityId && (
+                {ocr && !material.ocr_consent && (
+                  <div className="help" style={{ fontSize: 13 }}>
+                    사진 글자 읽기는 보호자가 AI 글자 읽기에 동의해야 쓸 수 있어요. 요약은 직접 입력해 주세요.
+                  </div>
+                )}
+                {ocr && material.ocr_consent && photo && activityId && (
                   <button className="btn2" disabled={reading || ocrLeft <= 0 || !!busy} onClick={() => void readPhoto()}>
                     {reading ? "사진에서 글자를 읽는 중…" : ocrLeft > 0 ? `사진에서 글자 읽기 (${ocrLeft}번 남음)` : "글자 읽기를 다 썼어요"}
                   </button>

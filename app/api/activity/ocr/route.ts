@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   if (!b?.activityId) return json({ error: "bad request" }, 400);
 
   const { data: key, error } = await db().rpc("ocr_take", { p_student: learner.student_id, p_activity: b.activityId });
-  if (error) return json({ error: error.message.includes("ocr limit") ? "limit" : "cannot read" }, 409);
+  if (error) return json({ error: error.message.includes("ocr limit") ? "limit" : error.message.includes("no ai consent") ? "no_consent" : "cannot read" }, 409);
   if (typeof key !== "string") return json({ error: "not found" }, 404);
 
   const { data: file, error: e2 } = await db().storage.from("media").download(key);

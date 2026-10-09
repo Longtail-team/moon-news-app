@@ -58,6 +58,7 @@ export type WorkMaterial = {
   weekly_target: number;
   deadline: string;
   vote_open: boolean; // 찬반토론 의견은 그 주차 일요일 자정까지만
+  ocr_consent: boolean; // 보호자가 사진 글자 읽기(외부 AI)에 동의함
   week_completed: number;
   title: string;
   vocab: { no: number; word: string; meaning: string }[];
@@ -83,6 +84,7 @@ export async function getWorkMaterial(studentId: string, week: number, type: Act
     weekly_target: m.weekly_target,
     deadline: m.deadline,
     vote_open: m.vote_open,
+    ocr_consent: m.ocr_consent,
     week_completed: m.week_completed,
     title: m.title,
     vocab: m.vocab,

@@ -112,6 +112,8 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 - 찬반토론: 입장(찬성/반대)과 이유 한 문장. 그 주차 일요일 자정(주차 끝)까지만 받고, 마감 뒤에는 저장하지 않는다(주차 안에 완주하도록 유도). 찬반토론 활동(사진)은 지난 주차도 소급할 수 있다.
 - 찬반 비율 = 그 기수·주차에서 마감 전에 학습 완료한 찬반토론의 입장, 학습자마다 마지막 1개. 마감 시점에 고정된다. 학생에게 보여 주는 시점은 미정(뉴스북에는 싣는다).
 - 요약 텍스트·의견은 사진과 같이 종강 후 3개월에 지운다.
+- 사진에서 글자 읽기(외부 AI 전송)는 첫 접속 3단계의 **선택 동의**("작성지 사진의 손글씨를 글자로 읽기 위해 사진을 외부 AI 서비스(Anthropic)로 보내는 데 동의합니다")를 한 학습자만 쓴다. 동의하지 않으면 버튼을 쓰지 않고 요약은 직접 입력하며, 학습·완주에는 영향이 없다. 나중에 바꾸는 화면은 마이페이지에 둔다(예정).
+- 듣기 전 질문은 연령별로 나누지 않고 기사마다 하나만 쓴다(같은 기사·음원을 모두가 쓰고, 답을 받지 않는 생각거리라서). 초등 4학년도 이해할 말로, 정답이 없고 기사 내용을 미리 알려 주지 않게 쓴다.
 
 인스타그램 게시물은 학습 1회에 1개다. 활동마다 따로 올리는 이유는 완주를 60회로 세기 때문이다. 활동별 중간 단계는 다를 수 있지만 학습 완료(completed_at)와 인증(verified_at)은 공통으로 관리한다. 중단된 활동은 언제든 이어서 할 수 있어야 한다.
 
@@ -323,7 +325,7 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 | --- | --- | --- |
 | orders | 아임웹 주문 1건 | order_id, imweb_order_no, guardian_id, cohort_id, quantity(아임웹 기록, 등록 인원 제한에 쓰지 않음 · 주문당 학습자 최대 4명), paid_at, paid_amount, coupon_code, source |
 | guardians | 보호자 1명 | guardian_id, name, phone(결제자 번호, 숫자만, 고유값), alimtalk_agreed_at, reenroll_marketing_agreed_at, created_at |
-| students | 학습자 1명 | student_id, guardian_id, name, is_self(결제자 본인, 가정당 1명), birth_ym(본인은 비움), own_phone, instagram_id, consent_at, admin_memo, created_at |
+| students | 학습자 1명 | student_id, guardian_id, name, is_self(결제자 본인, 가정당 1명), birth_ym(본인은 비움), own_phone, instagram_id, consent_at, ai_ocr_consent_at(사진 글자 읽기 선택 동의), admin_memo, created_at |
 | access_tokens | 접속 링크 1개 | token_id, guardian_id(보호자 링크), student_id(자녀 링크), holder(보호자/자녀), sent_to_phone, token_hash, issued_at, expires_at, revoked_at, last_used_at |
 | cohorts | 기수 1개 | cohort_id, course_title, cohort_no, start_date, deadline(12주차 일요일), grace_until(마감 + 7일), weekly_target(5), total_target(60), reward_pdf_key |
 | cohort_weeks | 기수의 주차 1개 | cohort_id, week_no, starts_at, ends_at, article_id |

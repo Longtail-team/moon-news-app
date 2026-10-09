@@ -59,9 +59,32 @@ describe("기자수첩", () => {
     });
   });
 
+  it("사진 글자 읽기는 보호자가 AI 동의를 하지 않으면 쓸 수 없다", async () => {
+    await db.transaction(async (tx) => {
+      const id = await act(tx, "S-0002", 4, "SUMMARY");
+      const m = (await tx.query<Row>("select public.work_material('S-0002', 4, 'SUMMARY', $1) as j", [NOW])).rows[0].j as any;
+      expect(m.ocr_consent).toBe(false);
+      await expect(tx.query("select public.ocr_take('S-0002', $1)", [id])).rejects.toThrow(/no ai consent/);
+      await tx.rollback();
+    });
+  });
+
+  it("AI 동의는 그 보호자의 학습자에게만 저장된다", async () => {
+    await db.transaction(async (tx) => {
+      const g = async (s: string) => (await tx.query<Row>("select guardian_id from students where student_id = $1", [s])).rows[0].guardian_id;
+      await tx.query("select public.set_ai_consent($1, 'S-0002', true)", [await g("S-0002")]);
+      expect((await tx.query<Row>("select ai_ocr_consent_at is not null as on from students where student_id = 'S-0002'")).rows[0].on).toBe(true);
+      await tx.query("select public.set_ai_consent($1, 'S-0002', false)", [await g("S-0002")]);
+      expect((await tx.query<Row>("select ai_ocr_consent_at is null as off from students where student_id = 'S-0002'")).rows[0].off).toBe(true);
+      await expect(tx.query("select public.set_ai_consent($1, 'S-0002', true)", [await g("S-0001")])).rejects.toThrow(/not found/);
+      await tx.rollback();
+    });
+  });
+
   it("사진 글자 읽기는 활동마다 3번까지", async () => {
     await db.transaction(async (tx) => {
       const id = await act(tx, "S-0002", 4, "SUMMARY");
+      await tx.query("update students set ai_ocr_consent_at = now() where student_id = 'S-0002'");
       const take = () => tx.query<Row>("select public.ocr_take('S-0002', $1) as k", [id]).then((r) => r.rows[0].k);
       expect(await take()).toMatch(/^photos\//);
       await take();

@@ -374,6 +374,7 @@ function Access({ s, onDone, onDevLinks }: { s: State; onDone: () => void; onDev
   const [own, setOwn] = useState<Record<string, boolean>>({});
   const [phones, setPhones] = useState<Record<string, string>>({});
   const [consent, setConsent] = useState(false);
+  const [aiConsent, setAiConsent] = useState(false);
   const [showPolicy, setShowPolicy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -390,6 +391,7 @@ function Access({ s, onDone, onDevLinks }: { s: State; onDone: () => void; onDev
     try {
       const r = await post<{ devLinks: { studentId: string; link: string }[] }>("/api/onboarding/access", {
         consent: true,
+        aiConsent,
         items: s.pending.map((p) => ({ studentId: p.student_id, ownPhone: !p.is_self && own[p.student_id] ? phones[p.student_id] : null })),
       });
       if (r.devLinks.length) onDevLinks(r.devLinks.map((d) => ({ name: s.pending.find((p) => p.student_id === d.studentId)?.name ?? "", link: d.link })));
@@ -483,6 +485,22 @@ function Access({ s, onDone, onDevLinks }: { s: State; onDone: () => void; onDev
             보관 기간과 삭제 기준 보기
           </button>
           {showPolicy && <div className="help">녹음과 작성지 사진은 종강 후 3개월이 지나면 모두 지워요. 학습 기록(횟수·날짜)은 남아요.</div>}
+        </div>
+        <div className="card lift">
+          <label className="row" style={{ alignItems: "flex-start", gap: 10, fontSize: 14, lineHeight: 1.5 }}>
+            <input
+              type="checkbox"
+              checked={aiConsent}
+              onChange={(e) => setAiConsent(e.target.checked)}
+              style={{ width: 22, height: 22, marginTop: 2, accentColor: "var(--deep)", flexShrink: 0 }}
+            />
+            작성지 사진의 손글씨를 글자로 읽기 위해 사진을 외부 AI 서비스(Anthropic)로 보내는 데 동의합니다 (선택)
+          </label>
+          <div className="help">
+            {aiConsent
+              ? "기사 요약에서 '사진에서 글자 읽기'를 누를 때만 그 사진을 보내요. 글자를 읽는 데만 쓰여요."
+              : "동의하지 않으면 '사진에서 글자 읽기'를 쓰지 않아요. 요약은 직접 입력할 수 있고, 학습과 완주에는 영향이 없어요."}
+          </div>
         </div>
         {err && <div className="err">{err}</div>}
         <button className="cta" disabled={busy} onClick={() => void start()}>
