@@ -28,12 +28,12 @@ describe("활동 선택", () => {
 });
 
 describe("낭독 자료", () => {
-  it("1주차: 문장 14개(끊어 읽기 포함), 음원 2종 정보", async () => {
+  it("1주차: 문장 14개(끊어 읽기 포함), 음원 2종과 기사 PDF 정보, 종강일", async () => {
     const m = await json("select public.reading_material('S-0001', 1, $1) as j", [NOW]);
-    expect(m).toMatchObject({ week_no: 1, weekly_target: 5, week_completed: 5, word_count: 173 });
+    expect(m).toMatchObject({ week_no: 1, weekly_target: 5, week_completed: 5, word_count: 173, deadline: "2026-12-06" });
     expect(m.sentences).toHaveLength(14);
     expect(m.sentences[1].en).toBe("For RM of BTS, / the answer is art.");
-    expect(m.assets.map((a: any) => a.type).sort()).toEqual(["article_audio", "kr_en_repeat_audio"]);
+    expect(m.assets.map((a: any) => a.type).sort()).toEqual(["article_audio", "article_pdf", "kr_en_repeat_audio"]);
   });
 
   it("시작 전 주차·공개 전 기사는 없음", async () => {

@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Onboarding as State } from "@/lib/server/onboarding";
 import { post } from "@/lib/client-api";
-import { maskPhone } from "@/lib/phone";
 import { fmtDay, givenName } from "@/lib/format";
 import { GRADES, gradeLabel, withGa, withRo } from "@/lib/korean";
 
@@ -84,7 +83,7 @@ function Welcome({ s, onDone }: { s: State; onDone: () => void }) {
           {kv("과정", `${o.course_title} ${o.cohort_no}기`)}
           {kv("기간", "12주")}
           {kv("시작", fmtDay(o.start_date))}
-          {kv("신청 연락처", maskPhone(s.guardian.phone))}
+          {kv("신청 연락처", s.guardian.phone)}
           <div className="help" style={{ fontSize: 13, marginTop: 8 }}>
             정보가 다르면 운영팀에 문의해 주세요.
           </div>
@@ -124,7 +123,7 @@ function Welcome({ s, onDone }: { s: State; onDone: () => void }) {
           </div>
           <div className="stack" style={{ gap: 6 }}>
             <label style={{ fontSize: 13, fontWeight: 700 }}>알림 받을 연락처</label>
-            <input style={{ ...input, background: "var(--mute)" }} value={maskPhone(s.guardian.phone)} readOnly />
+            <input style={{ ...input, background: "var(--mute)" }} value={s.guardian.phone} readOnly />
             <div className="help">신청한 번호로 알림톡을 보내드려요.</div>
           </div>
           <label className="row" style={{ minHeight: 44, fontSize: 14, gap: 10 }}>
@@ -385,7 +384,6 @@ function Access({ s, onDone, onDevLinks }: { s: State; onDone: () => void; onDev
       if (p.is_self || !own[p.student_id]) continue;
       const d = (phones[p.student_id] ?? "").replace(/\D/g, "");
       if (!d) return setErr(`${givenName(p.name)} 연락처를 입력해 주세요.`);
-      if (d === s.guardian.phone) return setErr("보호자 번호와 같아요. 보호자 휴대폰으로 진행한다면 '아니요'를 골라 주세요.");
     }
     setBusy(true);
     setErr(null);

@@ -1,20 +1,16 @@
 // 이번 주 자료 탭 (spec.md 17장): 주차가 시작되어야 열린다
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { currentLearner, getSession } from "@/lib/server/session";
+import { pageLearner } from "@/lib/server/learner";
 import { getMaterials } from "@/lib/server/materials";
-import { getHome } from "@/lib/server/home";
 import { MaterialsView } from "@/components/materials/MaterialsView";
 import { fmtDay, fmtLive } from "@/lib/format";
 import "../student.css";
 
 export default async function MaterialsPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
-  const session = await getSession();
-  if (!session) redirect("/");
-  const learner = await currentLearner(session);
-  if (!learner) redirect("/profiles");
+  const { learner } = await pageLearner();
   const w = Number((await searchParams).week);
-  const [m, home] = await Promise.all([getMaterials(learner.student_id, Number.isInteger(w) && w > 0 ? w : null), getHome(learner.student_id)]);
+  const m = await getMaterials(learner.student_id, Number.isInteger(w) && w > 0 ? w : null);
   if (!m) redirect("/");
 
   const nextOpenLabel = m.next_open
@@ -26,7 +22,7 @@ export default async function MaterialsPage({ searchParams }: { searchParams: Pr
   return (
     <MaterialsView
       m={m}
-      uploadCount={home?.progress.pending_post_count ?? 0}
+      uploadCount={m.pending_post_count}
       nextOpenLabel={nextOpenLabel}
       liveLabels={liveLabels}
       kakao={kakao}

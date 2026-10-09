@@ -1,10 +1,10 @@
-# 인수인계 (2026-10-08 기준)
+# 인수인계 (2026-10-09 기준)
 
 새벽달 영어뉴스 낭독 챌린지 웹앱. 이 문서만 읽고 이어서 작업할 수 있게 정리했다.
 제품 규칙은 `docs/spec.md`, 작업 지시는 `docs/tasks/`, 날짜별 경과는 `docs/devlog.md`.
 
 ## 1. 지금 상태 한 줄
-개발 1단계 중(PR #1~#16 운영 반영). **결제(시험 주문) → 보호자 링크 → 첫 접속 3단계 → 홈 → 기사 읽기(녹음) → 작성 활동(사진) → 인스타 올리기(링크 인증) → 이번 주 자료(주차별 순차 공개)**, 다시 들어가기, 콘텐츠 시트 → 앱 반영(검사 실행까지)이 동작한다.
+개발 1단계 중(PR #1~#17 운영 반영, 10-09 점검 수정은 `fix/audit-1009` PR). **결제(시험 주문) → 보호자 링크 → 첫 접속 3단계 → 홈 → 기사 읽기(녹음) → 작성 활동(사진) → 인스타 올리기(링크 인증) → 이번 주 자료(주차별 순차 공개)**, 다시 들어가기, 콘텐츠 시트 → 앱 반영(검사 실행까지)이 동작한다.
 아직 없는 것: 영상 만들기(2단계), 완주 화면, 관리자, 아임웹 결제 신호, 솔라피 실제 발송, 실제 음원·시간 정보(하이라이트), 주차 PDF.
 
 ## 2. 주소와 계정
@@ -41,14 +41,14 @@
 node --env-file=.env.local scripts/test-order.mjs 01000009001 2 1 <주소>   # 샘플 번호, 형제 2명, 1기 → 보호자 링크 출력
 node --env-file=.env.local scripts/delete-test-order.mjs 01000009001       # 시험 데이터 지우기 (0100000xxxx 번호만)
 ```
-미리보기 주소에서는 자녀 링크·다시 들어가기 링크가 화면에 보인다(`DEV_OUTBOX=1`, Preview 환경변수). 운영 주소에는 보이지 않는다.
+미리보기 주소에서는 **시험 번호(0100000xxxx)일 때만** 자녀 링크·다시 들어가기 링크가 화면에 보인다(`DEV_OUTBOX=1`, Preview 환경변수). 미리보기도 운영 DB를 쓰므로 실제 번호의 링크는 보이지 않게 막았다. 운영 주소에는 보이지 않는다.
 
 ## 3. 로컬에서 실행
 
 ```
 npm install
 npm run dev        # http://localhost:3000  (predev가 ffmpeg 워커를 public/ffmpeg로 복사)
-npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 108개
+npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 111개
 npm run build
 ```
 
@@ -61,7 +61,7 @@ DB 변경
 supabase link --project-ref mefmwetcfrmwdqcgxtpz -p <DB 비밀번호>
 supabase db push -p <DB 비밀번호>            # supabase/migrations 적용
 ```
-- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 14개 모두 운영에 적용됨.
+- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 15개 모두 운영에 적용됨.
 
 ### Windows 주의
 - 프로젝트 경로에 한글이 있으면 Node `fs.cpSync`가 오류 없이 종료된다 → `copyFileSync` 사용(`scripts/copy-ffmpeg-worker.mjs`)
@@ -82,6 +82,7 @@ app/
   upload/                인스타 올리기
   materials/             이번 주 자료 (주차별 순차 공개)
   files/[week]/[type]/   학습 자료 파일 → 확인 후 짧은 주소로 이동
+  media/[activity]/      녹음·사진 → 주인 확인 후 1분 주소로 이동 (화면에 저장소 주소를 싣지 않음)
   live/[session]/        라이브 입장·다시보기 (입장 기록)
   */loading.tsx          불러오는 동안 뼈대 (components/student/PageLoading)
   api/activity/*  api/onboarding/*  api/reentry
@@ -89,13 +90,17 @@ app/
 components/student|reading|work|upload|materials|onboarding/
 lib/
   server/                서버 전용(db, session, home, reading, media, learner, guardian, onboarding, notify, materials)
+                         learner.ts: API용 requireLearner, 화면용 pageLearner(세션·학습자 없으면 이동)
+  client-api.ts          브라우저 → 서버 API, 파일 직접 업로드
+  format.ts phone.ts korean.ts insta.ts image.ts   날짜·이름 표시, 번호 정리·가리기, 조사·학년, 인스타 링크 정리, 사진 줄이기
+  lab/                   /lab 기기 검증 페이지 전용
   content/parse.mjs      콘텐츠 시트 검사·변환, 파일명 규칙
   video/                 2단계 영상 모듈 연결 규칙 (지금은 자리만, MAX_RECORDING_SEC=300)
   reading/               지문·하이라이트 순서, 녹음기
 scripts/sync-content.mjs 콘텐츠 반영 (GitHub Actions에서 실행)
 .github/workflows/content-sync.yml
 supabase/
-  migrations/            14개
+  migrations/            15개
   seed.sql               샘플 데이터
   sample-cleanup.sql     개강 전 샘플 지우기
 tests/db/ tests/unit/
@@ -105,7 +110,8 @@ docs/ spec.md · tasks/ · devlog.md · spike-results.md · content/ · referenc
 ### 보안·데이터 흐름
 - 브라우저는 우리 서버(Next.js)하고만 통신한다. 서버가 service_role로 Supabase에 접근하고, 학습자 범위는 세션에서 정한다.
 - 접속 링크·세션은 원문을 저장하지 않고 SHA-256 해시만 둔다. 세션 쿠키 `nd_s`(httpOnly, 180일), 학습자 선택 `nd_p`.
-- 파일: 비공개 버킷 `media`(녹음 `recordings/<수강id>/…`, 사진 `photos/<수강id>/…`), `course`(학습 자료). 학생 화면에는 앱 주소(`/files/...`)만 싣고, 누를 때 수강·주차 공개를 확인한 뒤 짧은 유효시간 주소로 보낸다. 경로에 이름·연락처 없음.
+- 지금 기수 = 환불하지 않은 수강 중 시작한 기수의 가장 최근 것(없으면 가장 최근 기수). `app.current_enrollment`
+- 파일: 비공개 버킷 `media`(녹음 `recordings/<수강id>/…`, 사진 `photos/<수강id>/…`), `course`(학습 자료). 학생 화면에는 앱 주소(`/files/...`, `/media/...`)만 싣고, 누를 때 수강·주차 공개를 확인한 뒤 짧은 유효시간 주소로 보낸다. 경로에 이름·연락처 없음.
 - 아직 시작하지 않은 주차의 기사 제목·파일은 브라우저로 보내지 않는다.
 - 구글 시트·드라이브는 브라우저도 Vercel도 읽지 않는다. GitHub Actions가 키 없는 연결로 1시간 토큰을 받아 "보기"로만 읽고 DB·Storage로 복사한다.
 - RLS는 2중 안전장치. 지금 앱은 service_role로만 접근한다.

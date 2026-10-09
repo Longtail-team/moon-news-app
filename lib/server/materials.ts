@@ -7,6 +7,7 @@ export type WeekItem = { kind: "link" | "text"; title: string; url: string | nul
 export type LiveSession = { session_id: string; session_no: number; starts_at: string; has_zoom: boolean; has_replay: boolean };
 export type Materials = {
   current_week: number | null;
+  pending_post_count: number; // 하단 탭의 올릴 것 수
   opened: { week_no: number; title: string | null }[];
   next_open: { week_no: number; starts_at: string } | null;
   selected: {
@@ -44,9 +45,9 @@ export async function getMaterials(studentId: string, week: number | null): Prom
   if (r.selected) {
     const s = r.selected;
     const url = (t: string) => courseFileUrl(s.week_no, t, s.assets.find((a) => a.type === t)?.storage_key);
-    const pdfs = await Promise.all(PDFS.map(async ([t, label, sub]) => ({ type: t, label, sub, url: await url(t) })));
-    const audios = await Promise.all(AUDIOS.map(async ([t, label]) => ({ type: t, label, url: await url(t) })));
+    const pdfs = PDFS.map(([t, label, sub]) => ({ type: t, label, sub, url: url(t) }));
+    const audios = AUDIOS.map(([t, label]) => ({ type: t, label, url: url(t) }));
     selected = { week_no: s.week_no, title_en: s.title_en, level: s.level, word_count: s.word_count, pdfs, audios, items: s.items };
   }
-  return { current_week: r.current_week, opened: r.opened, next_open: r.next_open, selected, live: r.live };
+  return { current_week: r.current_week, pending_post_count: r.pending_post_count, opened: r.opened, next_open: r.next_open, selected, live: r.live };
 }

@@ -17,7 +17,7 @@ export type HomeData = {
     completion_tier: "on_time" | "grace" | "late" | null;
   };
   weeks: HomeWeek[];
-  live: { session_no: number; starts_at: string } | null;
+  live: { session_id: string; session_no: number; starts_at: string; has_zoom: boolean } | null;
 };
 
 /** 학생 홈 데이터. 환불하지 않은 가장 최근 기수 기준. 수강이 없으면 null. */

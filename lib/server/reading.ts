@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "./db";
-import { courseFileUrl, signedUrl } from "./media";
+import { activityMediaUrl, courseFileUrl } from "./media";
 import type { ActType } from "@/components/student/icons";
 import type { Sentence } from "@/lib/reading/text";
 
@@ -17,6 +17,7 @@ export async function getPicker(studentId: string): Promise<Picker | null> {
 export type Material = {
   week_no: number;
   weekly_target: number;
+  deadline: string;
   week_completed: number;
   title: string;
   sentences: Sentence[];
@@ -26,20 +27,33 @@ export type AudioSrc = { key: string; label: string; src: string | null; highlig
 
 type Asset = { type: string; storage_key: string; file_name?: string };
 
-/** 낭독 화면 자료와 음원(파일이 실제로 있을 때만 짧은 유효시간 주소) */
-export async function getMaterial(studentId: string, week: number): Promise<(Material & { article: string | null; krEn: string | null }) | null> {
+/** 낭독 화면 자료와 음원·기사 PDF(앱 주소) */
+export async function getMaterial(
+  studentId: string,
+  week: number,
+): Promise<(Material & { article: string | null; krEn: string | null; articlePdf: string | null }) | null> {
   const { data, error } = await db().rpc("reading_material", { p_student: studentId, p_week: week });
   if (error) throw error;
   if (!data) return null;
   const m = data as Material & { assets: Asset[] };
-  const key = (t: string) => m.assets.find((x) => x.type === t)?.storage_key;
-  const [article, krEn] = await Promise.all([courseFileUrl(week, "article_audio", key("article_audio")), courseFileUrl(week, "kr_en_repeat_audio", key("kr_en_repeat_audio"))]);
-  return { week_no: m.week_no, weekly_target: m.weekly_target, week_completed: m.week_completed, title: m.title, sentences: m.sentences, article, krEn };
+  const url = (t: string) => courseFileUrl(week, t, m.assets.find((x) => x.type === t)?.storage_key);
+  return {
+    week_no: m.week_no,
+    weekly_target: m.weekly_target,
+    deadline: m.deadline,
+    week_completed: m.week_completed,
+    title: m.title,
+    sentences: m.sentences,
+    article: url("article_audio"),
+    krEn: url("kr_en_repeat_audio"),
+    articlePdf: url("article_pdf"),
+  };
 }
 
 export type WorkMaterial = {
   week_no: number;
   weekly_target: number;
+  deadline: string;
   week_completed: number;
   title: string;
   vocab: { no: number; word: string; meaning: string }[];
@@ -49,7 +63,7 @@ export type WorkMaterial = {
   draft: { activityId: string; photoUrl: string | null } | null;
 };
 
-/** 작성 활동 자료: 작성지 PDF, VOCA 단어·음원, 이어서 할 작성 중 기록(사진 미리보기 주소) */
+/** 작성 활동 자료: 작성지 PDF, VOCA 단어·음원, 이어서 할 작성 중 기록(사진 미리보기는 앱 주소) */
 export async function getWorkMaterial(studentId: string, week: number, type: ActType): Promise<WorkMaterial | null> {
   const { data, error } = await db().rpc("work_material", { p_student: studentId, p_week: week, p_type: type });
   if (error) throw error;
@@ -58,24 +72,19 @@ export async function getWorkMaterial(studentId: string, week: number, type: Act
     assets: Asset[];
     draft: { activity_id: string; media_key: string | null } | null;
   };
-  const key = (t: string) => m.assets.find((x) => x.type === t)?.storage_key;
+  const url = (t: string) => courseFileUrl(week, t, m.assets.find((x) => x.type === t)?.storage_key);
   const photoKey = m.draft?.media_key?.startsWith("photos/") ? m.draft.media_key : null;
-  const [articlePdf, vocaPdf, vocaAudio, photoUrl] = await Promise.all([
-    courseFileUrl(week, "article_pdf", key("article_pdf")),
-    courseFileUrl(week, "voca_pdf", key("voca_pdf")),
-    courseFileUrl(week, "voca_repeat_audio", key("voca_repeat_audio")),
-    signedUrl("media", photoKey),
-  ]);
   return {
     week_no: m.week_no,
     weekly_target: m.weekly_target,
+    deadline: m.deadline,
     week_completed: m.week_completed,
     title: m.title,
     vocab: m.vocab,
-    articlePdf,
-    vocaPdf,
-    vocaAudio,
-    draft: m.draft ? { activityId: m.draft.activity_id, photoUrl } : null,
+    articlePdf: url("article_pdf"),
+    vocaPdf: url("voca_pdf"),
+    vocaAudio: url("voca_repeat_audio"),
+    draft: m.draft ? { activityId: m.draft.activity_id, photoUrl: activityMediaUrl(m.draft.activity_id, photoKey) } : null,
   };
 }
 
@@ -85,7 +94,7 @@ export type QueueItem = {
   activity_type: ActType;
   completed_at: string;
   kind: "video" | "photo";
-  mediaUrl: string | null; // 사진 저장·영상 재료 (짧은 유효시간)
+  mediaUrl: string | null; // 사진 저장·영상 재료 (앱 주소 /media/활동, 누를 때 짧은 주소로)
   templateUrl: string | null; // 영상 화면 (2단계)
 };
 export type Queue = { deadline: string; total_target: number; verified_count: number; items: QueueItem[] };
@@ -96,12 +105,10 @@ export async function getQueue(studentId: string): Promise<Queue | null> {
   if (error) throw error;
   if (!data) return null;
   const q = data as Omit<Queue, "items"> & { items: (Omit<QueueItem, "mediaUrl" | "templateUrl"> & { media_key: string; template_key: string | null })[] };
-  const items = await Promise.all(
-    q.items.map(async ({ media_key, template_key, ...it }) => ({
-      ...it,
-      mediaUrl: await signedUrl("media", media_key),
-      templateUrl: await courseFileUrl(it.week_no, "insta_template", template_key),
-    })),
-  );
+  const items = q.items.map(({ media_key, template_key, ...it }) => ({
+    ...it,
+    mediaUrl: activityMediaUrl(it.activity_id, media_key),
+    templateUrl: courseFileUrl(it.week_no, "insta_template", template_key),
+  }));
   return { deadline: q.deadline, total_target: q.total_target, verified_count: q.verified_count, items };
 }
