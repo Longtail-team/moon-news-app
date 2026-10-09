@@ -107,6 +107,15 @@
 
 NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 완료) → VERIFIED(인스타그램 인증)
 
+**기자수첩과 의견 (2026-10-09, 뉴스북 구성안)**: 모두 선택 입력이며 학습 완료 조건은 그대로(작성지 사진 1장)다.
+- 기사 요약: "내가 붙인 제목"과 요약 텍스트. 사진에서 글자 읽기(외부 AI, 활동마다 3번까지)를 누르면 읽은 글자를 보여 주고 "수정하실래요? 이대로 저장하실래요?"로 고르게 한다. 이대로 저장하면 바로 저장, 수정하면 고친 뒤 완료할 때 저장. 모델은 가장 싼 Claude Haiku 5.5로 시작하고, 정확도는 수강생 제출이 쌓인 뒤 판단한다(2026-10-09).
+- 찬반토론: 입장(찬성/반대)과 이유 한 문장. 그 주차 일요일 자정(주차 끝)까지만 받고, 마감 뒤에는 저장하지 않는다(주차 안에 완주하도록 유도). 찬반토론 활동(사진)은 지난 주차도 소급할 수 있다.
+- 의견은 고르는 순간 저장하고, **고른 학생에게만 그때까지의 찬반 결과를 바로 보여 준다. 고르기 전에는 볼 수 없다**(2026-10-09). 마감 뒤에는 그 주차에 의견을 골랐던 학생에게만 최종 결과를 보여 준다.
+- 찬반 비율 = 그 기수·주차에서 마감 전에 저장된 의견, 학습자마다 마지막 1개("고르지 않음"으로 바꾸면 빠짐). 마감 뒤에는 저장하지 않으므로 마감 시점에 고정된다. 뉴스북에도 싣는다.
+- 요약 텍스트·의견은 사진과 같이 종강 후 3개월에 지운다.
+- 사진에서 글자 읽기(외부 AI 전송)는 첫 접속 3단계의 **선택 동의**("작성지 사진의 손글씨를 글자로 읽기 위해 사진을 외부 AI 서비스(Anthropic)로 보내는 데 동의합니다")를 한 학습자만 쓴다. 동의하지 않으면 버튼을 쓰지 않고 요약은 직접 입력하며, 학습·완주에는 영향이 없다. 나중에 바꾸는 화면은 마이페이지에 둔다(예정).
+- 듣기 전 질문은 연령별로 나누지 않고 기사마다 하나만 쓴다(같은 기사·음원을 모두가 쓰고, 답을 받지 않는 생각거리라서). 초등 4학년도 이해할 말로, 정답이 없고 기사 내용을 미리 알려 주지 않게 쓴다.
+
 인스타그램 게시물은 학습 1회에 1개다. 활동마다 따로 올리는 이유는 완주를 60회로 세기 때문이다. 활동별 중간 단계는 다를 수 있지만 학습 완료(completed_at)와 인증(verified_at)은 공통으로 관리한다. 중단된 활동은 언제든 이어서 할 수 있어야 한다.
 
 
@@ -132,7 +141,7 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 ## 8. 낭독 활동 루프
 
 1. 자료·음원 확인: 원문(영어 문단 + 한글 해석)과 음원을 먼저 접한다.
-2. '녹음'보다 학습 행위를 강조하는 '낭독 시작' 버튼을 쓴다. 이어폰 사용을 한 줄로 안내한다.
+2. 듣기 단계에 기사별 **듣기 전 질문**을 하나 보여 준다(콘텐츠 시트 기사 탭 "듣기 전 질문" 칸, 답은 받지 않음, 2026-10-09). '녹음'보다 학습 행위를 강조하는 '낭독 시작' 버튼을 쓴다. 이어폰 사용을 한 줄로 안내한다.
 3. 3초 카운트다운 후 녹음을 시작한다.
 4. 녹음 중에는 경과 시간과 최소한의 상태만 표시한다.
 5. 종료 후 다시 듣기, '다시 읽기 / 이대로 완료 / 완료하고 바로 올리기' 중 선택한다. 완료를 누르면 "이 낭독으로 제출할까요?"로 한 번 더 확인하고, 제출한 낭독만 학습 1회로 센다(2026-10-09 결정, 낭독 횟수 집계 기준과 같음).
@@ -317,7 +326,7 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 | --- | --- | --- |
 | orders | 아임웹 주문 1건 | order_id, imweb_order_no, guardian_id, cohort_id, quantity(아임웹 기록, 등록 인원 제한에 쓰지 않음 · 주문당 학습자 최대 4명), paid_at, paid_amount, coupon_code, source |
 | guardians | 보호자 1명 | guardian_id, name, phone(결제자 번호, 숫자만, 고유값), alimtalk_agreed_at, reenroll_marketing_agreed_at, created_at |
-| students | 학습자 1명 | student_id, guardian_id, name, is_self(결제자 본인, 가정당 1명), birth_ym(본인은 비움), own_phone, instagram_id, consent_at, admin_memo, created_at |
+| students | 학습자 1명 | student_id, guardian_id, name, is_self(결제자 본인, 가정당 1명), birth_ym(본인은 비움), own_phone, instagram_id, consent_at, ai_ocr_consent_at(사진 글자 읽기 선택 동의), admin_memo, created_at |
 | access_tokens | 접속 링크 1개 | token_id, guardian_id(보호자 링크), student_id(자녀 링크), holder(보호자/자녀), sent_to_phone, token_hash, issued_at, expires_at, revoked_at, last_used_at |
 | cohorts | 기수 1개 | cohort_id, course_title, cohort_no, start_date, deadline(12주차 일요일), grace_until(마감 + 7일), weekly_target(5), total_target(60), reward_pdf_key |
 | cohort_weeks | 기수의 주차 1개 | cohort_id, week_no, starts_at, ends_at, article_id |
@@ -325,6 +334,7 @@ NOT_STARTED → STARTED → RECORDED 또는 CONTENT_READY → COMPLETED(학습 �
 | activities | 학습 1회 | activity_id, enrollment_id, week_no, activity_type, state, started_at, completed_at, post_url, verified_at, media_key, media_deleted_at |
 | notifications | 알림톡 1건 (받는 번호 1개) | notification_id, student_id, enrollment_id, template(시작 안내/진도 독려/라이브 당일/종강 예고/자녀 링크/새 링크/완주 상장), checkpoint(예: nudge_1, nudge_2, nudge_3, manual_날짜), recipient(보호자/자녀), sent_to_phone, sent_at, result |
 | live_clicks | 라이브 입장 1회 | student_id, session_id, clicked_at |
+| activity_notes | 기사 요약·찬반토론 기록 1회의 메모 | activity_id, title(내가 붙인 제목), body(요약), stance(agree/disagree), reason, ocr_count(글자 읽기 횟수, 3 상한), updated_at |
 
 이전 모델의 Verification과 Media는 activities의 열로 합쳤다. 학습 1회에 게시물과 파일이 하나씩이기 때문이다. Course는 cohorts의 course_title로 대신한다.
 

@@ -24,7 +24,7 @@ describe("작성 활동", () => {
       expect((await tx.query<Row>("select state, media_key from activities where activity_id = $1", [s.activity_id])).rows[0]).toEqual({ state: "CONTENT_READY", media_key: key });
 
       const m = await one(tx, "select public.work_material('S-0006', 1, 'SUMMARY', $1) as j", [NOW]);
-      expect(m.draft).toEqual({ activity_id: s.activity_id, media_key: key });
+      expect(m.draft).toEqual({ activity_id: s.activity_id, media_key: key, note: null });
       expect(m.title).toBe("RM Opens His Art Collection to the World");
       expect(m.assets.map((a: any) => a.type).sort()).toEqual(["article_pdf", "voca_pdf", "voca_repeat_audio"]);
 

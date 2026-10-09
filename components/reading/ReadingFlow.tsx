@@ -73,6 +73,7 @@ export function ReadingFlow({
   learnerName,
   deadline,
   articlePdf = null,
+  preQuestion = null,
 }: {
   kind: Kind;
   material: Material;
@@ -81,6 +82,7 @@ export function ReadingFlow({
   learnerName: string;
   deadline: string;
   articlePdf?: string | null; // 기사 PDF 받기 (spec 17장: 낭독 화면 원문 카드)
+  preQuestion?: string | null; // 듣기 전 질문: 듣기 단계에 보여 주기만 한다(답은 받지 않음)
 }) {
   const router = useRouter();
   const en = kind !== "kr"; // 영어가 주인 화면 (영어 낭독, VOCA 단어)
@@ -562,6 +564,12 @@ export function ReadingFlow({
         </div>
         {steps(1)}
         <div className="pad stack" style={{ paddingTop: 14, gap: 10 }}>
+          {preQuestion && (
+            <div className="card stack" style={{ gap: 6, background: "var(--tint)", border: 0 }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "var(--deep)" }}>듣기 전에 생각해 봐요</span>
+              <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.6 }}>{preQuestion}</span>
+            </div>
+          )}
           {articlePdf && (
             <div className="card row" style={{ padding: "12px 16px" }}>
               <span style={{ fontSize: 15, fontWeight: 800, flex: 1 }}>기사 PDF</span>

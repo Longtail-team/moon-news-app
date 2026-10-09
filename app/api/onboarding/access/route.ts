@@ -9,7 +9,7 @@ import { normalizePhone } from "@/lib/phone";
 export async function POST(req: Request) {
   const g = await requireGuardian();
   if (!g) return json({ error: "unauthorized" }, 401);
-  const body = (await req.json().catch(() => null)) as { consent?: boolean; items?: { studentId: string; ownPhone?: string | null }[] } | null;
+  const body = (await req.json().catch(() => null)) as { consent?: boolean; aiConsent?: boolean; items?: { studentId: string; ownPhone?: string | null }[] } | null;
   if (body?.consent !== true || !body.items?.length) return json({ error: "bad request" }, 400);
 
   const origin = new URL(req.url).origin;
@@ -19,6 +19,9 @@ export async function POST(req: Request) {
     if (it.ownPhone && !phone) return json({ error: "bad_phone", studentId: it.studentId }, 400);
     const { error } = await db().rpc("onboarding_access", { p_guardian: g, p_student: it.studentId, p_own_phone: phone });
     if (error) return json({ error: error.message.includes("same as guardian") ? "same_phone" : "cannot save" }, 409);
+    // 선택 동의: 작성지 사진 글자 읽기(외부 AI)
+    const { error: e2 } = await db().rpc("set_ai_consent", { p_guardian: g, p_student: it.studentId, p_on: body.aiConsent === true });
+    if (e2) return json({ error: "cannot save" }, 409);
     if (phone) {
       const raw = await issueLink("child", { studentId: it.studentId }, phone);
       const r = await sendAlimtalk({ template: "child_link", to: phone, recipient: "child", studentId: it.studentId, link: linkUrl(origin, raw) });
