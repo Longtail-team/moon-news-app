@@ -1,6 +1,7 @@
 // 내 기록·뉴스북 데이터 (학습자별, 기수별). 진도 중간에는 화면 열람, 종강 다음 날부터 PDF 다운로드
 import "server-only";
 import { db } from "./db";
+import type { ActType } from "@/components/student/icons";
 
 export type BookWeek = {
   week_no: number;
@@ -16,11 +17,21 @@ export type Newsbook = {
   enrollment_id: string;
   is_current: boolean;
   student: { name: string; ai_consent: boolean };
-  cohort: { course_title: string; cohort_no: number; start_date: string; deadline: string; weeks_total: number };
+  cohort: { course_title: string; cohort_no: number; start_date: string; deadline: string; weeks_total: number; total_target: number };
   download_from: string;
   can_download: boolean;
   pending_post_count: number; // 하단 탭의 올릴 것 수
-  stats: { readings: number; articles: number; summaries: number; opinions: number; weeks_met: number };
+  stats: {
+    readings: number;
+    articles: number;
+    summaries: number;
+    opinions: number;
+    weeks_met: number;
+    completed: number; // 학습 완료
+    verified: number; // 인스타 올리기(인증)
+    acts: Partial<Record<ActType, number>>; // 활동별 학습 완료
+    reading_words: number; // 소리 내어 읽은 영어 단어 (영어 기사 읽기 완료 × 그 주차 기사 단어 수)
+  };
   weeks: BookWeek[];
   others: { enrollment_id: string; course_title: string; cohort_no: number; deadline: string }[];
 };

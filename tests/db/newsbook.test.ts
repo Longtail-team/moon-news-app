@@ -62,3 +62,16 @@ describe("뉴스북", () => {
     expect(await book(db, "S-0001", NOW, cur.others[0].enrollment_id)).toBeNull();
   });
 });
+
+describe("내 기록: 완주 화면 모양의 기록", () => {
+  it("인스타 올리기 수, 활동별 횟수, 소리 내어 읽은 영어 단어", async () => {
+    const b = await book(db, "S-0001");
+    const p = (await db.query<Row>("select verified_count, total_completed, reading_words from app.enrollment_progress($1) where student_id = 'S-0001'", [NOW])).rows[0];
+    expect(b.cohort.total_target).toBe(60);
+    expect(b.stats.verified).toBe(p.verified_count);
+    expect(b.stats.completed).toBe(p.total_completed);
+    expect(b.stats.reading_words).toBe(p.reading_words);
+    const acts = b.stats.acts as Record<string, number>;
+    expect(Object.values(acts).reduce((a, n) => a + n, 0)).toBe(b.stats.completed);
+  });
+});

@@ -7,6 +7,16 @@ import type { Newsbook } from "@/lib/server/newsbook";
 import { post } from "@/lib/client-api";
 import { fmtDay, givenName } from "@/lib/format";
 import { TabBar } from "@/components/student/TabBar";
+import { ACT_ORDER, ActIcon, type ActType } from "@/components/student/icons";
+
+// 활동 칸 이름(좁은 칸이라 두 줄)
+const TILE: Record<ActType, [string, string]> = {
+  KR_READING: ["한국어", "기사 읽기"],
+  EN_READING: ["영어", "기사 읽기"],
+  VOCA: ["VOCA", ""],
+  SUMMARY: ["기사", "요약"],
+  DEBATE: ["찬반", "토론"],
+};
 
 export function RecordView({ b, profileLabel, canSwitch, isGuardian }: { b: Newsbook; profileLabel: string; canSwitch: boolean; isGuardian: boolean }) {
   const first = givenName(b.student.name);
@@ -30,13 +40,8 @@ export function RecordView({ b, profileLabel, canSwitch, isGuardian }: { b: News
   }
 
   const st = b.stats;
-  const stats: [string, string][] = [
-    ["낭독", `${st.readings}회`],
-    ["읽은 기사", `${st.articles}편`],
-    ["쓴 요약", `${st.summaries}개`],
-    ["낸 의견", `${st.opinions}개`],
-    ["주간 목표 달성", `${b.cohort.weeks_total}주 중 ${st.weeks_met}주`],
-  ];
+  const target = b.cohort.total_target;
+  const pct = Math.min(100, Math.round((st.verified / target) * 100));
 
   return (
     <div className="app">
@@ -54,6 +59,42 @@ export function RecordView({ b, profileLabel, canSwitch, isGuardian }: { b: News
           )}
         </div>
         <div className="pad stack" style={{ gap: 12 }}>
+          {/* 이번 기수 기록: 완주 화면과 같은 모양(진행 중 버전). 첫·마지막 낭독 비교와 상장은 완주 뒤 완주 화면에서 */}
+          <div className="card lift stack" style={{ gap: 14 }}>
+            <span className="meta" style={{ fontWeight: 700 }}>
+              {b.cohort.course_title} {b.cohort.cohort_no}기 · {b.is_current ? "이번 기수 기록" : "기수 기록"}
+            </span>
+            <div className="row" style={{ alignItems: "baseline", gap: 8 }}>
+              <span style={{ fontSize: 48, fontWeight: 800, lineHeight: 1 }}>{st.verified}</span>
+              <span style={{ fontSize: 18, fontWeight: 700, color: "var(--sub)" }}>/ {target}</span>
+              <span style={{ fontSize: 14, color: "var(--sub)", marginLeft: 4 }}>인스타 올리기</span>
+            </div>
+            <div className="bar">
+              <i style={{ width: `${pct}%` }} />
+            </div>
+            <span className="meta">
+              학습 완료 {st.completed}회 · 주간 목표 {b.cohort.weeks_total}주 중 {st.weeks_met}주 달성
+            </span>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+              {ACT_ORDER.map((k) => (
+                <div key={k} className="stack" style={{ gap: 4, alignItems: "center", padding: "10px 2px", borderRadius: 12, border: "1px solid var(--line)" }}>
+                  <span style={{ color: "var(--deep)" }}>
+                    <ActIcon type={k} size={20} />
+                  </span>
+                  <b style={{ fontSize: 17 }}>{st.acts[k] ?? 0}</b>
+                  <span style={{ fontSize: 13, color: "var(--sub)", textAlign: "center", lineHeight: 1.3, minHeight: 34 }}>
+                    {TILE[k][0]}
+                    {TILE[k][1] && <br />}
+                    {TILE[k][1]}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 14, padding: "12px 14px", borderRadius: 12, background: "var(--bg)" }}>
+              지금까지 소리 내어 읽은 영어 단어 <b style={{ color: "var(--deep)" }}>{st.reading_words.toLocaleString()}</b>개
+            </div>
+          </div>
+
           <div className="card lift stack" style={{ gap: 10, background: "var(--tint)", border: 0 }}>
             <span className="meta" style={{ fontWeight: 700, color: "var(--deep)" }}>
               {b.cohort.course_title} {b.cohort.cohort_no}기
@@ -68,16 +109,6 @@ export function RecordView({ b, profileLabel, canSwitch, isGuardian }: { b: News
             <div className="help" style={{ fontSize: 13, textAlign: "center" }}>
               {b.can_download ? "뉴스북 보기에서 PDF로 받을 수 있어요" : `PDF는 ${fmtDay(b.download_from)}부터 받을 수 있어요`}
             </div>
-          </div>
-
-          <div className="card stack" style={{ gap: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, paddingBottom: 6 }}>{b.is_current ? "이번 기수 기록" : "이 기수 기록"}</div>
-            {stats.map(([k, v]) => (
-              <div key={k} className="between" style={{ fontSize: 14, padding: "10px 0", borderTop: "1px solid var(--mute)" }}>
-                <span className="meta">{k}</span>
-                <b>{v}</b>
-              </div>
-            ))}
           </div>
 
           {b.others.length > 0 && (
