@@ -3,6 +3,7 @@
 // 인스타 올리기 (spec.md 8장): 올릴 것마다 저장 → 인스타에 올리기 → 게시물 링크 붙여넣기 → 완료(인증)
 // 낭독은 "영상 저장"(2단계 영상 모듈, lib/video), 작성지는 "사진 저장".
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Queue, QueueItem } from "@/lib/server/reading";
 import { ACT, ActIcon } from "@/components/student/icons";
@@ -116,6 +117,7 @@ function Item({ item, onVerified, onMessage }: { item: QueueItem; onVerified: (v
 }
 
 export function UploadQueue({ queue, deadline }: { queue: Queue; deadline: string }) {
+  const router = useRouter();
   const [items, setItems] = useState(queue.items);
   const [verified, setVerified] = useState(queue.verified_count);
   const [msg, setMsg] = useState<{ text: string; n: number } | null>(null);
@@ -151,6 +153,8 @@ export function UploadQueue({ queue, deadline }: { queue: Queue; deadline: strin
                     setVerified(n);
                     setItems((xs) => xs.filter((x) => x.activity_id !== it.activity_id));
                     say(`인스타 올리기 완료! 완주까지 ${n} / ${queue.total_target}`);
+                    // 60번째 인증: 완주 화면으로 (spec 9장)
+                    if (n === queue.total_target) router.push("/finish");
                   }}
                 />
               ))}

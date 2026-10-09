@@ -6,7 +6,17 @@ import type { ActType } from "@/components/student/icons";
 export type HomeWeek = { week_no: number; starts_at: string; ends_at: string; title: string | null; acts: ActType[] };
 export type HomeData = {
   student: { student_id: string; name: string };
-  cohort: { course_title: string; cohort_no: number; deadline: string; start_date: string; weekly_target: number; total_target: number };
+  cohort: {
+    course_title: string;
+    cohort_no: number;
+    deadline: string;
+    start_date: string;
+    weekly_target: number;
+    total_target: number;
+    grace_until: string; // 유예 마감(종강 + 7일)
+    grace_open: boolean; // 유예 기간 안
+    retention_until: string; // 녹음·사진 보관 기한(종강 + 3개월)
+  };
   progress: {
     current_week: number | null;
     this_week_completed: number;

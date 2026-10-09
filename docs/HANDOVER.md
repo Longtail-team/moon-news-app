@@ -5,7 +5,7 @@
 
 ## 1. 지금 상태 한 줄
 개발 1단계 중(PR #1~#17 운영 반영, 10-09 점검 수정은 `fix/audit-1009` PR). **결제(시험 주문) → 보호자 링크 → 첫 접속 3단계 → 홈 → 기사 읽기(녹음) → 작성 활동(사진) → 인스타 올리기(링크 인증) → 이번 주 자료(주차별 순차 공개)**, 다시 들어가기, 콘텐츠 시트 → 앱 반영(검사 실행까지)이 동작한다.
-아직 없는 것: 영상 만들기(2단계), 완주 화면, 관리자, 아임웹 결제 신호, 솔라피 실제 발송, 실제 음원·시간 정보(하이라이트), 주차 PDF.
+아직 없는 것: 영상 만들기(2단계), 관리자, 청독 미션·이달의 앵커(기획 중), 아임웹 결제 신호, 솔라피 실제 발송, 실제 음원·시간 정보(하이라이트), 주차 PDF.
 
 ## 2. 주소와 계정
 
@@ -48,7 +48,7 @@ node --env-file=.env.local scripts/delete-test-order.mjs 01000009001       # 시
 ```
 npm install
 npm run dev        # http://localhost:3000  (predev가 ffmpeg 워커를 public/ffmpeg로 복사)
-npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 123개
+npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 127개
 npm run build
 ```
 
@@ -62,7 +62,7 @@ DB 변경
 supabase link --project-ref mefmwetcfrmwdqcgxtpz -p <DB 비밀번호>
 supabase db push -p <DB 비밀번호>            # supabase/migrations 적용
 ```
-- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 21개 모두 운영에 적용됨.
+- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 22개 모두 운영에 적용됨.
 
 ### Windows 주의
 - 프로젝트 경로에 한글이 있으면 Node `fs.cpSync`가 오류 없이 종료된다 → `copyFileSync` 사용(`scripts/copy-ffmpeg-worker.mjs`)
@@ -82,6 +82,7 @@ app/
   write/[week]/[kind]/   작성 활동 (voca | summary | debate)
   upload/                인스타 올리기
   materials/             이번 주 자료 (주차별 순차 공개)
+  finish/                완주 화면, finish/certificate 상장 이름 확인, finish/certificate/pdf 상장 PDF
   record/                내 기록 탭 (학습자별 기록·지난 기수·설정), record/book 뉴스북 보기, record/book/pdf PDF(종강 다음 날부터)
   files/[week]/[type]/   학습 자료 파일 → 확인 후 짧은 주소로 이동
   media/[activity]/      녹음·사진 → 주인 확인 후 1분 주소로 이동 (화면에 저장소 주소를 싣지 않음)
@@ -96,14 +97,14 @@ lib/
   client-api.ts          브라우저 → 서버 API, 파일 직접 업로드
   format.ts phone.ts korean.ts insta.ts image.ts   날짜·이름 표시, 번호 정리·가리기, 조사·학년, 인스타 링크 정리, 사진 줄이기
   lab/                   /lab 기기 검증 페이지 전용
-  pdf/                   뉴스북 PDF (react-pdf), fonts/ Pretendard TTF + LICENSE
+  pdf/                   뉴스북·상장 PDF (react-pdf), fonts/ Pretendard TTF + LICENSE
   content/parse.mjs      콘텐츠 시트 검사·변환, 파일명 규칙
   video/                 2단계 영상 모듈 연결 규칙 (지금은 자리만, MAX_RECORDING_SEC=300)
   reading/               지문·하이라이트 순서, 녹음기
 scripts/sync-content.mjs 콘텐츠 반영 (GitHub Actions에서 실행)
 .github/workflows/content-sync.yml
 supabase/
-  migrations/            21개
+  migrations/            22개
   seed.sql               샘플 데이터
   sample-cleanup.sql     개강 전 샘플 지우기
 tests/db/ tests/unit/
