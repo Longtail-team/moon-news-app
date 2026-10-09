@@ -48,7 +48,10 @@ describe("청독", () => {
       expect(after.progress.total_completed).toBe(before.progress.total_completed + 1); // 학습 1회
 
       const q = (await tx.query<Row>("select public.upload_queue('S-0002') as q")).rows[0].q as any;
-      expect(q.items.find((i: any) => i.activity_id === card.activity_id)).toMatchObject({ activity_type: "LISTENING", kind: "photo" });
+      const item = q.items.find((i: any) => i.activity_id === card.activity_id);
+      expect(item).toMatchObject({ activity_type: "LISTENING", kind: "photo" });
+      // 인스타용 카드를 다시 그릴 값
+      expect(item.card).toMatchObject({ activity_id: card.activity_id, week_no: 4, name: "박서연", plays: { article_audio: 1 }, session_seconds: 100, date: card.date });
 
       const b = (await tx.query<Row>("select public.newsbook('S-0002') as j")).rows[0].j as any;
       expect(b.weeks[3].cards).toEqual([{ activity_id: card.activity_id }]);

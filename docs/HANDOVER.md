@@ -62,7 +62,7 @@ DB 변경
 supabase link --project-ref mefmwetcfrmwdqcgxtpz -p <DB 비밀번호>
 supabase db push -p <DB 비밀번호>            # supabase/migrations 적용
 ```
-- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 23개 모두 운영에 적용됨.
+- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 24개 모두 운영에 적용됨.
 
 ### Windows 주의
 - 프로젝트 경로에 한글이 있으면 Node `fs.cpSync`가 오류 없이 종료된다 → `copyFileSync` 사용(`scripts/copy-ffmpeg-worker.mjs`)
@@ -106,7 +106,7 @@ lib/
 scripts/sync-content.mjs 콘텐츠 반영 (GitHub Actions에서 실행)
 .github/workflows/content-sync.yml
 supabase/
-  migrations/            23개
+  migrations/            24개
   seed.sql               샘플 데이터
   sample-cleanup.sql     개강 전 샘플 지우기
 tests/db/ tests/unit/

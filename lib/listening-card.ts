@@ -1,6 +1,7 @@
 // 청독 카드 그리기 (2026-10-09 확정 시안 C: 기사 스크랩 + 도장). 휴대폰에서 1080×1350(인스타 4:5) PNG로 그린다.
 // - 들은 음원만 표시, 오늘 들은 시간·누적 시간을 크게
-// - 제목: 인스타 4:5에서 읽히게 100px(3줄까지), 넘치면 84px(3줄) → 68px(4줄) → 58px
+// - 두 가지 스타일(2026-10-09): "app" = 앱 화면·뉴스북(제목 2줄 68px, 3줄 58px), "insta" = 인스타 저장(제목 100px, 넘치면 84→68→58px)
+//   앱·뉴스북용만 서버에 보관하고, 인스타용은 저장할 때 같은 값으로 다시 그린다
 // - 도장: 음원 표시와 시간 칸 사이 빈 곳의 아무 자리 + 각도 -25°~+25° (빈 곳이 좁으면 시간 칸 오른쪽 위 모서리), 기록 id로 정해서 다시 그려도 같은 모양
 import { fmtListen, type AudioType } from "./listening";
 
@@ -124,12 +125,29 @@ function drawStamp(rand: () => number, date: string): HTMLCanvasElement {
   return c;
 }
 
+export type CardStyle = "app" | "insta";
+
+// 제목 크기 단계: [크기, 그 크기에서 허용하는 최대 줄 수]
+const TITLE_STEPS: Record<CardStyle, [number, number][]> = {
+  app: [
+    [68, 2],
+    [58, 3],
+    [50, 99],
+  ],
+  insta: [
+    [100, 3],
+    [84, 3],
+    [68, 4],
+    [58, 99],
+  ],
+};
+
 /** 서체를 불러온 뒤 카드를 PNG로 그린다 */
-export async function drawListeningCard(d: CardData): Promise<Blob> {
+export async function drawListeningCard(d: CardData, style: CardStyle = "app"): Promise<Blob> {
   const title = d.title ?? `${d.week_no}주차 기사`;
   try {
     await Promise.all([
-      document.fonts.load(`900 68px ${SERIF}`, `새벽달 영어뉴스청독${title}`),
+      document.fonts.load(`900 ${TITLE_STEPS[style][0][0]}px ${SERIF}`, `새벽달 영어뉴스청독${title}`),
       document.fonts.load(`900 112px ${SANS}`, "0123456789분초시간"),
       document.fonts.load(`700 30px ${SANS}`, `오늘 들은 시간지금까지 누적새벽달 영어뉴스 기자${d.reporter}영어 기사한영 구간반복VOCA 회·월일기주차()`),
     ]);
@@ -167,16 +185,11 @@ export async function drawListeningCard(d: CardData): Promise<Blob> {
   ctx.fillRect(x0, y, maxW, 4);
   y += 4 + 22;
 
-  // 제목: 100px(3줄까지) → 84px(3줄) → 68px(4줄) → 58px
+  // 제목: 스타일별 크기 단계(앱 68→58→50, 인스타 100→84→68→58)
   ctx.textAlign = "left";
-  let size = 100;
+  let size = TITLE_STEPS[style][0][0];
   let lines: string[] = [];
-  for (const [s, max] of [
-    [100, 3],
-    [84, 3],
-    [68, 4],
-    [58, 99],
-  ]) {
+  for (const [s, max] of TITLE_STEPS[style]) {
     size = s;
     ctx.font = `900 ${s}px ${SERIF}`;
     lines = wrap(ctx, title, maxW);

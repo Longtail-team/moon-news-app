@@ -11,6 +11,8 @@ import { TabBar } from "@/components/student/TabBar";
 import { post } from "@/lib/client-api";
 import { fmtMonthDay } from "@/lib/format";
 import { canMakeVideo, saveFile } from "@/lib/video";
+import { drawListeningCard } from "@/lib/listening-card";
+import { givenName } from "@/lib/format";
 
 function Item({ item, onVerified, onMessage }: { item: QueueItem; onVerified: (verifiedCount: number) => void; onMessage: (m: string) => void }) {
   const [url, setUrl] = useState("");
@@ -20,11 +22,14 @@ function Item({ item, onVerified, onMessage }: { item: QueueItem; onVerified: (v
   const photo = item.kind === "photo";
 
   // 사진은 미리 받아 둔다: 공유 창은 버튼을 누른 바로 그 순간에 열어야 하는 기기가 있어서
+  // 청독 카드는 인스타용(제목 100px)으로 휴대폰에서 다시 그린다(앱·뉴스북용은 서버에 보관된 것)
   useEffect(() => {
-    if (!photo || !item.mediaUrl) return;
+    if (!photo || (!item.mediaUrl && !item.card)) return;
     let alive = true;
-    fetch(item.mediaUrl)
-      .then((r) => (r.ok ? r.blob() : Promise.reject()))
+    const blob = item.card
+      ? drawListeningCard({ ...item.card, reporter: givenName(item.card.name) }, "insta")
+      : fetch(item.mediaUrl!).then((r) => (r.ok ? r.blob() : Promise.reject()));
+    blob
       .then((b) => {
         if (!alive) return;
         const ext = b.type === "image/png" ? "png" : "jpg";
@@ -117,6 +122,7 @@ function Item({ item, onVerified, onMessage }: { item: QueueItem; onVerified: (v
 }
 
 export function UploadQueue({ queue, deadline }: { queue: Queue; deadline: string }) {
+  const hasCard = queue.items.some((i) => i.card);
   const router = useRouter();
   const [items, setItems] = useState(queue.items);
   const [verified, setVerified] = useState(queue.verified_count);
@@ -126,6 +132,7 @@ export function UploadQueue({ queue, deadline }: { queue: Queue; deadline: strin
   const steps = ["1. 저장하기", "2. 인스타에\n올리기", "3. 링크\n붙여넣기"];
   return (
     <div className="app">
+      {hasCard && <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&display=swap" precedence="default" />}
       <div className="scroll">
         <div className="pad stack" style={{ paddingTop: 22 }}>
           <div className="between" style={{ alignItems: "baseline" }}>
