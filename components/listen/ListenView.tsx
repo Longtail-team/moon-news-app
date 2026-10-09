@@ -40,7 +40,7 @@ export function ListenView({ week, title, audios, weeklyTarget, weekCompleted }:
   const [progress, setProgress] = useState<Partial<Record<AudioType, number>>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // url = 앱용 카드 미리보기(뉴스북과 같은 모양), file = 인스타용 카드(제목 100px)
+  // 청독 완료 화면: 저장·인스타에 올릴 인스타용 카드(제목 100px)를 그대로 미리 보여 주고 저장한다. 앱·뉴스북용(68/58px)은 서버에 보관
   const [done, setDone] = useState<{ url: string; file: File; weekCompleted: number } | null>(null);
 
   // 재생 시간 재기와 90% 들은 횟수
@@ -103,7 +103,7 @@ export function ListenView({ week, title, audios, weeklyTarget, weekCompleted }:
       const path = await uploadMedia(card.activity_id, appBlob, "image/png", "card");
       const c = await post<{ weekCompleted: number }>("/api/activity/complete", { activityId: card.activity_id, path });
       const file = new File([instaBlob], `새벽달영어뉴스_${week}주차_청독.png`, { type: "image/png" });
-      const blob = appBlob;
+      const blob = instaBlob;
       setDone({ url: URL.createObjectURL(blob), file, weekCompleted: c.weekCompleted });
     } catch {
       setError("청독 카드를 만들지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요. 들은 기록은 남아 있어요.");
