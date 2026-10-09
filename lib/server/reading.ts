@@ -106,6 +106,8 @@ export type QueueItem = {
   kind: "video" | "photo";
   mediaUrl: string | null; // 사진 저장·영상 재료 (앱 주소 /media/활동, 누를 때 짧은 주소로)
   templateUrl: string | null; // 영상 화면 (2단계)
+  // 청독: 인스타용 카드(제목 100px)를 휴대폰에서 다시 그릴 값
+  card: { activity_id: string; week_no: number; title: string | null; cohort_no: number; name: string; date: string; plays: Record<string, number>; session_seconds: number; total_seconds: number } | null;
 };
 export type Queue = { deadline: string; total_target: number; verified_count: number; items: QueueItem[] };
 

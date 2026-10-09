@@ -15,6 +15,7 @@ export type Finish = {
   tier: "on_time" | "grace" | "late" | null; // 완주 전이면 null
   acts: Partial<Record<ActType, number>>;
   reading_words: number;
+  listening_seconds: number; // 누적 청독 시간
   first_reading: Reading | null; // 제때·유예 완주만
   last_reading: Reading | null;
   certificate_name: string | null;
