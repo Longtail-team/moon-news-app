@@ -5,7 +5,7 @@
 // 기사 요약은 기자수첩(내가 붙인 제목·요약, 사진 글자 읽기), 찬반토론은 내 의견(입장·이유, 일요일 자정까지). 모두 선택 입력.
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Tally, WorkMaterial } from "@/lib/server/reading";
 import { post, uploadMedia } from "@/lib/client-api";
 import { shrinkPhoto } from "@/lib/image";
@@ -94,6 +94,9 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
   const [voteOpen, setVoteOpen] = useState(material.vote_open);
   const [tally, setTally] = useState<Tally | null>(material.tally);
   const [voting, setVoting] = useState(false);
+  // 화면 준비 전에 누르면 아무 일도 일어나지 않으므로, 준비될 때까지 의견 버튼을 잠근다
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
   const [ocrLeft, setOcrLeft] = useState(note?.ocr_left ?? 3);
   const [reading, setReading] = useState(false);
   const [ocrMsg, setOcrMsg] = useState<string | null>(null);
@@ -424,7 +427,7 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
               voteOpen ? (
                 <>
                   <div className="help" style={{ fontSize: 13 }}>
-                    이번 주 일요일 자정까지 낼 수 있어요. 마감 뒤에 모두의 찬반 결과를 모아요.
+                    이번 주 일요일 자정까지 낼 수 있어요. 내 의견을 고르면 지금까지의 찬반 결과를 볼 수 있어요.
                   </div>
                   <div className="row" style={{ gap: 8 }} role="group" aria-label="내 입장">
                     {(["agree", "disagree"] as const).map((v) => (
@@ -433,7 +436,7 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
                         className={`chip${stance === v ? " on" : ""}`}
                         style={{ flex: 1, justifyContent: "center" }}
                         aria-pressed={stance === v}
-                        disabled={voting}
+                        disabled={voting || !ready}
                         onClick={() => void pick(v)}
                       >
                         {v === "agree" ? "찬성" : "반대"}
