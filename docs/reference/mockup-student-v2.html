@@ -38,6 +38,15 @@ a{color:var(--ink)}
 .side label.tg input{width:18px;height:18px;accent-color:var(--deep)}
 .side select{height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--white);padding:0 10px;font-size:14px}
 .side .reset{height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--white);font-size:14px;font-weight:700}
+.note{background:var(--white);border:1px solid var(--line);border-left:4px solid var(--main);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.note .nt{font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.note .st{padding:2px 7px;border-radius:7px;background:var(--tint);color:var(--deep);font-size:11px;font-weight:800}
+.note .st.plan{background:#FFE9B8;color:#7A5300}
+.note ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.note li{font-size:13px;line-height:1.55;color:var(--ink)}
+.note .q{font-size:12px;line-height:1.5;color:var(--sub);border-top:1px dashed var(--line2);padding-top:6px}
+.rule{display:flex;gap:10px;align-items:flex-start}
+.rule b.n{width:28px;height:28px;flex-shrink:0;border-radius:50%;background:var(--tint);color:var(--deep);font-size:13px;display:flex;align-items:center;justify-content:center}
 .phone{width:390px;height:844px;flex-shrink:0;border-radius:44px;background:var(--bg);position:relative;overflow:hidden;
   box-shadow:0 0 0 10px #FFFFFF,0 0 0 11px var(--line2),0 24px 60px rgba(31,127,119,.18)}
 .menuBtn{display:none}
@@ -180,6 +189,7 @@ a{color:var(--ink)}
       <h1>새벽달 영어뉴스<br>수강생 화면 목업 v2</h1>
       <p style="margin-top:6px">2026년 10월 9일 기준 앱 화면을 반영했어요. 버튼을 눌러 실제처럼 넘겨 볼 수 있어요. 기사는 지문 하나를 예시로 넣었고, 이름·날짜·숫자는 예시입니다. 음원은 회의용으로 8초짜리로 줄여 흉내 냅니다.</p>
     </div>
+    <div class="note" id="note" aria-live="polite"></div>
     <div class="grp" id="navList"></div>
     <div class="grp">
       <b>데모 설정</b>
@@ -730,6 +740,25 @@ book(){
   <div class="pad" style="padding-top:12px;padding-bottom:20px">${S.afterEnd?`<button class="cta" data-action="pdf" data-name="영어 뉴스북 PDF">${I.dl}&nbsp;PDF로 받기</button>`:'<button class="cta" disabled>PDF는 12월 7일(월)부터 받을 수 있어요</button>'}</div>`;
 },
 
+anchorInfo(){
+  const r=(n,t,d)=>`<div class="rule"><b class="n">${n}</b><span class="stack" style="gap:3px"><span style="font-size:15px;font-weight:800">${t}</span><span class="help" style="font-size:14px">${d}</span></span></div>`;
+  const per=(w,d,on)=>`<div class="stack" style="gap:2px;align-items:center;text-align:center;padding:10px 4px;border-radius:12px;background:${on?'var(--tint)':'var(--bg)'};border:${on?'2px solid var(--deep)':'1px solid var(--line)'}"><span style="font-size:15px;font-weight:800">${w}</span><span class="meta">${d}</span></div>`;
+  return `<div class="scroll">${topBar('record','내 기록','')}
+  <div class="pad stack" style="gap:16px">
+    <div class="row" style="gap:10px"><span style="width:48px;height:48px;border-radius:50%;background:var(--tint);display:flex;align-items:center;justify-content:center">${I.star}</span><h2 class="h1">이달의 앵커란?</h2></div>
+    <div style="font-size:15px;line-height:1.7">4주마다 꾸준히 학습하고 영어 낭독을 낸 친구 중에서, 가장 멋진 영어 낭독을 뽑아 모두에게 들려줘요.</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${per('1~4주차','9.14–10.11',true)}${per('5~8주차','10.12–11.8')}${per('9~12주차','11.9–12.6')}</div>
+    <div class="card stack" style="gap:16px">
+      ${r(1,'앵커 후보 되기','4주 중 3주 이상 주간 목표(학습 5회)를 채우고, 영어 기사 읽기를 3번 이상 내면 후보가 돼요.')}
+      ${r(2,'출품하기','후보가 되면 그 4주 동안 낸 영어 낭독 중 하나를 골라 출품해요. 보호자 동의가 필요해요.')}
+      ${r(3,'수상작 발표','운영팀이 출품작 중에서 수상작을 골라요. 수상작은 내 기록에서 모두 들을 수 있어요.')}
+    </div>
+    <div class="help">후보가 되지 않아도 완주와 상장에는 영향이 없어요.</div>
+    <div class="stack" style="gap:2px"><div style="font-size:13px;color:var(--faint)">회의에서 결정: 수상작 수·선정 방법, 이름 표시, 수상 혜택</div></div>
+  </div></div>
+  <div class="pad" style="padding-top:12px;padding-bottom:20px"><button class="cta" data-go="record">내 기록으로</button></div>`;
+},
+
 anchorEntry(){
   const R=[{w:'1주차 · 9월 18일',t:'1:38'},{w:'2주차 · 9월 23일',t:'1:45'},{w:'4주차 · 10월 8일',t:'1:42'}];
   if(S.entryDone){const r=R[S.pick??2];return `<div class="scroll">${topBar('record','내 기록','')}
@@ -827,7 +856,7 @@ function anchorCard(){
     ${line('영어 낭독',c?'3 / 3회 ✓':'2 / 3회',c,c?100:67)}
     ${c?`<div class="tinted stack reveal" style="gap:10px"><div style="font-size:15px;font-weight:800;line-height:1.5">앵커 후보가 됐어요! 이번 4주의 영어 낭독 중 하나를 골라 출품해 보세요</div><button class="cta" data-go="anchorEntry">출품하기</button></div>`
       :`<div class="help" style="color:var(--deep);font-weight:700">영어 기사 읽기를 1번 더 제출하면 앵커 후보가 돼요</div>`}
-    <button class="textbtn" style="align-self:flex-start;font-size:13px" data-go="anchorWin">지난 수상작 보기</button>
+    <div class="row" style="gap:16px"><button class="textbtn" style="font-size:13px" data-go="anchorInfo">이달의 앵커란?</button><button class="textbtn" style="font-size:13px" data-go="anchorWin">지난 수상작 보기</button></div>
   </div>`;
 }
 function pageFilled(n){return !!(S.notes[n]||S.opinions[n]||(S.cards[n]||[]).length)}
@@ -927,15 +956,48 @@ const NAV=[
   ['작성',[['worksheet:SU','기사 요약 · 기자수첩'],['worksheet:DE','찬반토론 · 의견'],['worksheet:VO','VOCA']]],
   ['인스타 올리기',[['queue','인스타 올리기 (하단 탭)']]],
   ['내 기록 · 뉴스북',[['record','내 기록 (하단 탭)'],['book','뉴스북 보기']]],
-  ['이달의 앵커',[['record:anchor','내 기록 · 앵커 카드'],['anchorEntry','출품하기'],['anchorWin','수상작']],'기획 중'],
+  ['이달의 앵커',[['record:anchor','내 기록 · 앵커 카드'],['anchorInfo','이달의 앵커란?'],['anchorEntry','출품하기'],['anchorWin','수상작']],'기획 중'],
   ['완주 · 마감',[['finish','완주'],['cert','상장 이름 확인'],['grace','마감 이후 홈']]]
 ];
+/* 화면별 설명 (회의용, 왼쪽 위 상자). st: 'live' 운영 반영 / 'plan' 기획 중 */
+const NOTES={
+  welcome:{t:'첫 접속 1 · 정보 확인',st:'live',b:['알림톡 링크로만 들어와요. 로그인 화면이 없어요','신청 정보·제공 자료를 확인하고 보호자 이름을 넣어요','홈 화면에 추가하는 방법을 아이폰/안드로이드로 나눠 안내']},
+  student:{t:'첫 접속 2 · 학습자 등록',st:'live',b:['학습자 이름(상장에 그대로 들어감), 출생 연월 → 학년 자동 표시','인증할 인스타 계정(보호자 계정도 가능)','형제·자매는 한 번에 최대 4명까지 등록']},
+  access:{t:'첫 접속 3 · 접속 방법과 동의',st:'live',b:['아이 휴대폰으로 할지 보호자 휴대폰으로 할지 고름. 아이 휴대폰이면 아이 전용 링크를 보냄','음성·작성 이미지 수집 동의(필수), 사진 글자 읽기 외부 AI 동의(선택)']},
+  reentry:{t:'다시 들어가기',st:'live',b:['링크를 잃어버렸거나 휴대폰을 바꿨을 때 등록 번호로 새 접속 링크를 받아요','인증번호 없이 알림톡으로 링크만 보냄']},
+  home:{t:'홈',st:'live',b:['이번 주 학습 n / 5(학습 완료 기준)와 오늘 학습하기','완주 진행은 인스타 올리기 n / 60 기준(학습 완료와 따로 셈)','12주 기록: 칸마다 한 활동 아이콘, 지난 주 빈칸을 누르면 그 주차로 가서 채움','라이브가 있으면 맨 위에 D-day 카드'],q:'진도는 요일이 아니라 횟수(주 5회). 활동·순서 자유, 반복 허용'},
+  activity:{t:'학습 고르기',st:'live',b:['활동 6가지: 청독·한국어/영어 기사 읽기·VOCA·기사 요약·찬반토론','밀린 주차가 있으면 위의 주차 버튼으로 지난 주차를 골라 채움','같은 활동을 여러 번 해도 매번 1회']},
+  listen:{t:'청독',st:'live',b:['영어 기사 음원·한영 구간반복을 들으며 지문 하이라이트를 따라감(영어는 끊어 읽기 구, 한영은 한국어 → 영어 2회)','음원 하나를 90% 이상 들으면 "청독 완료"가 켜짐 → 학습 1회','반복·배속까지 실제 들은 시간을 청독량으로 쌓음','목업은 음원을 8초로 줄임. 왼쪽 "청독 90% 들은 걸로"로 바로 완료 가능'],q:'VOCA 구간반복은 문장이 아니라 청독에서 뺌(VOCA 탭에 있음)'},
+  listenDone:{t:'청독 완료 · 청독 카드',st:'live',b:['청독 미션 인증 카드: 기사 스크랩 + "청독" 도장','오늘 들은 시간·지금까지 누적, 들은 음원 횟수, 기자 이름','이 화면과 인스타 올리기는 인스타용(제목 크게), 뉴스북에는 앱용(제목 작게) 4열','도장은 카드마다 자리·각도가 조금씩 다름'],q:'카드를 저장해서 인스타에 올리면 인증 1회'},
+  reading:{t:'기사 읽기 · 1 듣기',st:'live',b:['듣기 전 질문 카드(콘텐츠 시트에서 기사마다 1개)와 기사 PDF','음원은 청독에서 들어요 → 청독 화면으로 연결','지문 보기: 함께 보기 / 영어만(한글만), 끊어 읽기 표시, 속도 0.5~1.2배']},
+  recording:{t:'기사 읽기 · 2 낭독',st:'live',b:['3초 카운트다운 뒤 녹음 시작','하이라이트가 읽을 속도로 움직임(끄기·잠깐 멈추기)','최대 5분 자동 정지(임시)']},
+  review:{t:'기사 읽기 · 3 확인',st:'live',b:['내 낭독을 다시 듣고 "이 낭독으로 제출할까요?" 확인','제출한 낭독만 학습 1회','첫 영어 낭독은 기억해 뒀다가 완주 때 마지막 낭독과 함께 들려줌']},
+  materials:{t:'이번 주 자료 (하단 탭)',st:'live',b:['주차별 PDF·음원·라이브. 매주 월요일 0시에 열림','여기서 들은 기사 음원도 청독 시간에 들어감']},
+  'worksheet:SU':{t:'기사 요약 · 기자수첩',st:'live',b:['작성지 사진 1장 올리면 학습 완료','기자수첩(선택): 내가 붙인 제목 + 요약 → 뉴스북 뉴스 카드','"사진에서 글자 읽기": 외부 AI가 손글씨를 글자로(활동마다 3번), "수정하실래요? 이대로 저장하실래요?"']},
+  'worksheet:DE':{t:'찬반토론 · 의견',st:'live',b:['작성지 사진 1장 올리면 학습 완료','찬성/반대 + 이유 한 문장(선택). 고른 학생에게만 지금까지 결과가 보임','그 주 일요일 자정 마감, 결과는 뉴스북 의견 카드에']},
+  'worksheet:VO':{t:'VOCA',st:'live',b:['VOCA 정리 PDF와 VOCA 구간반복 음원','작성지 사진 또는 단어 낭독 녹음으로 완료']},
+  queue:{t:'인스타 올리기 (하단 탭)',st:'live',b:['학습한 것이 "올릴 것"으로 쌓임: 저장 → 인스타에 올리기 → 게시물 링크 붙여넣기','링크를 붙이면 인증 1회 → 완주 n / 60','청독은 청독 카드, 낭독은 영상(2단계), 작성은 사진']},
+  record:{t:'내 기록 (하단 탭)',st:'live',b:['이번 기수 기록: 인스타 올리기 n / 60, 활동별 횟수, 읽은 영어 단어, 청독 시간','내 영어 뉴스북 카드','이달의 앵커 카드(기획 중)','설정: 사진 글자 읽기 동의(보호자만 바꿈)']},
+  'record:anchor':{t:'이달의 앵커 · 앵커 카드',st:'plan',b:['4주 묶음(1~4, 5~8, 9~12주차)마다 후보 조건 진행을 보여 줌','조건: 주간 목표 3주 이상 + 영어 기사 읽기 3번 이상, 둘 다','후보가 되면 "출품하기" 버튼이 나타남','왼쪽 "앵커 후보 상태"를 켜고 끄며 전·후 비교'],q:'목적: 청독만으로도 완주되니, 영어 낭독은 앵커 도전으로 동기를 줌'},
+  anchorInfo:{t:'이달의 앵커란? (학생 안내)',st:'plan',b:['학생·보호자에게 규칙을 한 화면으로 설명','후보 되기 → 출품하기 → 수상작 발표 3단계','후보가 아니어도 완주·상장에는 영향 없음']},
+  anchorEntry:{t:'이달의 앵커 · 출품하기',st:'plan',b:['그 4주 동안 낸 영어 낭독 목록에서 들어 보고 하나 고름','보호자 공개 동의(필수) 후 출품','출품은 4주 묶음마다 1개'],q:'회의: 음성 공개 동의 문구(법률 검토)'},
+  anchorWin:{t:'이달의 앵커 · 수상작',st:'plan',b:['운영팀이 고른 수상작을 모두가 들을 수 있음','관리자 화면 전에는 운영팀 요청 → 개발 담당이 표시'],q:'회의: 수상작 수·선정 방법, 이름 표시(전체 / 부르는 이름 / 가림), 수상 혜택'},
+  book:{t:'뉴스북 보기',st:'live',b:['기수별 1권(12주). 진도 중간에는 화면으로 보고, 종강 다음 날부터 PDF','주차 쪽: 뉴스 카드(내 제목·요약), 의견 카드·찬반 결과, 청독 카드 4열','마지막: 내가 붙인 제목 모아보기','왼쪽 "종강 다음 날"을 켜면 PDF 버튼이 열림']},
+  finish:{t:'완주',st:'live',b:['60번째 인증 직후 이동. COMPLETE!는 제때 완주만','활동별 횟수, 읽은 영어 단어, 청독 시간','첫·마지막 영어 낭독 비교(제때·유예 완주만)','왼쪽 "완주 단계"로 제때/유예/늦은 완주 비교']},
+  cert:{t:'상장 이름 확인',st:'live',b:['상장에 들어갈 이름을 확인·수정 후 받기','서버에서 PDF로 만들어 휴대폰에서 받음, 발급 기관 "새벽달"(임시)'],q:'상장 디자인은 보완 예정'},
+  grace:{t:'마감 이후 홈',st:'live',b:['종강일이 지났는데 완주 전이면 홈이 바뀜','유예 중(종강 후 1주): 남은 개수와 유예 마감일','유예 끝: 늦은 완주 가능, 녹음 보관 기한 안내']}
+};
+function noteHTML(){
+  const n=NOTES[navKey]||NOTES[S.screen];if(!n)return '';
+  return `<div class="nt">${n.t}<span class="st${n.st==='plan'?' plan':''}">${n.st==='plan'?'기획 중':'운영 반영'}</span></div><ul>${n.b.map(x=>`<li>${x}</li>`).join('')}</ul>${n.q?`<div class="q">${n.q}</div>`:''}`;
+}
 const phone=document.getElementById('phone');
 let navKey='welcome';
 function go(name){clearTimers();clearInterval(L.int);L.int=null;pStop(false);S.playing=null;S.pacerPaused=false;S._sec=0;S.popup=null;S.screen=name;navKey=name;render();phone.querySelector('.scroll')?.scrollTo(0,0)}
 function render(){
   phone.innerHTML=`<div class="screen">${SCREENS[S.screen]()}</div>${popupHTML()}`;
   document.getElementById('navList').innerHTML=NAV.map(([g,items,tag])=>`<div class="grp"><b>${g}${tag?`<span class="ptag">${tag}</span>`:''}</b>${items.map(([k,l])=>`<button class="nav${navKey===k?' on':''}" data-nav="${k}">${l}</button>`).join('')}</div>`).join('');
+  document.getElementById('note').innerHTML=noteHTML();
   if(S.screen==='recording'&&!S._recStarted){S._recStarted=true;startRecording()}
   if(S.screen!=='recording')S._recStarted=false;
   if(S.screen==='listen')L.idx=-1;
