@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Tally, WorkMaterial } from "@/lib/server/reading";
 import { post, uploadMedia } from "@/lib/client-api";
 import { shrinkPhoto } from "@/lib/image";
+import { trackListening } from "@/lib/listening";
 
 type Kind = "voca" | "summary" | "debate";
 const TYPE: Record<Kind, string> = { voca: "VOCA", summary: "SUMMARY", debate: "DEBATE" };
@@ -94,6 +95,13 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
   const [voteOpen, setVoteOpen] = useState(material.vote_open);
   const [tally, setTally] = useState<Tally | null>(material.tally);
   const [voting, setVoting] = useState(false);
+  // 청독량: VOCA 구간반복 음원으로 들은 시간도 쌓는다(2026-10-09)
+  useEffect(() => {
+    const el = audioRef.current;
+    if (kind !== "voca" || !el) return;
+    const t = trackListening(el, { week: material.week_no, type: "voca_repeat_audio" });
+    return () => t.detach();
+  }, [kind, material.week_no]);
   // 화면 준비 전에 누르면 아무 일도 일어나지 않으므로, 준비될 때까지 의견 버튼을 잠근다
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);

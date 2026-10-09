@@ -35,7 +35,7 @@ const s = StyleSheet.create({
 
 export type PdfPhoto = { data: Buffer; format: "jpg" | "png" };
 
-function ArticlePage({ w, reporter, photo }: { w: BookWeek; reporter: string; photo?: PdfPhoto }) {
+function ArticlePage({ w, reporter, photo, cards }: { w: BookWeek; reporter: string; photo?: PdfPhoto; cards: PdfPhoto[] }) {
   const t = w.tally;
   const total = t ? t.agree + t.disagree : 0;
   const pct = t && total ? Math.round((t.agree / total) * 100) : 0;
@@ -77,6 +77,19 @@ function ArticlePage({ w, reporter, photo }: { w: BookWeek; reporter: string; ph
             <Text style={{ fontSize: 10 }}>
               반대 {100 - pct}% · {total}명
             </Text>
+          </View>
+        </View>
+      )}
+      {cards.length > 0 && (
+        <View style={{ marginTop: 14 }}>
+          <Text style={s.label}>청독 카드 {cards.length}장</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: -3 }}>
+            {cards.map((c, i) => (
+              // 4열 (인스타 4:5 그대로)
+              <View key={i} style={{ width: "25%", padding: 3 }}>
+                <Image src={c} style={{ width: "100%", height: 149, objectFit: "cover", borderRadius: 4 }} />
+              </View>
+            ))}
           </View>
         </View>
       )}
@@ -124,7 +137,13 @@ function NewsbookDoc({ b, pages, photos }: { b: Newsbook; pages: BookWeek[]; pho
       </Page>
 
       {pages.map((w) => (
-        <ArticlePage key={w.week_no} w={w} reporter={name} photo={w.summary ? photos[w.summary.activity_id] : undefined} />
+        <ArticlePage
+          key={w.week_no}
+          w={w}
+          reporter={name}
+          photo={w.summary ? photos[w.summary.activity_id] : undefined}
+          cards={w.cards.flatMap((c) => (photos[c.activity_id] ? [photos[c.activity_id]] : []))}
+        />
       ))}
 
       {titles.length > 0 && (

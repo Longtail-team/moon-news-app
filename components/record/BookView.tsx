@@ -9,14 +9,25 @@ function WeekCard({ w, reporter }: { w: BookWeek; reporter: string }) {
   const t = w.tally;
   const total = t ? t.agree + t.disagree : 0;
   const pct = t && total ? Math.round((t.agree / total) * 100) : 0;
-  const empty = !w.summary && !w.opinion;
+  const empty = !w.summary && !w.opinion && w.cards.length === 0;
   return (
     <div className="card stack" style={{ gap: 10, ...(empty ? { background: "var(--bg)", borderStyle: "dashed" } : {}) }}>
       <span className="meta">
         {w.week_no}주차 · {fmtMonthDay(w.starts_at)} 주
       </span>
       <div style={{ fontSize: 15, fontWeight: 800, lineHeight: 1.4 }}>{w.title_en ?? `${w.week_no}주차 기사`}</div>
-      {empty && <div className="help" style={{ fontSize: 13 }}>아직 비어 있어요. 기사 요약이나 찬반토론을 하면 이 쪽이 채워져요.</div>}
+      {empty && <div className="help" style={{ fontSize: 13 }}>아직 비어 있어요. 청독, 기사 요약, 찬반토론을 하면 이 쪽이 채워져요.</div>}
+      {w.cards.length > 0 && (
+        <div className="stack" style={{ gap: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: "var(--deep)" }}>청독 카드 {w.cards.length}장</span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+            {w.cards.map((c) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={c.activity_id} src={`/media/${c.activity_id}`} alt="청독 카드" loading="lazy" style={{ width: "100%", aspectRatio: "4 / 5", objectFit: "cover", borderRadius: 6, border: "1px solid var(--line)", background: "var(--bg)" }} />
+            ))}
+          </div>
+        </div>
+      )}
       {w.summary && (
         <div className="stack" style={{ gap: 6, padding: 12, borderRadius: 12, background: "var(--tint)" }}>
           <span style={{ fontSize: 13, fontWeight: 800, color: "var(--deep)" }}>뉴스 카드</span>

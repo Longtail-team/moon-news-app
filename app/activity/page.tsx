@@ -10,14 +10,15 @@ import "../student.css";
 const RECOMMEND: Record<number, ActType> = { 1: "KR_READING", 2: "VOCA", 3: "SUMMARY", 4: "DEBATE", 5: "EN_READING" };
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
 const DESC: Record<ActType, string> = {
+  LISTENING: "음원을 끝까지 들으면 1회, 카드를 인스타에 올려요",
   KR_READING: "한글 해석을 소리 내어 읽고 녹음해요",
   EN_READING: "음원을 듣고 영어로 읽어 녹음해요",
   VOCA: "단어를 익히고 작성지 사진을 올려요",
   SUMMARY: "작성지 사진 1장을 올려요",
   DEBATE: "작성지 사진 1장을 올려요",
 };
-const ORDER: ActType[] = ["KR_READING", "EN_READING", "VOCA", "SUMMARY", "DEBATE"];
-const SLUG: Record<ActType, string> = { KR_READING: "kr", EN_READING: "en", VOCA: "voca", SUMMARY: "summary", DEBATE: "debate" };
+const ORDER: ActType[] = ["LISTENING", "KR_READING", "EN_READING", "VOCA", "SUMMARY", "DEBATE"];
+const SLUG: Record<ActType, string> = { LISTENING: "", KR_READING: "kr", EN_READING: "en", VOCA: "voca", SUMMARY: "summary", DEBATE: "debate" };
 
 function kstDow(): number {
   const wd = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Seoul", weekday: "short" }).format(new Date());
@@ -70,7 +71,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
               const inProgress = sel.in_progress.includes(k);
               const n = sel.counts[k] ?? 0;
               return (
-                <Link key={k} className="act" href={`/${k.endsWith("READING") ? "read" : "write"}/${sel.week_no}/${SLUG[k]}`}>
+                <Link key={k} className="act" href={k === "LISTENING" ? `/listen/${sel.week_no}` : `/${k.endsWith("READING") ? "read" : "write"}/${sel.week_no}/${SLUG[k]}`}>
                   <span className="ic">
                     <ActIcon type={k} />
                   </span>

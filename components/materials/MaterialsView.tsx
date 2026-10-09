@@ -3,7 +3,8 @@
 // 이번 주 자료 (spec.md 17장, 목업 materials): 주차 고르기 → PDF 받기 · 음원 재생 · 추가 자료 · 라이브
 // 열린 주차만 고를 수 있다(주차 시작 = 월 0시). 다음 주차가 열리는 날을 알려 준다.
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { isAudioType, trackListening } from "@/lib/listening";
 import type { Materials } from "@/lib/server/materials";
 import { TabBar } from "@/components/student/TabBar";
 
@@ -47,6 +48,16 @@ export function MaterialsView({
   const [playing, setPlaying] = useState<string | null>(null);
   const refs = useRef<Record<string, HTMLAudioElement | null>>({});
   const s = m.selected;
+
+  // 청독량: 여기서 들은 시간도 쌓는다(2026-10-09)
+  useEffect(() => {
+    if (!s) return;
+    const ts = s.audios.flatMap((a) => {
+      const el = refs.current[a.type];
+      return el && isAudioType(a.type) ? [trackListening(el, { week: s.week_no, type: a.type })] : [];
+    });
+    return () => ts.forEach((t) => t.detach());
+  }, [s]);
 
   const toggle = (key: string) => {
     const a = refs.current[key];

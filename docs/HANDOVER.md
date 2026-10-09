@@ -5,7 +5,7 @@
 
 ## 1. 지금 상태 한 줄
 개발 1단계 중(PR #1~#17 운영 반영, 10-09 점검 수정은 `fix/audit-1009` PR). **결제(시험 주문) → 보호자 링크 → 첫 접속 3단계 → 홈 → 기사 읽기(녹음) → 작성 활동(사진) → 인스타 올리기(링크 인증) → 이번 주 자료(주차별 순차 공개)**, 다시 들어가기, 콘텐츠 시트 → 앱 반영(검사 실행까지)이 동작한다.
-아직 없는 것: 영상 만들기(2단계), 관리자, 청독 미션·이달의 앵커(기획 중), 아임웹 결제 신호, 솔라피 실제 발송, 실제 음원·시간 정보(하이라이트), 주차 PDF.
+아직 없는 것: 영상 만들기(2단계), 관리자, 이달의 앵커, 아임웹 결제 신호, 솔라피 실제 발송, 실제 음원·시간 정보(하이라이트), 주차 PDF.
 
 ## 2. 주소와 계정
 
@@ -48,7 +48,7 @@ node --env-file=.env.local scripts/delete-test-order.mjs 01000009001       # 시
 ```
 npm install
 npm run dev        # http://localhost:3000  (predev가 ffmpeg 워커를 public/ffmpeg로 복사)
-npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 127개
+npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 130개
 npm run build
 ```
 
@@ -62,7 +62,7 @@ DB 변경
 supabase link --project-ref mefmwetcfrmwdqcgxtpz -p <DB 비밀번호>
 supabase db push -p <DB 비밀번호>            # supabase/migrations 적용
 ```
-- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 22개 모두 운영에 적용됨.
+- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 23개 모두 운영에 적용됨.
 
 ### Windows 주의
 - 프로젝트 경로에 한글이 있으면 Node `fs.cpSync`가 오류 없이 종료된다 → `copyFileSync` 사용(`scripts/copy-ffmpeg-worker.mjs`)
@@ -79,6 +79,7 @@ app/
   profiles/ add-learner/ reentry/   학습자 고르기·추가, 다시 들어가기(번호 → 새 링크)
   activity/              활동 고르기
   read/[week]/[kind]/    기사 읽기·VOCA 단어 (en | kr | voca)
+  listen/[week]/         청독 (음원 듣기 → 청독 완료 → 카드)
   write/[week]/[kind]/   작성 활동 (voca | summary | debate)
   upload/                인스타 올리기
   materials/             이번 주 자료 (주차별 순차 공개)
@@ -101,10 +102,11 @@ lib/
   content/parse.mjs      콘텐츠 시트 검사·변환, 파일명 규칙
   video/                 2단계 영상 모듈 연결 규칙 (지금은 자리만, MAX_RECORDING_SEC=300)
   reading/               지문·하이라이트 순서, 녹음기
+  listening.ts           청독량 기록(재생 시간 재기·전송), listening-card.ts 청독 카드 그리기(1080×1350)
 scripts/sync-content.mjs 콘텐츠 반영 (GitHub Actions에서 실행)
 .github/workflows/content-sync.yml
 supabase/
-  migrations/            22개
+  migrations/            23개
   seed.sql               샘플 데이터
   sample-cleanup.sql     개강 전 샘플 지우기
 tests/db/ tests/unit/

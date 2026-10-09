@@ -1,5 +1,5 @@
 // 파일 올릴 주소: 브라우저가 Storage 비공개 버킷에 바로 올린다(서버 요청 크기 제한을 피하려고)
-// 녹음은 recordings/<수강>/, 사진은 photos/<수강>/. 경로에 이름·연락처를 넣지 않는다.
+// 녹음은 recordings/<수강>/, 사진은 photos/<수강>/, 청독 카드는 cards/<수강>/. 경로에 이름·연락처를 넣지 않는다.
 import { db } from "@/lib/server/db";
 import { json, requireLearner } from "@/lib/server/learner";
 
@@ -18,9 +18,10 @@ const EXT: Record<string, [folder: string, ext: string]> = {
 export async function POST(req: Request) {
   const learner = await requireLearner();
   if (!learner) return json({ error: "unauthorized" }, 401);
-  const body = (await req.json().catch(() => null)) as { activityId?: string; mime?: string } | null;
+  const body = (await req.json().catch(() => null)) as { activityId?: string; mime?: string; kind?: string } | null;
   const mime = (body?.mime ?? "").split(";")[0].trim().toLowerCase();
-  const rule = EXT[mime];
+  // 청독 카드: 휴대폰이 그린 PNG
+  const rule = body?.kind === "card" ? (mime === "image/png" ? (["cards", "png"] as [string, string]) : undefined) : EXT[mime];
   if (!body?.activityId || !rule) return json({ error: "bad request" }, 400);
 
   const { data: owner, error } = await db().rpc("activity_owner", { p_student: learner.student_id, p_activity: body.activityId });

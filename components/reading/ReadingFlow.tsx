@@ -9,6 +9,10 @@ import type { AudioSrc, Material } from "@/lib/server/reading";
 import { chunksOf, clock, enId, fmtDuration, koId, paragraphs, timeline, totalSec, type Sentence, type Step } from "@/lib/reading/text";
 import { micErrorText, openRecorder, type Recorder } from "@/lib/reading/recorder";
 import { post, uploadMedia } from "@/lib/client-api";
+import { trackListening, type AudioType as ListenType } from "@/lib/listening";
+
+// 청독량: 읽기 화면 음원으로 들은 시간도 쌓는다(2026-10-09)
+const LISTEN_TYPE: Record<string, ListenType> = { article: "article_audio", krEn: "kr_en_repeat_audio", voca: "voca_repeat_audio" };
 
 type Kind = "en" | "kr" | "voca";
 type Phase = "listen" | "count" | "record" | "review";
@@ -115,6 +119,15 @@ export function ReadingFlow({
   const startedAt = useRef(0);
   const audioRefs = useRef<Record<AudioKey, HTMLAudioElement | null>>({});
   const stopRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    const ts = audios.flatMap((a) => {
+      const el = audioRefs.current[a.key];
+      const type = LISTEN_TYPE[a.key];
+      return el && type ? [trackListening(el, { week: material.week_no, type })] : [];
+    });
+    return () => ts.forEach((t) => t.detach());
+  }, [audios, material.week_no, phase]);
 
   // 속도 기억
   useEffect(() => {

@@ -1,7 +1,7 @@
 // 아이콘 (docs/reference/mockup-student.html과 같은 모양)
 import type { ReactNode } from "react";
 
-export type ActType = "KR_READING" | "EN_READING" | "VOCA" | "SUMMARY" | "DEBATE";
+export type ActType = "LISTENING" | "KR_READING" | "EN_READING" | "VOCA" | "SUMMARY" | "DEBATE";
 
 function Svg({ size = 22, stroke = "currentColor", width = 2, children }: { size?: number; stroke?: string; width?: number; children: ReactNode }) {
   return (
@@ -21,6 +21,17 @@ const Bubble = ({ t, fs }: { t: string; fs: number }) => (
 );
 
 export const ACT: Record<ActType, { name: string; short: string; icon: ReactNode }> = {
+  LISTENING: {
+    name: "청독",
+    short: "청독",
+    icon: (
+      <>
+        <path d="M4 15v-3a8 8 0 0 1 16 0v3" />
+        <rect x="3" y="14" width="4.5" height="6.5" rx="1.8" />
+        <rect x="16.5" y="14" width="4.5" height="6.5" rx="1.8" />
+      </>
+    ),
+  },
   KR_READING: { name: "한국어 기사 읽기", short: "한국어 기사 읽기", icon: <Bubble t="가" fs={8} /> },
   EN_READING: { name: "영어 기사 읽기", short: "영어 기사 읽기", icon: <Bubble t="A" fs={9} /> },
   VOCA: {
@@ -56,7 +67,7 @@ export const ACT: Record<ActType, { name: string; short: string; icon: ReactNode
   },
 };
 
-export const ACT_ORDER: ActType[] = ["KR_READING", "EN_READING", "VOCA", "SUMMARY", "DEBATE"];
+export const ACT_ORDER: ActType[] = ["LISTENING", "KR_READING", "EN_READING", "VOCA", "SUMMARY", "DEBATE"];
 
 export const ActIcon = ({ type, size = 22 }: { type: ActType; size?: number }) => <Svg size={size}>{ACT[type].icon}</Svg>;
 

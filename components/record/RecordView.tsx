@@ -7,10 +7,12 @@ import type { Newsbook } from "@/lib/server/newsbook";
 import { post } from "@/lib/client-api";
 import { fmtDay, givenName } from "@/lib/format";
 import { TabBar } from "@/components/student/TabBar";
+import { fmtListen } from "@/lib/listening";
 import { ACT_ORDER, ActIcon, type ActType } from "@/components/student/icons";
 
 // 활동 칸 이름(좁은 칸이라 두 줄)
 const TILE: Record<ActType, [string, string]> = {
+  LISTENING: ["청독", ""],
   KR_READING: ["한국어", "기사 읽기"],
   EN_READING: ["영어", "기사 읽기"],
   VOCA: ["VOCA", ""],
@@ -84,7 +86,7 @@ export function RecordView({ b, profileLabel, canSwitch, isGuardian }: { b: News
             <span className="meta">
               학습 완료 {st.completed}회 · 주간 목표 {b.cohort.weeks_total}주 중 {st.weeks_met}주 달성
             </span>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
               {ACT_ORDER.map((k) => (
                 <div key={k} className="stack" style={{ gap: 4, alignItems: "center", padding: "10px 2px", borderRadius: 12, border: "1px solid var(--line)" }}>
                   <span style={{ color: "var(--deep)" }}>
@@ -99,8 +101,10 @@ export function RecordView({ b, profileLabel, canSwitch, isGuardian }: { b: News
                 </div>
               ))}
             </div>
-            <div style={{ fontSize: 14, padding: "12px 14px", borderRadius: 12, background: "var(--bg)" }}>
+            <div style={{ fontSize: 14, lineHeight: 1.8, padding: "12px 14px", borderRadius: 12, background: "var(--bg)" }}>
               지금까지 소리 내어 읽은 영어 단어 <b style={{ color: "var(--deep)" }}>{st.reading_words.toLocaleString()}</b>개
+              <br />
+              지금까지 청독한 시간 <b style={{ color: "var(--deep)" }}>{fmtListen(st.listening_seconds)}</b>
             </div>
           </div>
 

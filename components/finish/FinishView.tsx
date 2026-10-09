@@ -6,9 +6,11 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import type { Finish, Reading } from "@/lib/server/finish";
 import { fmtMonthDay } from "@/lib/format";
+import { fmtListen } from "@/lib/listening";
 import { ACT_ORDER, ActIcon, type ActType } from "@/components/student/icons";
 
 const TILE: Record<ActType, [string, string]> = {
+  LISTENING: ["청독", ""],
   KR_READING: ["한국어", "기사 읽기"],
   EN_READING: ["영어", "기사 읽기"],
   VOCA: ["VOCA", ""],
@@ -87,7 +89,7 @@ export function FinishView({ f }: { f: Finish }) {
             <span style={{ fontSize: 64, fontWeight: 800, lineHeight: 1 }}>{f.verified}</span>
             <span style={{ fontSize: 18, color: "var(--sub)" }}>/ {f.cohort.total_target} 인증</span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
             {ACT_ORDER.map((k) => (
               <div key={k} className="stack" style={{ gap: 4, alignItems: "center", padding: "10px 2px", borderRadius: 12, background: "var(--white)", border: "1px solid var(--line)" }}>
                 <span style={{ color: "var(--deep)" }}>
@@ -104,6 +106,8 @@ export function FinishView({ f }: { f: Finish }) {
           </div>
           <div className="card" style={{ fontSize: 14, lineHeight: 1.6 }}>
             12주 동안 소리 내어 읽은 영어 단어 <b style={{ color: "var(--deep)" }}>{f.reading_words.toLocaleString()}</b>개
+            <br />
+            12주 동안 청독한 시간 <b style={{ color: "var(--deep)" }}>{fmtListen(f.listening_seconds)}</b>
           </div>
           {f.first_reading && (
             <div className="stack" style={{ gap: 10 }}>

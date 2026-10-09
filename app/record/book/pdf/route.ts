@@ -27,13 +27,13 @@ export async function GET(req: Request) {
 
   const pages = bookPages(b);
   const photos: Record<string, PdfPhoto> = {};
+  // 손글씨 사진과 청독 카드 그림
+  const ids = pages.flatMap((w) => [...(w.summary?.has_photo ? [w.summary.activity_id] : []), ...w.cards.map((c) => c.activity_id)]);
   await Promise.all(
-    pages
-      .filter((w) => w.summary?.has_photo)
-      .map(async (w) => {
-        const p = await photo(w.summary!.activity_id, learner.student_id);
-        if (p) photos[w.summary!.activity_id] = p;
-      }),
+    ids.map(async (id) => {
+      const p = await photo(id, learner.student_id);
+      if (p) photos[id] = p;
+    }),
   );
   const pdf = await renderNewsbook(b, pages, photos);
   const name = `새벽달영어뉴스_${b.cohort.cohort_no}기_뉴스북_${givenName(b.student.name)}.pdf`;
