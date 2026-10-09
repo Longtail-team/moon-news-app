@@ -25,13 +25,13 @@ const SERIF = "'Noto Serif KR', serif";
 const LABEL: Record<AudioType, string> = { article_audio: "영어 기사", kr_en_repeat_audio: "한영 구간반복", voca_repeat_audio: "VOCA 구간반복" };
 const ORDER: AudioType[] = ["article_audio", "kr_en_repeat_audio", "voca_repeat_audio"];
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
-// 도장 자리(왼쪽 위 좌표, 300px 도장) — 시간 칸(아래쪽)을 가리지 않는 곳
+// 도장 자리(왼쪽 위 좌표, 300px 도장) — 제목과 시간 칸을 가리지 않는 곳: 오른쪽 위 날짜 자리, 가운데 빈 곳
 const SPOTS = [
-  { x: 690, y: 180 },
-  { x: 30, y: 24 },
-  { x: 740, y: 560 },
-  { x: 610, y: 36 },
-  { x: 36, y: 560 },
+  { x: 700, y: 120 },
+  { x: 700, y: 560 },
+  { x: 420, y: 590 },
+  { x: 150, y: 600 },
+  { x: 560, y: 510 },
 ];
 
 // 같은 id면 같은 값 (FNV-1a → mulberry32)
