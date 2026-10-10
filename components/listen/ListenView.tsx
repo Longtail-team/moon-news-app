@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { post, uploadMedia } from "@/lib/client-api";
 import { fmtListen, trackListening, type AudioType } from "@/lib/listening";
-import { drawListeningCard, type CardData } from "@/lib/listening-card";
+import { drawListeningCard, type ListeningCardData as CardData } from "@/lib/cards/listening";
 import { saveFile } from "@/lib/video";
 import { givenName } from "@/lib/format";
 import { krEnTimeline, stepAt, timeline, type Sentence } from "@/lib/reading/text";

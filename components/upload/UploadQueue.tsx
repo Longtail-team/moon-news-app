@@ -11,7 +11,7 @@ import { TabBar } from "@/components/student/TabBar";
 import { post } from "@/lib/client-api";
 import { fmtMonthDay } from "@/lib/format";
 import { canMakeVideo, saveFile } from "@/lib/video";
-import { drawListeningCard } from "@/lib/listening-card";
+import { drawListeningCard } from "@/lib/cards/listening";
 import { givenName } from "@/lib/format";
 
 function Item({ item, onVerified, onMessage }: { item: QueueItem; onVerified: (verifiedCount: number) => void; onMessage: (m: string) => void }) {
