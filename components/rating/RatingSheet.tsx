@@ -1,5 +1,5 @@
 // 평가 창(아래에서 올라오는 시트): 청독 이해도 5단계·토론 주제 반응 4가지가 함께 쓴다.
-// 필수일 때는 건너뛰기가 없고 바깥을 눌러도 닫히지 않는다.
+// 필수일 때는 건너뛰기가 없고 바깥을 눌러도 닫히지 않는다. 바깥을 누르면 닫기만 한다(건너뛰기와 다름).
 export function RatingSheet({
   title,
   help,
@@ -8,6 +8,7 @@ export function RatingSheet({
   required,
   onPick,
   onSkip,
+  onClose,
   busy = false,
   label,
 }: {
@@ -18,12 +19,13 @@ export function RatingSheet({
   required: boolean;
   onPick: (value: number) => void; // 1부터
   onSkip?: () => void;
+  onClose?: () => void;
   busy?: boolean;
   label: string;
 }) {
   return (
     <>
-      <div className="dim" onClick={() => !required && !busy && onSkip?.()} />
+      <div className="dim" onClick={() => !required && !busy && onClose?.()} />
       <div className="sheet" role="dialog" aria-modal="true" aria-label={label}>
         <div className="handle" />
         <h2 className="h1" style={{ fontSize: 22 }}>

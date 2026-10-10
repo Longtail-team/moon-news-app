@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { pageLearner } from "@/lib/server/learner";
 import { getMaterial } from "@/lib/server/reading";
 import { ratingNeeded } from "@/lib/server/rating";
+import { getDebateBoard } from "@/lib/server/debate";
 import { parseLang, parseMode } from "@/lib/article/mode";
 import type { ListenAudio } from "@/lib/listen/useListening";
 import { ArticleScreen } from "@/components/article/ArticleScreen";
@@ -15,7 +16,12 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   const week = Number((await params).week);
   const q = await searchParams;
   const { learner } = await pageLearner();
-  const [m, listenRatingRequired] = await Promise.all([getMaterial(learner.student_id, week), ratingNeeded(learner.student_id, week, "listen_understanding")]);
+  const [m, listenRatingRequired, debate, debateFeelRequired] = await Promise.all([
+    getMaterial(learner.student_id, week),
+    ratingNeeded(learner.student_id, week, "listen_understanding"),
+    getDebateBoard(learner.student_id, week),
+    ratingNeeded(learner.student_id, week, "debate_feel"),
+  ]);
   if (!m) redirect("/activity");
   // 청독 음원: 영어 기사 음원·한영 구간반복(VOCA 구간반복은 VOCA 탭에서)
   const audios: ListenAudio[] = [];
@@ -37,6 +43,8 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
       learnerName={givenName(learner.name)}
       deadline={fmtDay(m.deadline)}
       listenRatingRequired={listenRatingRequired}
+      debate={debate}
+      debateFeelRequired={debateFeelRequired}
     />
   );
 }

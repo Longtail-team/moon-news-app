@@ -96,15 +96,17 @@ describe("기자수첩", () => {
 });
 
 describe("의견·찬반 투표", () => {
-  it("주차 일요일 자정(다음 월 0시)이 지나면 의견을 저장하지 않는다", async () => {
+  // 2026-10-10 바뀐 규칙(T07 PR E): 마감 뒤 의견도 저장하되(학습 1회 인정) 비율·친구 의견에는 넣지 않는다(after_close)
+  it("주차 일요일 자정(다음 월 0시)이 지나면 마감 표시, 그 뒤 의견은 after_close로 저장", async () => {
     await db.transaction(async (tx) => {
       const id = await act(tx, "S-0002", 4, "DEBATE");
       const open = async (at: string) => ((await tx.query<Row>("select public.work_material('S-0002', 4, 'DEBATE', $1) as j", [at])).rows[0].j as any).vote_open;
       expect(await open("2026-10-11T23:59:00+09:00")).toBe(true);
       expect(await open("2026-10-12T00:00:00+09:00")).toBe(false);
       await save(tx, "S-0002", id, { stance: "agree", reason: "좋은 전시라서" }, "2026-10-11T23:59:00+09:00");
-      // 거부되면 트랜잭션이 끝나므로 마지막에 확인한다
-      await expect(save(tx, "S-0002", id, { stance: "disagree" }, "2026-10-12T00:00:00+09:00")).rejects.toThrow(/vote closed/);
+      expect((await tx.query<Row>("select after_close from activity_notes where activity_id = $1", [id])).rows[0].after_close).toBe(false);
+      await save(tx, "S-0002", id, { stance: "disagree" }, "2026-10-12T00:00:00+09:00");
+      expect((await tx.query<Row>("select stance, after_close from activity_notes where activity_id = $1", [id])).rows[0]).toEqual({ stance: "disagree", after_close: true });
       await tx.rollback();
     });
   });
@@ -121,7 +123,7 @@ describe("의견·찬반 투표", () => {
       await note("S-0003", "agree", "2026-10-07T10:00:00+09:00");
       await note("S-0003", null, "2026-10-08T10:00:00+09:00"); // 이도윤은 고르지 않음으로 바꿈
       const t = (await tx.query<Row>("select * from app.debate_tally((select cohort_id from cohorts where cohort_no = 1), 4)")).rows[0];
-      expect(t).toEqual({ agree: 1, disagree: 1 });
+      expect(t).toEqual({ agree: 1, disagree: 1, unsure: 0 }); // 잘 모르겠어요(2026-10-10 추가)
 
       // 결과는 의견을 고른 학습자에게만
       const my = async (s: string) => (await tx.query<Row>("select public.my_debate_tally($1, 4, $2) as j", [s, NOW])).rows[0].j as any;

@@ -2,26 +2,19 @@
 
 // 작성 활동 (spec.md 6장, 목업 worksheet): 1 작성지 받기 → 2 쓰기 안내 → 3 사진 올리기 → 완료하기
 // 사진은 고르자마자 줄여서 Storage 비공개 버킷에 올리고 붙여 둔다(작성 중). 나갔다 와도 이어서 할 수 있다.
-// 기사 요약은 기자수첩(내가 붙인 제목·요약, 사진 글자 읽기), 찬반토론은 내 의견(입장·이유, 일요일 자정까지). 모두 선택 입력.
+// 기사 요약은 기자수첩(내가 붙인 제목·요약, 사진 글자 읽기, 선택 입력). 찬반토론은 합친 기사 화면으로 옮김(T07 PR E).
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import type { Tally, WorkMaterial } from "@/lib/server/reading";
+import { useRef, useState } from "react";
+import type { WorkMaterial } from "@/lib/server/reading";
 import { post, uploadMedia } from "@/lib/client-api";
 import { shrinkPhoto } from "@/lib/image";
 
-type Kind = "voca" | "summary" | "debate";
-const TYPE: Record<Kind, string> = { voca: "VOCA", summary: "SUMMARY", debate: "DEBATE" };
+type Kind = "voca" | "summary";
+const TYPE: Record<Kind, string> = { voca: "VOCA", summary: "SUMMARY" };
 
 const TEXT: Record<Kind, { title: string; pdf: string; pdfSub: string; step2: string; guide: string }> = {
   summary: { title: "기사 요약 쓰기", pdf: "이번 주 기사 PDF", pdfSub: "요약 작성지는 PDF 뒤쪽에 있어요", step2: "요약하기", guide: "기사의 핵심을 내 말로 3~5문장에 담아 보세요." },
-  debate: {
-    title: "찬반토론 쓰기",
-    pdf: "이번 주 기사 PDF",
-    pdfSub: "토론 질문지는 PDF 맨 뒤에 있어요",
-    step2: "내 입장 쓰기",
-    guide: "찬성과 반대 중 하나를 고르고, 이유 두 가지를 기사에서 찾아 써 보세요.",
-  },
   voca: { title: "VOCA 공부", pdf: "VOCA 정리 PDF", pdfSub: "출력하거나 공책에 써도 돼요", step2: "단어 익히기", guide: "음원을 들으며 단어와 뜻을 따라 써 보세요." },
 };
 
@@ -56,26 +49,6 @@ const ImgIcon = () =>
     </>,
   );
 
-// 찬반 결과 막대: 내 의견을 고른 학생에게만 보인다
-function TallyBar({ t, final = false }: { t: Tally; final?: boolean }) {
-  const total = t.agree + t.disagree;
-  const pct = total ? Math.round((t.agree / total) * 100) : 0;
-  return (
-    <div className="stack" style={{ gap: 6 }} aria-label="찬반 결과">
-      <div className="between" style={{ fontSize: 13, fontWeight: 800 }}>
-        <span>찬성 {pct}%</span>
-        <span>반대 {total ? 100 - pct : 0}%</span>
-      </div>
-      <div className="bar">
-        <i style={{ width: `${pct}%` }} />
-      </div>
-      <div className="help" style={{ fontSize: 13 }}>
-        {final ? "최종 결과" : "지금까지"} {total}명 · 내 의견 {t.mine === "agree" ? "찬성" : "반대"}
-      </div>
-    </div>
-  );
-}
-
 export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: WorkMaterial; ocr: boolean }) {
   const router = useRouter();
   const t = TEXT[kind];
@@ -89,14 +62,6 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
   const note = material.draft?.note;
   const [title, setTitle] = useState(note?.title ?? "");
   const [body, setBody] = useState(note?.body ?? "");
-  const [stance, setStance] = useState<"agree" | "disagree" | null>(note?.stance ?? null);
-  const [reason, setReason] = useState(note?.reason ?? "");
-  const [voteOpen, setVoteOpen] = useState(material.vote_open);
-  const [tally, setTally] = useState<Tally | null>(material.tally);
-  const [voting, setVoting] = useState(false);
-  // 화면 준비 전에 누르면 아무 일도 일어나지 않으므로, 준비될 때까지 의견 버튼을 잠근다
-  const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
   const [ocrLeft, setOcrLeft] = useState(note?.ocr_left ?? 3);
   const [reading, setReading] = useState(false);
   const [ocrMsg, setOcrMsg] = useState<string | null>(null);
@@ -170,32 +135,9 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
     setTimeout(() => bodyRef.current?.focus(), 0);
   }
 
-  // 찬반토론: 고르는 순간 저장하고 그 주차 결과를 받는다(고르기 전에는 결과가 보이지 않음)
-  async function pick(v: "agree" | "disagree") {
-    if (voting || busy) return;
-    const next = stance === v ? null : v;
-    setVoting(true);
-    setError(null);
-    try {
-      const id = activityId ?? (await post<{ activityId: string }>("/api/activity/start", { week: material.week_no, type: TYPE[kind] })).activityId;
-      setActivityId(id);
-      const r = await post<{ tally: Tally | null }>("/api/activity/note", { activityId: id, week: material.week_no, stance: next, reason: next ? reason : "" });
-      setStance(next);
-      setTally(r.tally);
-    } catch (e) {
-      if ((e as { code?: string }).code === "vote_closed") {
-        setVoteOpen(false);
-        setError("이번 주 의견 받기가 끝났어요.");
-      } else setError("의견을 저장하지 못했어요. 다시 눌러 주세요.");
-    } finally {
-      setVoting(false);
-    }
-  }
-
   // 선택 입력이 있으면 학습 완료 직전에 저장한다
   async function saveNote(id: string) {
     if (kind === "summary" && (title.trim() || body.trim() || note)) await post("/api/activity/note", { activityId: id, title, body });
-    if (kind === "debate" && voteOpen && stance) await post("/api/activity/note", { activityId: id, week: material.week_no, stance, reason });
   }
 
   async function complete() {
@@ -205,12 +147,8 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
     try {
       try {
         await saveNote(activityId);
-      } catch (e) {
-        if ((e as { code?: string }).code === "vote_closed") {
-          setVoteOpen(false);
-          setStance(null);
-          setError("이번 주 의견 받기가 끝났어요. 의견 없이 완료할 수 있어요.");
-        } else setError("기록을 저장하지 못했어요. 다시 눌러 주세요.");
+      } catch {
+        setError("기록을 저장하지 못했어요. 다시 눌러 주세요.");
         setBusy(null);
         return;
       }
@@ -419,43 +357,6 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
                 )}
                 {ocrMsg && <div className="help" style={{ fontSize: 13 }}>{ocrMsg}</div>}
               </>,
-            )}
-          {kind === "debate" &&
-            step(
-              4,
-              "내 의견 (선택)",
-              voteOpen ? (
-                <>
-                  <div className="help" style={{ fontSize: 13 }}>
-                    이번 주 일요일 자정까지 낼 수 있어요. 내 의견을 고르면 지금까지의 찬반 결과를 볼 수 있어요.
-                  </div>
-                  <div className="row" style={{ gap: 8 }} role="group" aria-label="내 입장">
-                    {(["agree", "disagree"] as const).map((v) => (
-                      <button
-                        key={v}
-                        className={`chip${stance === v ? " on" : ""}`}
-                        style={{ flex: 1, justifyContent: "center" }}
-                        aria-pressed={stance === v}
-                        disabled={voting || !ready}
-                        onClick={() => void pick(v)}
-                      >
-                        {v === "agree" ? "찬성" : "반대"}
-                      </button>
-                    ))}
-                  </div>
-                  {stance && tally && <TallyBar t={tally} />}
-                  {stance && (
-                    <input style={input} value={reason} maxLength={300} placeholder="이유를 한 문장으로 써 주세요" aria-label="이유" onChange={(e) => setReason(e.target.value)} />
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="help" style={{ fontSize: 13 }}>
-                    이번 주 의견 받기는 끝났어요. 작성지 사진으로 학습은 그대로 할 수 있어요.
-                  </div>
-                  {tally && <TallyBar t={tally} final />}
-                </>
-              ),
             )}
           {error && <div className="err">{error}</div>}
         </div>

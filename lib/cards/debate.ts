@@ -9,7 +9,7 @@ export type DebateCounts = { agree: number; disagree: number; unsure: number };
 export type DebateCardData = CardHead & {
   question: string;
   counts: DebateCounts; // 이 카드를 만든 시점의 투표 수
-  feel: string; // 토론 주제 반응(예: "더 이야기하고 싶어요")
+  feel: string | null; // 토론 주제 반응(예: "더 이야기하고 싶어요"). 건너뛰면 없음
 };
 
 const STEPS: Record<CardStyle, TitleStep[]> = {
@@ -46,7 +46,7 @@ export async function drawDebateCard(d: DebateCardData, style: CardStyle = "app"
 
   // 반응 알약은 숫자 칸 바로 위
   const pillY = BOX_Y - 66 - 28;
-  drawPills(ctx, [{ label: `오늘 토론 주제: ${d.feel}` }], pillY);
+  if (d.feel) drawPills(ctx, [{ label: `오늘 토론 주제: ${d.feel}` }], pillY);
 
   // 숫자 칸: 함께 토론한 사람 수 + 세 줄 막대
   const total = d.counts.agree + d.counts.disagree + d.counts.unsure;

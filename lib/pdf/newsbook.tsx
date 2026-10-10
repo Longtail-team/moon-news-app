@@ -6,6 +6,7 @@ import { Document, Font, Image, Page, StyleSheet, Text, View, renderToBuffer } f
 import type { BookWeek, Newsbook } from "@/lib/server/newsbook";
 import { fmtDay, fmtMonthDay, givenName } from "@/lib/format";
 import { withGa } from "@/lib/korean";
+import { STANCE_TAG } from "@/lib/debate/board";
 
 const FONT_DIR = path.join(process.cwd(), "lib", "pdf", "fonts");
 Font.register({
@@ -61,7 +62,7 @@ function ArticlePage({ w, reporter, photo, cards }: { w: BookWeek; reporter: str
       {w.opinion && (
         <View style={s.card}>
           <Text style={s.label}>의견 카드</Text>
-          <Text style={{ fontSize: 14, fontWeight: 700 }}>내 입장: {w.opinion.stance === "agree" ? "찬성" : "반대"}</Text>
+          <Text style={{ fontSize: 14, fontWeight: 700 }}>내 입장: {STANCE_TAG[w.opinion.stance]}</Text>
           {w.opinion.reason ? <Text style={{ marginTop: 6 }}>{w.opinion.reason}</Text> : null}
         </View>
       )}
