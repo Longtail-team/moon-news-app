@@ -323,8 +323,17 @@ export function placeStamp(ctx: CanvasRenderingContext2D, head: CardHead, kind: 
   ctx.rotate(angle);
   ctx.drawImage(stamp, -150, -150);
   ctx.restore();
+  stamp.width = 0; // 도장 캔버스 메모리 비우기
 }
 
+/** PNG로 바꾼 뒤 캔버스 메모리를 바로 비운다(아이폰은 캔버스 메모리를 늦게 돌려줘 여러 장 연달아 그리면 멈출 수 있음, T07 4-1) */
 export function toPng(canvas: HTMLCanvasElement): Promise<Blob> {
-  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("card"))), "image/png"));
+  return new Promise((resolve, reject) =>
+    canvas.toBlob((b) => {
+      canvas.width = 0;
+      canvas.height = 0;
+      if (b) resolve(b);
+      else reject(new Error("card"));
+    }, "image/png"),
+  );
 }

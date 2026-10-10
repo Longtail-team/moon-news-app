@@ -1,17 +1,7 @@
-// 청독 (2026-10-09): 그 주차의 영어 기사 음원·한영 구간반복을 듣고 청독 완료 → 카드 (VOCA 구간반복은 VOCA 탭에서)
+// 청독은 합친 기사 화면으로 옮김(T07, 2026-10-10). 예전 주소(알림톡·홈 화면 바로가기 등)는 새 화면으로 보낸다.
 import { redirect } from "next/navigation";
-import { pageLearner } from "@/lib/server/learner";
-import { getMaterial } from "@/lib/server/reading";
-import { ListenView, type ListenAudio } from "@/components/listen/ListenView";
-import "../../student.css";
+import { articleHref } from "@/lib/article/mode";
 
 export default async function ListenPage({ params }: { params: Promise<{ week: string }> }) {
-  const week = Number((await params).week);
-  const { learner } = await pageLearner();
-  const m = await getMaterial(learner.student_id, week);
-  if (!m) redirect("/activity");
-  const audios: ListenAudio[] = [];
-  if (m.article) audios.push({ type: "article_audio", label: "영어 기사 음원", src: m.article });
-  if (m.krEn) audios.push({ type: "kr_en_repeat_audio", label: "새벽달 한영 구간반복", src: m.krEn });
-  return <ListenView week={week} title={m.title} sentences={m.sentences} audios={audios} weeklyTarget={m.weekly_target} weekCompleted={m.week_completed} />;
+  redirect(articleHref(Number((await params).week), "listen"));
 }

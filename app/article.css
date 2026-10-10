@@ -1,0 +1,30 @@
+/* 합친 기사 화면(T07, 시안 mockup-student-v2.html "합친 기사 화면"). student.css 위에 더한다 */
+
+/* 아래 시트 */
+.app .dock { background: var(--white); border-top: 1px solid var(--line); border-radius: 20px 20px 0 0; box-shadow: 0 -6px 20px rgba(31, 127, 119, 0.08); padding-top: 10px; }
+.app .mtabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: var(--mute); }
+.app .mtabs button { min-height: 44px; border: 0; border-radius: 10px; background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: var(--sub); display: flex; align-items: center; justify-content: center; gap: 5px; padding: 0 4px; cursor: pointer; }
+.app .mtabs button.on { background: var(--white); color: var(--ink); font-weight: 800; box-shadow: 0 1px 4px rgba(45, 45, 45, 0.1); }
+.app .mtabs button:disabled { opacity: 0.45; cursor: not-allowed; }
+.app .achip { flex: 1; min-height: 44px; padding: 0 10px; border-radius: 12px; border: 1px solid var(--line2); background: var(--white); font: inherit; font-size: 13px; font-weight: 700; color: var(--ink); display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+.app .achip.on { border: 2px solid var(--deep); background: var(--tint); font-weight: 800; }
+.app .achip em { font-style: normal; color: var(--deep); font-weight: 800; }
+.app .dock .rate button { height: 44px; border-radius: 22px; }
+
+/* 지문 상자 위 한 줄: 언어 선택(눌리는 영역 44px, 보이는 칸 30px)·끊어 읽기 */
+.app .seg { display: flex; }
+.app .seg button { min-width: 44px; min-height: 44px; padding: 0 2px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; font: inherit; cursor: pointer; }
+.app .seg button span { display: flex; align-items: center; height: 30px; padding: 0 9px; border-radius: 8px; background: var(--mute); font-size: 13px; font-weight: 700; color: var(--sub); }
+.app .seg button.on span { background: var(--tint); color: var(--deep); font-weight: 800; box-shadow: inset 0 0 0 1.5px var(--deep); }
+.app .seg button:disabled { opacity: 0.45; }
+.app .slashck { display: flex; align-items: center; gap: 8px; min-height: 44px; flex-shrink: 0; font-size: 13px; font-weight: 700; color: var(--sub); }
+.app .slashck input { width: 20px; height: 20px; accent-color: var(--deep); }
+
+/* 듣기 전 질문 */
+.app .qbox { background: var(--tint); border-radius: 16px; padding: 14px 16px; }
+.app .qhead { font-size: 13px; font-weight: 800; color: var(--deep); }
+.app .qfold { font-size: 13px; text-decoration: none; color: var(--sub); }
+.app .qtext { font-size: 16px; font-weight: 700; line-height: 1.55; }
+.app .qline { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 10px 14px; border: 0; border-radius: 16px; background: var(--tint); text-align: left; font: inherit; color: var(--ink); cursor: pointer; }
+.app .qline b { flex-shrink: 0; font-size: 13px; color: var(--deep); }
+.app .qline span { flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
