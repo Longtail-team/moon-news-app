@@ -325,7 +325,7 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
                   ))}
                 </div>
               )}
-              <Link className="textbtn" style={{ alignSelf: "flex-start", fontSize: 13 }} href={`/read/${material.week_no}/en`}>
+              <Link className="textbtn" style={{ alignSelf: "flex-start", fontSize: 13 }} href={`/article/${material.week_no}`}>
                 기사 원문 다시 보기
               </Link>
             </>,

@@ -5,6 +5,8 @@ import { getMaterial } from "@/lib/server/reading";
 import { parseLang, parseMode } from "@/lib/article/mode";
 import type { ListenAudio } from "@/lib/listen/useListening";
 import { ArticleScreen } from "@/components/article/ArticleScreen";
+import { MAX_RECORDING_SEC } from "@/lib/video";
+import { fmtDay, givenName } from "@/lib/format";
 import "../../student.css";
 import "../../article.css";
 
@@ -30,6 +32,9 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
       weekCompleted={m.week_completed}
       initialMode={parseMode(q.mode)}
       initialLang={parseLang(q.lang)}
+      maxSec={MAX_RECORDING_SEC}
+      learnerName={givenName(learner.name)}
+      deadline={fmtDay(m.deadline)}
     />
   );
 }

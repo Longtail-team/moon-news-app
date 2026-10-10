@@ -49,7 +49,7 @@ node --env-file=.env.local scripts/delete-test-order.mjs 01000009001       # 시
 ```
 npm install
 npm run dev        # http://localhost:3000  (predev가 ffmpeg 워커를 public/ffmpeg로 복사)
-npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 140개
+npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 144개
 npm run build
 ```
 
@@ -63,7 +63,7 @@ DB 변경
 supabase link --project-ref mefmwetcfrmwdqcgxtpz -p <DB 비밀번호>
 supabase db push -p <DB 비밀번호>            # supabase/migrations 적용
 ```
-- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 25개 모두 운영에 적용됨.
+- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 26개 모두 운영에 적용됨.
 
 ### Windows 주의
 - 프로젝트 경로에 한글이 있으면 Node `fs.cpSync`가 오류 없이 종료된다 → `copyFileSync` 사용(`scripts/copy-ffmpeg-worker.mjs`)
@@ -79,8 +79,8 @@ app/
   p/[sid]/route.ts       형제 프로필 고르기
   profiles/ add-learner/ reentry/   학습자 고르기·추가, 다시 들어가기(번호 → 새 링크)
   activity/              활동 고르기
-  read/[week]/[kind]/    기사 읽기·VOCA 단어 (en | kr | voca)
-  article/[week]/        합친 기사 화면(T07): 지문 + 아래 청독 / 기사 읽기 / 찬반토론 시트(?mode=). 지금은 청독만 이 안에서, 읽기·찬반은 기존 화면으로 연결
+  read/[week]/[kind]/    VOCA 단어 낭독(voca). en·kr은 article로 이동
+  article/[week]/        합친 기사 화면(T07): 지문 + 아래 청독 / 기사 읽기 / 찬반토론 시트(?mode=, ?lang=). 청독·기사 읽기(녹음 → 읽기 완료 카드)는 이 안에서, 찬반은 기존 화면으로 연결(PR E 전)
   listen/[week]/         예전 청독 주소 → article로 이동
   write/[week]/[kind]/   작성 활동 (voca | summary | debate)
   upload/                인스타 올리기
@@ -106,12 +106,13 @@ lib/
   reading/               지문·하이라이트 순서, 녹음기
   listening.ts           청독량 기록(재생 시간 재기·전송)
   listen/                청독 재생 훅(useListening)·청독 완료(finish: 카드 그리기·올리기)
+  reading/               녹음 훅(useRecording, 기사 읽기·VOCA 공용)·기사 읽기 완료(finish: 녹음 → 읽기 완료 카드 → 완료 → 카드 붙이기)
   article/mode.ts        기사 화면 상태 규칙(시트·지문 보기, 테스트)
   cards/                 활동 카드 그리기(1080×1350): frame.ts 공통 틀·도장, layout.ts 배치 규칙(테스트), listening·reading·summary·voca·debate.ts 카드 5종
 scripts/sync-content.mjs 콘텐츠 반영 (GitHub Actions에서 실행)
 .github/workflows/content-sync.yml
 supabase/
-  migrations/            25개
+  migrations/            26개
   seed.sql               샘플 데이터
   sample-cleanup.sql     개강 전 샘플 지우기
 tests/db/ tests/unit/
