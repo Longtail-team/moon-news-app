@@ -179,6 +179,48 @@ a{color:var(--ink)}
 
 .toast{position:absolute;left:50%;bottom:100px;transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--white);font-size:14px;font-weight:700;padding:12px 18px;border-radius:12px;white-space:nowrap;animation:fade .2s}
 
+/* 합친 기사 화면 (기획 중) */
+.dock{flex-shrink:0;background:var(--white);border-top:1px solid var(--line);border-radius:20px 20px 0 0;box-shadow:0 -6px 20px rgba(31,127,119,.08);padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px}
+.mtabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--mute)}
+.mtabs button{min-height:44px;border:0;border-radius:10px;background:transparent;font-size:14px;font-weight:700;color:var(--sub);display:flex;align-items:center;justify-content:center;gap:5px;padding:0 4px}
+.mtabs button.on{background:var(--white);color:var(--ink);font-weight:800;box-shadow:0 1px 4px rgba(45,45,45,.1)}
+.mtabs button:disabled{opacity:.45;cursor:not-allowed}
+.seg{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--mute)}
+.seg button{min-height:44px;min-width:52px;padding:0 10px;border:0;border-radius:9px;background:transparent;font-size:13px;font-weight:700;color:var(--sub)}
+.seg button.on{background:var(--white);color:var(--ink);font-weight:800;box-shadow:0 1px 3px rgba(45,45,45,.1)}
+.seg button:disabled{opacity:.45}
+/* 작은 언어 선택: 눌리는 영역은 44px, 보이는 칸은 30px */
+.seg.sm{background:none;padding:0;gap:0}
+.seg.sm button{min-width:44px;min-height:44px;padding:0 2px;background:transparent;box-shadow:none;display:flex;align-items:center;justify-content:center}
+.seg.sm button span{display:flex;align-items:center;height:30px;padding:0 9px;border-radius:8px;background:var(--mute);font-size:13px;font-weight:700;color:var(--sub)}
+.seg.sm button.on span{background:var(--tint);color:var(--deep);font-weight:800;box-shadow:inset 0 0 0 1.5px var(--deep)}
+.achip{flex:1;min-height:44px;padding:0 10px;border-radius:12px;border:1px solid var(--line2);background:var(--white);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px}
+.achip.on{border:2px solid var(--deep);background:var(--tint);font-weight:800}
+.achip em{font-style:normal;color:var(--deep);font-weight:800}
+.vopt{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;padding:0 16px;border-radius:12px;border:1px solid var(--line2);background:var(--white);font-size:16px;font-weight:800;text-align:left}
+.vopt i{position:absolute;left:0;top:0;bottom:0;background:var(--mute);animation:grow .5s ease-out}
+.vopt.on{border:2px solid var(--deep)}
+.vopt.on i{background:var(--tint)}
+.vopt span,.vopt b{position:relative}
+.vopt b{font-size:15px;color:var(--sub)}
+.vopt.on b{color:var(--deep)}
+.vopt:disabled{cursor:default}
+@keyframes grow{from{width:0}}
+.optag{display:inline-flex;align-items:center;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:800}
+.optag.pro{background:var(--tint);color:var(--deep)}
+.optag.con{background:var(--mute);color:var(--ink)}
+.optag.idk{background:var(--white);color:var(--sub);border:1px solid var(--line2)}
+.opi{padding:14px 0;border-bottom:1px solid var(--mute);display:flex;flex-direction:column;gap:8px}
+.r5{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:8px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--white);font-size:15px;font-weight:700;text-align:left}
+.r5 b{width:28px;height:28px;flex-shrink:0;border-radius:50%;background:var(--tint);color:var(--deep);font-size:13px;display:flex;align-items:center;justify-content:center}
+.vidwrap{position:relative}
+.vidbtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;border:0;background:rgba(45,45,45,.78);display:flex;align-items:center;justify-content:center}
+.vidbtn svg{width:26px;height:26px}
+.vidbar{position:absolute;left:12px;right:12px;bottom:12px;height:6px;border-radius:3px;background:rgba(45,45,45,.15);overflow:hidden}
+.vidbar i{display:block;height:6px;background:var(--deep);width:0}
+.vidbar.on i{animation:vid 8s linear forwards}
+@keyframes vid{to{width:100%}}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
@@ -187,7 +229,7 @@ a{color:var(--ink)}
   <aside class="side" id="side">
     <div>
       <h1>새벽달 영어뉴스<br>수강생 화면 목업 v2</h1>
-      <p style="margin-top:6px">2026년 10월 9일 기준 앱 화면을 반영했어요. 버튼을 눌러 실제처럼 넘겨 볼 수 있어요. 기사는 지문 하나를 예시로 넣었고, 이름·날짜·숫자는 예시입니다. 음원은 회의용으로 8초짜리로 줄여 흉내 냅니다.</p>
+      <p style="margin-top:6px">2026년 10월 9일 기준 앱 화면에 10월 10일 기획안(합친 기사 화면, 읽기 완료 카드, 찬반 투표, 청독 이해도 평가)을 더했어요. 학습 고르기에서 청독·기사 읽기·찬반토론을 누르면 새 화면으로 가고, 지금 앱 화면은 "비교용"에서 볼 수 있어요. 버튼을 눌러 실제처럼 넘겨 볼 수 있어요. 기사는 지문 하나를 예시로 넣었고, 이름·날짜·숫자는 예시입니다. 음원은 회의용으로 8초짜리로 줄여 흉내 냅니다.</p>
     </div>
     <div class="note" id="note" aria-live="polite"></div>
     <div class="grp" id="navList"></div>
@@ -222,7 +264,7 @@ const ACT={
   EN:{name:'영어 기사 읽기',short:'영어 읽기',d:BUB+TXT('A','9'),desc:'음원을 듣고 영어로 읽어 녹음해요'},
   VO:{name:'VOCA',short:'VOCA',d:'<rect x="3" y="7.5" width="13" height="13" rx="2"></rect><path d="M8 4h11a2 2 0 0 1 2 2v11"></path>',desc:'단어를 익히고 작성지 사진을 올려요'},
   SU:{name:'기사 요약',short:'기사 요약',d:'<path d="M6.5 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M9 8h6M9 12h6M9 16h3.5"></path>',desc:'작성지 사진 1장을 올려요'},
-  DE:{name:'찬반토론',short:'찬반토론',d:'<path d="M12 4v15M8 20h8M5 7h14"></path><path d="M2 13a3 3 0 0 0 6 0L5 7z"></path><path d="M16 13a3 3 0 0 0 6 0L19 7z"></path>',desc:'작성지 사진 1장을 올려요'}
+  DE:{name:'찬반토론',short:'찬반토론',d:'<path d="M12 4v15M8 20h8M5 7h14"></path><path d="M2 13a3 3 0 0 0 6 0L5 7z"></path><path d="M16 13a3 3 0 0 0 6 0L19 7z"></path>',desc:'기사를 읽고 투표한 뒤 이유를 한 줄 써요'}
 };
 const aIcon=(k,s=22)=>svg(ACT[k].d,s);
 const I={
@@ -286,6 +328,32 @@ const BOOK={
   4:{title:ARTICLE.title,dates:'10월 5일 – 11일'}
 };
 const OCR_SAMPLE='RM of BTS is sharing his art collection at SFMOMA. The show has 178 artworks, and half are by Korean artists. RM chose the works and wrote the wall texts himself.';
+/* 찬반토론 예시: 질문은 임시(나중에 콘텐츠 시트 기사 탭에서 반영), 투표 수·친구 의견은 예시 */
+const DEBATE={
+  q:'유명인이 모은 미술품을 미술관에서 전시하는 것, 좋은 일일까요?',
+  base:{pro:21,con:17,idk:6},
+  ops:[
+    {s:'pro',t:'미술관에 안 가던 친구들도 RM 때문에 가 볼 것 같아요.',d:'10.08 20:06'},
+    {s:'con',t:'미술관은 화가가 주인공이어야 하는데 RM만 보일 것 같아요.',d:'10.08 19:41'},
+    {s:'pro',t:'Fans can learn about Korean artists.',d:'10.08 18:15'},
+    {s:'idk',t:'좋은 점도 있지만 팬만 가는 전시가 될까 봐 고민돼요.',d:'10.07 21:30'},
+    {s:'con',t:'사람이 너무 많이 몰려서 그림을 제대로 못 볼 것 같아요.',d:'10.07 20:52'},
+    {s:'pro',t:'좋아하는 사람이 고른 그림이면 더 궁금해져요.',d:'10.07 17:03'},
+    {s:'pro',t:'It is a good way to share art with many people.',d:'10.06 19:12'}
+  ]
+};
+const DV={pro:'찬성해요',con:'반대해요',idk:'잘 모르겠어요'}, DVS={pro:'찬성',con:'반대',idk:'잘 모르겠어요'};
+/* 토론 주제 반응 (문구 임시): 인스타 토론 카드에는 내 입장·이유 대신 이 반응이 들어감 */
+const FEEL=['더 이야기하고 싶어요','재미있었어요','그저 그랬어요','어려웠어요'];
+/* 청독 이해도 5단계: 들으면서 무엇까지 알아들었나(단어 → 주제 → 줄거리 → 대부분 → 설명 가능)로 단계마다 기준을 다르게 */
+const RATE5=[
+  ['한국어 해석을 보면 무슨 내용인지 알 수 있어요','영어로만 들을 때는 아직 어려웠어요'],
+  ['아는 단어만 들렸어요','단어는 들리는데 무슨 이야기인지는 잘 모르겠어요'],
+  ['무엇에 대한 기사인지 알겠어요','주제는 알지만 자세한 내용은 많이 놓쳤어요'],
+  ['내용을 대부분 이해했어요','몇 군데만 놓쳤어요'],
+  ['친구에게 설명할 수 있어요','한국어 해석 없이도 거의 다 이해했어요']
+];
+const WAVE=[12,22,34,18,40,52,30,16,44,36,24,48,56,28,14,38,46,20,32,50,26,42,18,36,54,30,22,46,34,16,40,28,50,24,38,18,30,44,20,12];
 const STAMP_SPOTS=[{sx:600,sy:470,rot:-14},{sx:150,sy:520,rot:9},{sx:520,sy:560,rot:-6},{sx:640,sy:430,rot:16},{sx:260,sy:450,rot:-20}];
 
 /* ================= state ================= */
@@ -311,7 +379,12 @@ const INIT=()=>({
   // 데모 토글
   finished:false, afterEnd:false, anchorCand:false,
   // 이달의 앵커
-  pick:null, agree:false, entryDone:false
+  pick:null, agree:false, entryDone:false,
+  // 합친 기사 화면 (기획 중): am 모드 listen|read|debate, la 고른 음원, rl 읽기 언어 en|kr, rs 읽기 단계 idle|count|rec|done, view 지문 en|both|ko
+  am:'listen', la:'enAudio', rl:'en', rs:'idle', view:'both',
+  rated:{}, lastRead:null, qOpen:true,
+  // 찬반토론 3지선다: dv 내 투표 pro|con|idk, dr 이유 한 줄, dsub 냈음, df 친구 의견 거르기
+  dv:null, dr:'', dsub:false, df:'all', dops:DEBATE.ops.slice(), dfeel:{}, lastDebate:null
 });
 let S=INIT();
 const NOW=4; // 현재 주차
@@ -331,7 +404,7 @@ function addLearning(type,kind){
     S.selWeek=NOW;
   }
   S.weeks[S.selWeek-1].push(type);
-  const meta=kind==='card'?`${S.selWeek}주차 · 10월 9일 · 청독 카드`:`${S.selWeek}주차 · 10월 9일${kind==='photo'?' · 작성지 사진':' 녹음'}`;
+  const meta=`${S.selWeek}주차 · 10월 9일`+({card:' · 청독 카드',photo:' · 작성지 사진',opinion:' · 토론 카드',video:S.screen==='article'?' · 읽기 완료 카드 + 녹음':' 녹음'}[kind]||'');
   S.queue.push({id:S.nextId++,t:type,week:S.selWeek,meta,kind});
 }
 function tabbar(active,badge){
@@ -355,17 +428,92 @@ function stampSVG(o){
       <circle cx="150" cy="150" r="140" stroke-width="8"></circle>
       <circle cx="150" cy="150" r="124" stroke-width="2.5"></circle>
       <circle cx="150" cy="150" r="80" stroke-width="2.5"></circle>
-      <text fill="#1F7F77" stroke="none" font-family="Pretendard, sans-serif" font-size="19" font-weight="800"><textPath href="#${id}p" startOffset="0" textLength="640" lengthAdjust="spacing">SAEBYEOKDAL ENGLISH NEWS ★ LISTENED ★</textPath></text>
-      <text x="150" y="158" text-anchor="middle" fill="#1F7F77" stroke="none" font-family="Noto Serif KR, serif" font-weight="900" font-size="52">청독</text>
+      <text fill="#1F7F77" stroke="none" font-family="Pretendard, sans-serif" font-size="19" font-weight="800"><textPath href="#${id}p" startOffset="0" textLength="640" lengthAdjust="spacing">SAEBYEOKDAL ENGLISH NEWS ★ ${({read:'READ ALOUD',debate:'DEBATED',summary:'SUMMARIZED',voca:'WORDS LEARNED'})[o.kind]||'LISTENED'} ★</textPath></text>
+      <text x="150" y="158" text-anchor="middle" fill="#1F7F77" stroke="none" font-family="Noto Serif KR, serif" font-weight="900" font-size="52">${({read:'낭독',debate:'토론',summary:'요약',voca:'단어'})[o.kind]||'청독'}</text>
       <text x="150" y="196" text-anchor="middle" fill="#1F7F77" stroke="none" font-family="Pretendard, sans-serif" font-weight="800" font-size="20" letter-spacing="2">${o.stampDate}</text>
     </g></svg>`;
+}
+/* 작성지 사진 자리(목업): 줄 친 종이 그림. 실제로는 올린 작성지 사진 */
+const paperPhoto=(x,y,w,h,rot,lines)=>`<div style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;transform:rotate(${rot}deg);background:#fff;border:2px solid #E3E9E8;border-radius:10px;box-shadow:0 10px 26px rgba(45,45,45,.16);padding:26px">
+  <div style="width:100%;height:100%;background:repeating-linear-gradient(#FBFCFC 0 36px,#D3DCDB 36px 38px);border-radius:4px;position:relative">${lines||''}</div></div>`;
+const scribble=(n)=>Array.from({length:n},(_,i)=>`<div style="position:absolute;left:14px;top:${12+i*38}px;height:6px;width:${[78,64,86,52,70,82,58,74][i%8]}%;border-radius:3px;background:#8A8A8A;opacity:.55"></div>`).join('');
+/* 기사 요약 카드: 내가 붙인 제목 + 요약 앞부분 + 작성지 사진 + "요약" 도장 */
+function summaryCardHTML(opts){
+  const o=Object.assign({w:358,week:4,date:'10월 9일(금)',stampDate:'2026.10.09',sx:150,sy:985,rot:-10,title:"RM's Long Self-Introduction",text:OCR_SAMPLE},opts);
+  return `<div class="ncard" style="width:${o.w}px;height:${Math.round(o.w*1.25)}px" role="img" aria-label="기사 요약 카드: ${o.week}주차 ${o.date}, 내가 붙인 제목 ${esc(o.title)}">
+  <div class="ncard-in" style="transform:scale(${o.w/1080})">
+    <div class="np">
+      <div class="nmast"><span class="serif" style="font-size:42px">새벽달 영어뉴스</span><span style="font-size:27px;color:#5A5A5A">1기 · ${o.week}주차 · ${o.date}</span></div>
+      <div style="margin-top:44px;font-size:28px;font-weight:800;color:#1F7F77;letter-spacing:2px">기자수첩 · 내가 붙인 제목</div>
+      <div class="serif" style="margin-top:14px;font-size:78px;line-height:1.15;letter-spacing:-1px">${esc(o.title)}</div>
+      <div style="font-size:26px;color:#5A5A5A;margin-top:20px">원래 기사: ${ARTICLE.title}</div>
+      <div style="font-size:30px;color:#5A5A5A;margin-top:12px">새벽달 영어뉴스 기자 지우</div>
+      <div style="position:relative;flex:1;margin-top:34px">
+        <div style="position:absolute;left:0;top:0;width:470px;font-size:31px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:9;-webkit-box-orient:vertical;overflow:hidden">${esc(o.text)}</div>
+        ${paperPhoto(500,10,400,520,4,scribble(10))}
+      </div>
+    </div>
+    ${stampSVG(Object.assign({kind:'summary'},o))}
+  </div></div>`;
+}
+/* VOCA 카드: 이번 주 단어 + 작성지 사진(또는 단어 낭독) + 익힌 단어 수 + "단어" 도장 */
+const VOCA=['collection','exhibition','personal','artwork','lend','audio guide','honestly','collector'];
+function vocaCardHTML(opts){
+  const o=Object.assign({w:358,week:4,date:'10월 9일(금)',stampDate:'2026.10.09',sx:700,sy:470,rot:14,how:'photo',total:32},opts);
+  const chips=VOCA.map(v=>`<span style="border:2px solid #2D2D2D;border-radius:999px;padding:10px 26px;font-size:30px;font-weight:700;background:#fff">${v}</span>`).join('');
+  return `<div class="ncard" style="width:${o.w}px;height:${Math.round(o.w*1.25)}px" role="img" aria-label="VOCA 카드: ${o.week}주차 ${o.date}, 단어 ${VOCA.length}개">
+  <div class="ncard-in" style="transform:scale(${o.w/1080})">
+    <div class="np">
+      <div class="nmast"><span class="serif" style="font-size:42px">새벽달 영어뉴스</span><span style="font-size:27px;color:#5A5A5A">1기 · ${o.week}주차 · ${o.date}</span></div>
+      <div style="margin-top:44px;font-size:28px;font-weight:800;color:#1F7F77;letter-spacing:2px">이번 주 VOCA</div>
+      <div class="serif" style="margin-top:14px;font-size:64px;line-height:1.2;letter-spacing:-1px">${ARTICLE.title}</div>
+      <div style="font-size:30px;color:#5A5A5A;margin-top:20px">새벽달 영어뉴스 기자 지우 · ${o.how==='photo'?'작성지로 익혔어요':'소리 내어 읽었어요'}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:34px;width:${o.how==='photo'?560:810}px">${chips}</div>
+      <div style="flex:1"></div>
+      <div class="nbox" style="display:flex;justify-content:space-between;align-items:center;padding:36px 48px">
+        <div><div style="font-size:30px;font-weight:700;color:#1F7F77">오늘 익힌 단어</div><div style="font-size:96px;font-weight:900;line-height:1.1">${VOCA.length}개</div></div>
+        <div style="text-align:right"><div style="font-size:30px;font-weight:700;color:#1F7F77">지금까지 누적</div><div style="font-size:56px;font-weight:900">${o.total}개</div></div>
+      </div>
+    </div>
+    ${o.how==='photo'?paperPhoto(660,560,330,400,5,scribble(8)):''}
+    ${stampSVG(Object.assign({kind:'voca'},o))}
+  </div></div>`;
+}
+/* 토론 카드: 질문 + 함께 토론한 사람 수·비율(익명 집계) + 내 반응. 내 입장·이유는 넣지 않음 */
+function debateCardHTML(opts){
+  const o=Object.assign({w:358,week:4,date:'10월 9일(금)',stampDate:'2026.10.09',sx:690,sy:545,rot:12},opts);
+  const bar=(l,p,on)=>`<div style="display:flex;align-items:center;gap:20px"><span style="width:250px;font-size:30px;font-weight:700">${l}</span><span style="flex:1;height:22px;border-radius:11px;background:#fff;overflow:hidden"><i style="display:block;height:22px;width:${p}%;background:${on?'#1F7F77':'#76D4CC'}"></i></span><span style="width:96px;text-align:right;font-size:32px;font-weight:900">${p}%</span></div>`;
+  const top=Math.max(o.p.pro,o.p.con,o.p.idk);
+  return `<div class="ncard" style="width:${o.w}px;height:${Math.round(o.w*1.25)}px" role="img" aria-label="토론 카드: ${o.week}주차 ${o.date}, ${o.n}명이 함께 토론, 내 반응 ${o.feel}">
+  <div class="ncard-in" style="transform:scale(${o.w/1080})">
+    <div class="np">
+      <div class="nmast"><span class="serif" style="font-size:42px">새벽달 영어뉴스</span><span style="font-size:27px;color:#5A5A5A">1기 · ${o.week}주차 · ${o.date}</span></div>
+      <div style="margin-top:44px;font-size:28px;font-weight:800;color:#1F7F77;letter-spacing:2px">이번 주 토론</div>
+      <div class="serif" style="margin-top:14px;font-size:66px;line-height:1.25;letter-spacing:-1px">${o.q}</div>
+      <div style="font-size:30px;color:#5A5A5A;margin-top:26px">새벽달 영어뉴스 기자 지우</div>
+      <div style="flex:1"></div>
+      <div class="npills" style="margin:0 0 28px"><span>오늘 토론 주제: ${o.feel}</span></div>
+      <div class="nbox" style="padding:40px 48px;display:flex;flex-direction:column;gap:22px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:40px;font-weight:900">${o.n}명이 함께 토론했어요</span><span style="font-size:24px;color:#1F7F77;font-weight:700">${o.date.replace(/\(.\)/,'')} 기준</span></div>
+        ${bar('찬성',o.p.pro,o.p.pro===top)}${bar('반대',o.p.con,o.p.con===top)}${bar('잘 모르겠어요',o.p.idk,o.p.idk===top)}
+      </div>
+    </div>
+    ${stampSVG(Object.assign({kind:'debate'},o))}
+  </div></div>`;
 }
 function cardHTML(opts){
   const o=Object.assign({w:358,style:'insta',rot:-14,week:4,date:'10월 9일(금)',stampDate:'2026.10.09',en:2,kr:1,sec:432,total:4320,headline:ARTICLE.title},opts);
   const app=o.style==='app';
   if(o.sx==null){o.sx=app?600:690;o.sy=app?450:556;o.rot=o.rot??-14}
-  const pills=[o.en?`<span>영어 기사 ${o.en}회</span>`:'',o.kr?`<span>한영 구간반복 ${o.kr}회</span>`:''].join('');
-  return `<div class="ncard" style="width:${o.w}px;height:${Math.round(o.w*1.25)}px" role="img" aria-label="청독 카드: ${o.week}주차 ${o.date}, 오늘 들은 시간 ${fmtCard(o.sec)}">
+  const read=o.kind==='read';
+  const pills=read?`<span>${o.lang==='en'?'영어 기사 읽기':'한국어 기사 읽기'}</span><span>녹음 ${o.dur}</span>`
+    :[o.en?`<span>영어 기사 ${o.en}회</span>`:'',o.kr?`<span>한영 구간반복 ${o.kr}회</span>`:''].join('');
+  const box=read
+    ?(o.lang==='en'
+      ?{a:'오늘 소리 내어 읽은 단어',b:`${o.words}개`,c:'지금까지 누적',d:`${o.totalWords.toLocaleString()}단어`}
+      :{a:'오늘 읽은 시간',b:o.durLong,c:'지금까지 낭독',d:`${o.count}회`})
+    :{a:'오늘 들은 시간',b:fmtCard(o.sec),c:'지금까지 누적',d:fmtH(o.total)};
+  return `<div class="ncard" style="width:${o.w}px;height:${Math.round(o.w*1.25)}px" role="img" aria-label="${read?'읽기 완료':'청독'} 카드: ${o.week}주차 ${o.date}, ${box.a} ${box.b}">
   <div class="ncard-in" style="transform:scale(${o.w/1080})">
     <div class="np">
       <div class="nmast"><span class="serif" style="font-size:42px">새벽달 영어뉴스</span><span style="font-size:27px;color:#5A5A5A">1기 · ${o.week}주차 · ${o.date}</span></div>
@@ -374,10 +522,10 @@ function cardHTML(opts){
       <div class="npills">${pills}</div>
       <div style="flex:1"></div>
       <div class="nbox">
-        <div style="font-size:30px;font-weight:700;color:#1F7F77">오늘 들은 시간</div>
-        <div style="font-size:112px;font-weight:900;line-height:1.1;letter-spacing:-2px">${fmtCard(o.sec)}</div>
+        <div style="font-size:30px;font-weight:700;color:#1F7F77">${box.a}</div>
+        <div style="font-size:112px;font-weight:900;line-height:1.1;letter-spacing:-2px">${box.b}</div>
         <div style="height:2px;background:#76D4CC;margin:28px 0"></div>
-        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:32px;font-weight:700;color:#1F7F77">지금까지 누적</span><span style="font-size:56px;font-weight:900">${fmtH(o.total)}</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:32px;font-weight:700;color:#1F7F77">${box.c}</span><span style="font-size:56px;font-weight:900">${box.d}</span></div>
       </div>
     </div>
     ${stampSVG(o)}
@@ -548,7 +696,8 @@ listenDone(){
   </div></div>
   <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:10px">
     <button class="cta" data-action="save" data-kind="card">${I.dl}&nbsp;카드 저장</button>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-go="queue">인스타 올리기</button><button class="btn2" data-go="home">홈으로</button></div></div>`;
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-go="queue">인스타 올리기</button><button class="btn2" data-go="home">홈으로</button></div>
+    <button class="textbtn" style="text-decoration:none;color:var(--deep)" data-action="backArticle">기사로 돌아가서 기사 읽기·찬반토론 하기 ›</button></div>`;
 },
 
 reading(){
@@ -722,7 +871,8 @@ book(){
     return `<div class="card lift stack" style="gap:10px">${head}
       ${note?`<div class="sec" style="margin-top:2px">뉴스 카드</div><div class="row" style="align-items:flex-start;padding:14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)"><div class="stack" style="gap:6px;flex:1"><div style="font-size:16px;font-weight:800">${esc(note.title||'(제목 없음)')}</div><div style="font-size:14px;line-height:1.6">${esc(note.text)}</div><div class="meta">기자 지우</div></div><span title="손글씨 작성지 사진" style="width:40px;height:52px;flex-shrink:0;border-radius:6px;background:var(--white);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--faint)">${svg('<path d="M5 7h14M5 11h10M5 15h12"></path>',18)}</span></div>`:''}
       ${op?`<div class="sec" style="margin-top:2px">의견 카드</div><div class="stack" style="gap:8px;padding:14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)"><div style="font-size:14px">내 입장: <b>${op.side}</b></div><div style="font-size:14px;line-height:1.6">${esc(op.reason)}</div>${op.n?voteBar(op.pro,`최종 결과 ${op.n}명`):''}</div>`:''}
-      ${cards.length?`<div class="sec" style="margin-top:2px">청독 카드 ${cards.length}장</div><div style="display:grid;grid-template-columns:repeat(4,70px);gap:8px;justify-content:start">${cards.map((c,i)=>cardHTML(Object.assign({},c,{w:70,style:'app'},STAMP_SPOTS[(i+n)%STAMP_SPOTS.length]))).join('')}</div>`:''}
+      ${(()=>{const all=[...cards.map((c,i)=>cardHTML(Object.assign({},c,{w:70,style:'app'},STAMP_SPOTS[(i+n)%STAMP_SPOTS.length]))),...(BOOK_EXTRA[n]||[]).map(k=>smallCard(k,n))];
+        return all.length?`<div class="sec" style="margin-top:2px">활동 카드 ${all.length}장</div><div style="display:grid;grid-template-columns:repeat(4,70px);gap:8px;justify-content:start">${all.join('')}</div>`:''})()}
     </div>`;
   };
   const titles=[1,2,3,4].filter(n=>S.notes[n]&&S.notes[n].title).map(n=>`<div class="between" style="padding:10px 0;border-bottom:1px solid var(--mute);font-size:14px"><span style="color:var(--sub)">${n}주차</span><span style="font-weight:800;text-align:right">${esc(S.notes[n].title)}</span></div>`).join('');
@@ -842,8 +992,195 @@ grace(){
     <div class="pad stack" style="padding-top:12px;gap:10px"><button class="cta" data-go="queue">올릴 것 5개 올리기</button><button class="btn2" data-go="activity">+ 학습하기</button></div>
     <div class="pad" style="padding-top:12px"><div class="card" style="padding:8px 16px"><button class="recHead" data-go="home"><span class="stack" style="gap:3px"><span style="font-size:15px;font-weight:800">12주 기록</span><span class="meta">학습 57 / 60 · 남은 칸 3개</span></span><span class="row" style="gap:4px;font-size:13px;font-weight:700">펼쳐 보기${I.down}</span></button></div></div>
   </div>${tabbar('home',5)}`;
+},
+
+/* ---------- 합친 기사 화면 (기획 중): 지문 하나 + 아래 청독 / 기사 읽기 / 찬반토론 ---------- */
+article(){
+  const m=S.am, w=S.weeks[S.selWeek-1].length;
+  const lock=m==='read'&&(S.rs==='count'||S.rs==='rec');
+  const views=[['en','영어'],['both','한·영'],['ko','한국어']];
+  const seg=`<div class="seg sm" role="group" aria-label="지문 보기">${views.map(([k,l])=>`<button data-view="${k}" class="${S.view===k?'on':''}" aria-pressed="${S.view===k}" ${lock?'disabled':''}><span>${l}</span></button>`).join('')}</div>`;
+  const text=S.view==='en'?articleHTML(true,true,lock):S.view==='ko'?articleHTML(false,true,lock):articleHTML(true,false,false);
+  /* 듣기 전 질문: 처음엔 펼쳐 두고, 재생·읽기를 시작하면 한 줄로 접힘(누르면 다시 펼침) */
+  const PREQ='내가 오랫동안 모아 온 물건이 있다면, 그 물건은 나에 대해 무엇을 말해 줄까요?';
+  const preQ=lock||m==='debate'?'':S.qOpen
+    ?`<div class="tinted stack" style="gap:8px">
+      <div class="between"><span style="font-size:13px;font-weight:800;color:var(--deep)">${m==='listen'?'이 질문을 생각하며 들어 봐요':'이 질문을 생각하며 읽어 봐요'}</span><button class="textbtn" style="font-size:13px;text-decoration:none;color:var(--sub)" data-action="qToggle" aria-expanded="true">접기</button></div>
+      <div style="font-size:16px;font-weight:700;line-height:1.55">${PREQ}</div></div>`
+    :`<button class="tinted row" style="border:0;width:100%;text-align:left;padding:10px 14px;min-height:44px;gap:8px" data-action="qToggle" aria-expanded="false"><span style="font-size:13px;font-weight:800;color:var(--deep);flex-shrink:0">질문</span><span style="flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${PREQ}</span><span style="display:flex">${I.down}</span></button>`;
+  return `<div class="scroll">${topBar('activity','학습 고르기',`${S.selWeek}주차 학습 ${Math.min(w,5)} / 5`)}
+  <div class="pad stack" style="gap:10px">
+    <div class="stack" style="gap:2px"><h2 class="h1" style="font-size:20px">${ARTICLE.title}</h2><div class="meta">난이도 ${ARTICLE.level} · 본문 ${ARTICLE.words}단어</div></div>
+    ${preQ}
+    <div class="card stack" style="gap:12px">
+      ${lock?'':`<div class="between" style="margin:-6px 0 -4px">${seg}${S.view!=='ko'?`<label class="ckl" style="flex-shrink:0"><input type="checkbox" data-action="slash" ${S.slash?'checked':''}>끊어 읽기</label>`:''}</div>`}
+      <div class="${lock?'recText':''}">${text}</div>
+    </div>
+    ${m==='debate'?debateHTML():''}
+  </div></div>
+  <div class="dock">${dockHTML()}</div>
+  ${S.rs==='count'?'<div class="count" id="count"><b id="cnum">3</b><div style="font-size:15px;font-weight:700">곧 녹음이 시작돼요</div><div class="help">하이라이트를 따라 읽어 보세요</div></div>':''}`;
+},
+
+readDone(){
+  const r=S.lastRead||{lang:'en',dur:'1:42',durLong:'1분 42초',words:ARTICLE.words,totalWords:countOf('EN')*ARTICLE.words,count:countOf('EN')};
+  const w=S.weeks[S.selWeek-1].length, on=S.playing==='vid';
+  return `<div class="scroll"><div class="pad stack" style="padding-top:28px;gap:16px">
+    <h2 class="h1" style="font-size:28px">읽기 완료!</h2>
+    <div style="font-size:15px;line-height:1.6">${S.selWeek}주차 학습 <b>${Math.min(w,5)} / 5</b>. 영상을 저장해서 인스타에 올리면 인증돼요.</div>
+    <div class="vidwrap" style="display:flex;justify-content:center">
+      ${cardHTML(Object.assign({w:cardW(),style:'insta',kind:'read',week:S.selWeek,sx:690,sy:556,rot:-10},r))}
+      <button class="vidbtn" data-play="vid" aria-label="영상 미리보기 ${on?'멈춤':'재생'}">${on?I.pause:I.play}</button>
+      <div class="vidbar${on?' on':''}"><i></i></div>
+    </div>
+    <div class="help" style="text-align:center">이 카드에 내 목소리(${r.dur})를 입혀 영상으로 저장해요</div>
+  </div></div>
+  <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:10px">
+    <button class="cta" data-action="save" data-kind="video">${I.dl}&nbsp;영상 저장</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-go="queue">인스타 올리기</button><button class="btn2" data-action="backArticle">기사로 돌아가기</button></div></div>`;
+},
+
+cardGallery(){
+  const w=cardW(), t=tally();
+  const item=(label,desc,html)=>`<div class="stack" style="gap:8px"><div class="between"><span style="font-size:16px;font-weight:800">${label}</span></div><div class="help">${desc}</div><div style="display:flex;justify-content:center">${html}</div></div>`;
+  return `<div class="scroll">${topBar('record','내 기록','')}
+  <div class="pad stack" style="gap:24px">
+    <div class="stack" style="gap:6px"><h2 class="h1">활동 카드 모음</h2><div class="help">활동마다 같은 신문 스크랩 모양에 도장만 달라요. 인스타에 올리고, 뉴스북 주차 쪽에도 실려요.</div></div>
+    ${item('청독 카드','들은 시간·누적 청독 시간 · "청독" 도장',cardHTML({w,style:'insta'}))}
+    ${item('읽기 완료 카드','읽은 단어·누적 단어(한국어는 읽은 시간·횟수) · "낭독" 도장 · 녹음을 입혀 영상으로',cardHTML({w,style:'insta',kind:'read',lang:'en',dur:'1:42',durLong:'1분 42초',words:ARTICLE.words,totalWords:ARTICLE.words*3,count:3,sx:690,sy:556,rot:-10}))}
+    ${item('기사 요약 카드','기자수첩 제목·요약 앞부분 + 작성지 사진 · "요약" 도장. 요약을 안 썼으면 기사 제목과 사진만',summaryCardHTML({w}))}
+    ${item('VOCA 카드','이번 주 단어 + 작성지 사진(단어 낭독이면 사진 없이 "소리 내어 읽었어요") · 익힌 단어 수 · "단어" 도장',vocaCardHTML({w}))}
+    ${item('토론 카드','질문·함께 토론한 사람 수·비율·토론 주제 반응 · "토론" 도장 · 내 입장과 이유는 넣지 않음',debateCardHTML({w,q:DEBATE.q,feel:FEEL[0],n:t.n,p:t.p}))}
+  </div></div>`;
+},
+
+debateDone(){
+  const c=S.lastDebate||Object.assign({q:DEBATE.q,feel:FEEL[0]},tally());
+  const w=S.weeks[S.selWeek-1].length;
+  return `<div class="scroll"><div class="pad stack" style="padding-top:28px;gap:16px">
+    <h2 class="h1" style="font-size:28px">토론 완료!</h2>
+    <div style="font-size:15px;line-height:1.6">${S.selWeek}주차 학습 <b>${Math.min(w,5)} / 5</b>. 카드를 저장해서 인스타에 올리면 인증돼요.</div>
+    <div style="display:flex;justify-content:center">${debateCardHTML({w:cardW(),week:S.selWeek,q:c.q,feel:c.feel,n:c.n,p:c.p})}</div>
+    <div class="help" style="text-align:center">내 입장과 이유는 카드에 들어가지 않아요. 앱과 뉴스북에만 저장돼요.</div>
+  </div></div>
+  <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:10px">
+    <button class="cta" data-action="save" data-kind="opinion">${I.dl}&nbsp;카드 저장</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-go="queue">인스타 올리기</button><button class="btn2" data-action="backDebate">친구들 생각 보기</button></div></div>`;
 }
 };
+
+/* 합친 기사 화면: 아래 시트 */
+function dockHTML(){
+  const m=S.am, lock=m==='read'&&(S.rs==='count'||S.rs==='rec');
+  const tab=(k,l,ic)=>`<button data-mode="${k}" class="${m===k?'on':''}" aria-pressed="${m===k}" ${lock&&m!==k?'disabled':''}>${svg(ic,18)}${l}</button>`;
+  const tabs=`<div class="mtabs" role="group" aria-label="활동">${tab('listen','청독',HEAD)}${tab('read','기사 읽기',BUB)}${tab('debate','찬반토론',ACT.DE.d)}</div>`;
+  if(m==='listen'){
+    const a=S.la, n=S.heard[a];
+    const ch=(k,l)=>`<button class="achip${S.la===k?' on':''}" data-la="${k}" aria-pressed="${S.la===k}">${l}${S.heard[k]?` <em>${S.heard[k]}회</em>`:''}</button>`;
+    return `${tabs}
+    <div class="row" style="gap:8px">${ch('enAudio','영어 기사 음원')}${ch('krAudio','한영 구간반복')}</div>
+    <div class="row"><button class="play" data-play="${a}" aria-label="${S.playing===a?'멈춤':'재생'}">${S.playing===a?I.pause:I.play}</button>
+      <div class="stack" style="flex:1;gap:6px"><div class="lbar"><i id="lp-${a}" style="width:${Math.round((L.pos[a]||0)*100)}%"></i></div>
+        <div class="between meta"><span>이번 청독 <b id="lsec" style="color:var(--ink);font-variant-numeric:tabular-nums">${fmtMS(S.lsec)}</b></span><span id="lm-${a}" style="${n?'color:var(--deep);font-weight:800':''}">${n?n+'회 들음':'90% 들으면 1회'}</span></div></div></div>
+    <div class="between">${rateBar(true)}<button class="chip${S.loop?' on':''}" style="border-radius:12px;padding:0 10px" data-action="loopChip" aria-pressed="${S.loop}">반복</button></div>
+    <div id="lctaWrap">${lCtaHTML()}</div>`;
+  }
+  if(m==='read'){
+    const en=S.rl==='en';
+    if(S.rs==='rec')return `${tabs}
+      <div class="between"><span class="rec"><i></i>${en?'영어':'한국어'}로 읽는 중</span><span id="clock" style="font-size:18px;font-weight:800;font-variant-numeric:tabular-nums">${Math.floor((S._sec||0)/60)}:${String((S._sec||0)%60).padStart(2,'0')}</span></div>
+      <div class="row" style="gap:6px"><button class="chip" style="border-radius:12px" data-action="pacerToggle">${S.pacerOn?'하이라이트 끄기':'하이라이트 켜기'}</button>${S.pacerOn?`<button class="chip" style="border-radius:12px" data-action="pacerPause" id="pauseBtn">${S.pacerPaused?'다시 움직이기':'잠깐 멈추기'}</button>`:''}</div>
+      <button class="cta" data-action="readStop">다 읽었어요</button>`;
+    if(S.rs==='done'){
+      const bars=WAVE.map(v=>`<span style="flex:1;height:${Math.round(v*0.6)}px;border-radius:2px;background:${S.playing==='mine'?'var(--deep)':'var(--main)'}"></span>`).join('');
+      return `${tabs}
+      <div style="font-size:16px;font-weight:800">끝까지 읽었어요! 한번 들어볼까요?</div>
+      <div class="row"><button class="play" data-play="mine" aria-label="내 낭독 ${S.playing==='mine'?'멈춤':'재생'}">${S.playing==='mine'?I.pause:I.play}</button><div class="row" style="flex:1;gap:2px;height:36px">${bars}</div><span class="meta">${en?'1:42':'2:05'}</span></div>
+      <button class="cta" data-action="readDone">읽기를 완료했어요</button>
+      <button class="btn2" data-action="readRetry">다시 읽을게요</button>`;
+    }
+    return `${tabs}
+      <div class="row" style="gap:8px"><button class="achip${!en?' on':''}" data-rl="kr" aria-pressed="${!en}">${aIcon('KR',18)}한국어로 읽기</button><button class="achip${en?' on':''}" data-rl="en" aria-pressed="${en}">${aIcon('EN',18)}영어로 읽기</button></div>
+      <div class="between">${rateBar(true)}</div>
+      <div class="help" id="estTime" style="text-align:center">${S.rate}배 하이라이트로 약 ${fmtT((en?EN_TOTAL:KO_TOTAL)/S.rate)} · 이어폰을 끼면 녹음이 더 깨끗해요</div>
+      <button class="cta" data-action="readStart">${svg('<rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path>',22)}&nbsp;읽기 시작</button>`;
+  }
+  // debate
+  if(S.dsub)return `${tabs}
+    <div class="tinted between"><span style="font-size:14px;font-weight:800;color:var(--deep)">의견을 냈어요 · 학습 1회</span><span class="meta">토론 카드가 생겼어요</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-go="debateDone">토론 카드 보기</button><button class="btn2" data-go="home">홈으로</button></div>`;
+  const ok=S.dv&&S.dr.trim();
+  return `${tabs}
+    <div class="help" style="text-align:center">투표하고 이유를 한 줄 쓰면 학습 1회 · 일요일 자정 마감</div>
+    <button class="cta" id="dcta" data-action="debateDone" ${ok?'':'disabled'}>${ok?'의견 내기':S.dv?'이유를 한 줄 써 주세요':'찬성·반대·잘 모르겠어요 중 골라 주세요'}</button>`;
+}
+
+/* 찬반토론: 질문 → 3지선다 투표(누르면 비율) → 이유 한 줄 → 다른 친구들의 생각 */
+function tally(){
+  const c=Object.assign({},DEBATE.base);if(S.dv)c[S.dv]++;
+  const n=c.pro+c.con+c.idk, p={};
+  p.pro=Math.round(c.pro/n*100);p.con=Math.round(c.con/n*100);p.idk=100-p.pro-p.con; // 합이 100이 되게
+  return {c,n,p};
+}
+function debateHTML(){
+  const t=tally(), v=S.dv;
+  const opt=k=>{const on=v===k;return `<button class="vopt${on?' on':''}" data-dv="${k}" aria-pressed="${on}" ${S.dsub?'disabled':''}>${v?`<i style="width:${t.p[k]}%"></i>`:''}<span>${DV[k]}</span>${v?`<b>${t.p[k]}%</b>`:''}</button>`};
+  const ops=S.dops, cnt=k=>ops.filter(o=>o.s===k).length;
+  const fc=(k,l,n)=>`<button class="chip${S.df===k?' on':''}" data-df="${k}" aria-pressed="${S.df===k}">${l} ${n}</button>`;
+  const list=ops.filter(o=>S.df==='all'||o.s===S.df).map(o=>`<div class="opi"><div class="between"><span class="row" style="gap:6px"><span class="optag ${o.s}">${DVS[o.s]}</span>${o.mine?'<span class="meta" style="font-weight:800;color:var(--deep)">내 의견</span>':''}</span><span class="meta">${o.d}</span></div><div style="font-size:15px;line-height:1.6">${esc(o.t)}</div></div>`).join('')||'<div class="help" style="padding:14px 0">아직 이 의견을 쓴 친구가 없어요.</div>';
+  return `<div id="debateSec" class="stack" style="gap:12px;margin-top:6px">
+    <div class="card lift stack" style="gap:8px">
+      <div class="between"><span class="pill">이번 주 토론 질문</span><span class="meta">${t.n}명 참여</span></div>
+      <div style="font-size:20px;font-weight:800;line-height:1.45">${DEBATE.q}</div>
+    </div>
+    <div class="stack" style="gap:8px" role="group" aria-label="내 의견">${opt('pro')}${opt('con')}${opt('idk')}</div>
+    ${v&&!S.dsub?`<div class="stack reveal" style="gap:6px"><label class="label" for="dreason">왜 그렇게 생각하나요?</label><input class="input" id="dreason" data-bind="dreason" maxlength="80" value="${esc(S.dr)}" placeholder="이유를 한 줄로 써 주세요 (한국어·영어 모두 좋아요)"></div>`:''}
+    <div class="card stack" style="gap:10px">
+      <div class="row" style="gap:8px"><span style="display:flex;color:var(--deep)">${svg(BUB,22)}</span><span style="font-size:17px;font-weight:800">다른 친구들의 생각</span></div>
+      ${v?`<div class="row" style="gap:6px;overflow-x:auto;padding-bottom:2px">${fc('all','전체',ops.length)}${fc('pro','찬성',cnt('pro'))}${fc('con','반대',cnt('con'))}${fc('idk','잘 모르겠어요',cnt('idk'))}</div><div>${list}</div>`
+        :'<div class="help" style="padding:16px 12px;border-radius:12px;border:2px dashed var(--line2);text-align:center">내 의견을 고르면 친구들의 투표 결과와 생각을 볼 수 있어요</div>'}
+    </div>
+  </div>`;
+}
+function openArticle(mode,rl){
+  S.am=mode;S.rs='idle';S.qOpen=true;
+  if(rl){S.rl=rl;S.act=rl==='en'?'EN':'KR'}
+  S.view=mode==='read'?(S.rl==='en'?'en':'ko'):'both';
+  go('article');navKey=articleKey();render();
+  if(mode==='debate')document.getElementById('debateSec')?.scrollIntoView({block:'start'});
+}
+const articleKey=()=>'article:'+(S.am==='listen'?'LI':S.am==='debate'?'DE':S.rl==='en'?'EN':'KR');
+function readStart(){
+  lStop();pStop();S.rs='count';S.qOpen=false;S.view=S.rl==='en'?'en':'ko';S.act=S.rl==='en'?'EN':'KR';render();
+  let n=3;const t=setInterval(()=>{n--;if(n<=0){clearInterval(t);S.rs='rec';S._sec=0;render();
+    timers.push(setInterval(()=>{S._sec++;const c=document.getElementById('clock');if(c)c.textContent=`${Math.floor(S._sec/60)}:${String(S._sec%60).padStart(2,'0')}`},1000));
+    if(S.pacerOn)pStart('pacer',S.rl==='en'?'en':'ko',()=>{});
+  }else{const c=document.getElementById('cnum');if(c)c.textContent=n}},1000);
+  timers.push(t);
+}
+function readComplete(){
+  addLearning(S.act,'video');
+  const en=S.act==='EN';
+  S.lastRead={lang:en?'en':'kr',dur:en?'1:42':'2:05',durLong:en?'1분 42초':'2분 5초',words:ARTICLE.words,totalWords:countOf('EN')*ARTICLE.words,count:countOf(S.act),date:'10월 9일(금)',stampDate:'2026.10.09'};
+  const firstEN=en&&!S.firstShown;
+  S.rs='idle';go('readDone');
+  if(firstEN){S.firstShown=true;S.popup='first';render()}
+  else toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);
+}
+/* 의견 내기 → 학습 1회, 입장·이유는 앱·뉴스북에 저장 → 토론 주제 반응(첫 토론 필수) → 토론 카드 */
+function debateComplete(){
+  if(!S.dv||!S.dr.trim())return;
+  addLearning('DE','opinion');
+  const t=tally();
+  S.dsub=true;S.dops.unshift({s:S.dv,t:S.dr.trim(),d:'10.09 지금',mine:true});
+  S.opinions[S.selWeek]={side:DVS[S.dv],reason:S.dr.trim(),pro:t.p.pro,n:t.n};
+  S.popup='drate';render();
+}
+function debateFeel(i){
+  S.dfeel[S.selWeek]=i;
+  S.lastDebate=Object.assign({q:DEBATE.q,feel:FEEL[i]},tally());
+  go('debateDone');toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);
+}
 
 /* 이달의 앵커 카드 (기획 중) */
 function anchorCard(){
@@ -859,7 +1196,16 @@ function anchorCard(){
     <div class="row" style="gap:16px"><button class="textbtn" style="font-size:13px" data-go="anchorInfo">이달의 앵커란?</button><button class="textbtn" style="font-size:13px" data-go="anchorWin">지난 수상작 보기</button></div>
   </div>`;
 }
-function pageFilled(n){return !!(S.notes[n]||S.opinions[n]||(S.cards[n]||[]).length)}
+function pageFilled(n){return !!(S.notes[n]||S.opinions[n]||(S.cards[n]||[]).length||(BOOK_EXTRA[n]||[]).length)}
+/* 뉴스북 예시: 청독 카드 말고 다른 활동 카드(읽기 완료·토론·요약·VOCA)도 주차 쪽에 함께 */
+const BOOK_EXTRA={1:['summary','debate','voca'],2:['read','voca'],3:['summary','debate','read'],4:['read','voca']};
+function smallCard(k,week){
+  const t=tally();
+  if(k==='read')return cardHTML({w:70,style:'app',kind:'read',lang:'en',week,dur:'1:42',durLong:'1분 42초',words:ARTICLE.words,totalWords:ARTICLE.words*3,count:3,sx:600,sy:470,rot:9});
+  if(k==='debate')return debateCardHTML({w:70,week,q:DEBATE.q,feel:FEEL[1],n:t.n,p:t.p});
+  if(k==='summary')return summaryCardHTML({w:70,week});
+  return vocaCardHTML({w:70,week});
+}
 
 function rateBar(compact){
   return `<div class="rate" role="group" aria-label="속도">${compact?'':'<span>속도</span>'}${[0.5,0.8,1,1.2].map(r=>`<button class="${S.rate===r?'on':''}" data-rate="${r}" aria-pressed="${S.rate===r}">${r}배</button>`).join('')}</div>`;
@@ -934,6 +1280,21 @@ function progress(n,label){
   return `<div style="padding:20px 20px 0" class="stack"><div class="row" style="gap:6px">${bars}</div><div class="meta" style="font-size:13px;font-weight:700">${n} / 3 · ${label}</div></div>`;
 }
 function popupHTML(){
+  if(S.popup==='drate')return `<div class="dim"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="토론 주제 반응">
+    <div class="handle"></div>
+    <div class="tinted" style="padding:12px 14px;font-size:14px;font-weight:800;color:var(--deep)">의견을 냈어요 · ${S.selWeek}주차 학습 1회</div>
+    <h2 class="h1" style="font-size:22px">오늘 토론 주제는 어땠어요?</h2>
+    <div class="help" style="font-size:14px">하나만 골라 주세요. 토론 카드에 들어가요.</div>
+    <div class="stack" style="gap:8px">${FEEL.map((t,i)=>`<button class="r5" data-feel="${i}">${t}</button>`).join('')}</div></div>`;
+  if(S.popup==='rate'){
+    const first=!S.rated[S.selWeek];
+    return `<div class="dim"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="청독 이해도">
+    <div class="handle"></div>
+    <h2 class="h1" style="font-size:22px">이번 청독은 어땠나요?</h2>
+    <div class="help" style="font-size:14px">${first?'이 기사를 처음 청독했어요. 나와 가장 가까운 것을 골라 주세요.':'같은 기사를 다시 들었어요. 골라도 되고 건너뛰어도 돼요.'}</div>
+    <div class="stack" style="gap:8px">${RATE5.map(([t,s],i)=>`<button class="r5" data-r5="${i+1}"><b>${i+1}</b><span class="stack" style="gap:2px"><span>${t}</span><span style="font-size:13px;font-weight:500;color:var(--sub)">${s}</span></span></button>`).join('')}</div>
+    ${first?'':'<button class="btn2" data-action="rateSkip">건너뛰기</button>'}</div>`;
+  }
   if(S.popup==='submit')return `<div class="dim" data-action="closeSheet"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="제출 확인">
     <div class="handle"></div>
     <h2 class="h1" style="font-size:22px">이 낭독으로 제출할까요?</h2>
@@ -952,10 +1313,12 @@ function popupHTML(){
 /* ================= navigation ================= */
 const NAV=[
   ['첫 접속',[['welcome','1. 환영 · 정보 확인'],['student','2. 학습자 등록'],['access','3. 접속 방법 · 동의'],['reentry','다시 들어가기']]],
-  ['학습',[['home','홈 (하단 탭)'],['activity','학습 고르기'],['listen','청독'],['listenDone','청독 완료 · 카드'],['reading','기사 읽기 · 듣기'],['recording','기사 읽기 · 녹음 중'],['review','기사 읽기 · 확인'],['materials','이번 주 자료 (하단 탭)']]],
-  ['작성',[['worksheet:SU','기사 요약 · 기자수첩'],['worksheet:DE','찬반토론 · 의견'],['worksheet:VO','VOCA']]],
+  ['학습',[['home','홈 (하단 탭)'],['activity','학습 고르기'],['materials','이번 주 자료 (하단 탭)']]],
+  ['합친 기사 화면 (10월 10일 안)',[['article:LI','기사 · 청독'],['article:rate','청독 완료 · 이해도 평가'],['listenDone','청독 완료 · 카드'],['article:EN','기사 · 영어로 읽기'],['article:KR','기사 · 한국어로 읽기'],['readDone','읽기 완료 · 카드'],['article:DE','기사 · 찬반토론'],['article:drate','찬반 의견 내기 · 주제 반응'],['debateDone','토론 완료 · 토론 카드']],'기획 중'],
+  ['지금 앱 · 탭별 화면 (비교용)',[['listen','청독'],['reading','기사 읽기 · 듣기'],['recording','기사 읽기 · 녹음 중'],['review','기사 읽기 · 확인'],['worksheet:DE','찬반토론 · 작성지(지금)']]],
+  ['작성',[['worksheet:SU','기사 요약 · 기자수첩'],['worksheet:VO','VOCA']]],
   ['인스타 올리기',[['queue','인스타 올리기 (하단 탭)']]],
-  ['내 기록 · 뉴스북',[['record','내 기록 (하단 탭)'],['book','뉴스북 보기']]],
+  ['내 기록 · 뉴스북',[['record','내 기록 (하단 탭)'],['book','뉴스북 보기'],['cardGallery','활동 카드 모음']]],
   ['이달의 앵커',[['record:anchor','내 기록 · 앵커 카드'],['anchorInfo','이달의 앵커란?'],['anchorEntry','출품하기'],['anchorWin','수상작']],'기획 중'],
   ['완주 · 마감',[['finish','완주'],['cert','상장 이름 확인'],['grace','마감 이후 홈']]]
 ];
@@ -982,9 +1345,18 @@ const NOTES={
   anchorInfo:{t:'이달의 앵커란? (학생 안내)',st:'plan',b:['학생·보호자에게 규칙을 한 화면으로 설명','후보 되기 → 출품하기 → 수상작 발표 3단계','후보가 아니어도 완주·상장에는 영향 없음']},
   anchorEntry:{t:'이달의 앵커 · 출품하기',st:'plan',b:['그 4주 동안 낸 영어 낭독 목록에서 들어 보고 하나 고름','보호자 공개 동의(필수) 후 출품','출품은 4주 묶음마다 1개'],q:'회의: 음성 공개 동의 문구(법률 검토)'},
   anchorWin:{t:'이달의 앵커 · 수상작',st:'plan',b:['운영팀이 고른 수상작을 모두가 들을 수 있음','관리자 화면 전에는 운영팀 요청 → 개발 담당이 표시'],q:'회의: 수상작 수·선정 방법, 이름 표시(전체 / 부르는 이름 / 가림), 수상 혜택'},
-  book:{t:'뉴스북 보기',st:'live',b:['기수별 1권(12주). 진도 중간에는 화면으로 보고, 종강 다음 날부터 PDF','주차 쪽: 뉴스 카드(내 제목·요약), 의견 카드·찬반 결과, 청독 카드 4열','마지막: 내가 붙인 제목 모아보기','왼쪽 "종강 다음 날"을 켜면 PDF 버튼이 열림']},
+  book:{t:'뉴스북 보기',st:'live',b:['기수별 1권(12주). 진도 중간에는 화면으로 보고, 종강 다음 날부터 PDF','주차 쪽: 뉴스 카드(내 제목·요약), 의견 카드·찬반 결과, 활동 카드 4열(청독·읽기 완료·요약·VOCA·토론, 10-10 결정)','마지막: 내가 붙인 제목 모아보기','왼쪽 "종강 다음 날"을 켜면 PDF 버튼이 열림']},
   finish:{t:'완주',st:'live',b:['60번째 인증 직후 이동. COMPLETE!는 제때 완주만','활동별 횟수, 읽은 영어 단어, 청독 시간','첫·마지막 영어 낭독 비교(제때·유예 완주만)','왼쪽 "완주 단계"로 제때/유예/늦은 완주 비교']},
   cert:{t:'상장 이름 확인',st:'live',b:['상장에 들어갈 이름을 확인·수정 후 받기','서버에서 PDF로 만들어 휴대폰에서 받음, 발급 기관 "새벽달"(임시)'],q:'상장 디자인은 보완 예정'},
+  'article:LI':{t:'합친 기사 화면 · 청독',st:'plan',b:['지문은 한 화면에 한 번만. 아래 시트에서 청독 / 기사 읽기 / 찬반토론을 바꿔요','위쪽은 듣기 전 질문만(기사 PDF 받기는 뺌, 이번 주 자료 탭에 있음). 질문은 들어오면 펼쳐 있고, 재생·읽기를 시작하면 한 줄로 접힘','청독: 음원 고르기(영어 기사·한영 구간반복), 재생·진행, 속도, 반복, 이번 청독 시간','지문 상자 위 한 줄: 왼쪽 영어 / 한·영 / 한국어(작게), 오른쪽 끊어 읽기. 하이라이트는 지금 앱과 같음','90% 들으면 "청독 완료" → 이해도 평가 → 청독 카드'],q:'학습 고르기의 청독·한국어/영어 읽기·찬반토론이 모두 이 화면으로 들어와요(그 시트가 열린 채). 학습 1회 세는 법은 그대로'},
+  'article:rate':{t:'청독 완료 · 이해도 5단계 평가',st:'plan',b:['청독 완료를 누르면 "이번 청독은 어땠나요?" 5단계','같은 기사 첫 청독은 필수(건너뛰기 없음), 다시 청독하면 선택(건너뛰기)','점수는 DB에 저장 → 운영 시트·관리자 대시보드에서 기사별·학년별·학습자별 난이도와 변화를 집계'],q:'5단계 기준(10-10): 해석 보면 앎 → 단어만 → 주제 → 대부분 → 설명할 수 있음. 남은 것: 학생 화면에 내 점수 변화를 보여 줄지'},
+  'article:EN':{t:'합친 기사 화면 · 영어로 읽기',st:'plan',b:['시트에서 한국어로 / 영어로 고르고 "읽기 시작" → 3초 뒤 녹음','녹음 중에는 시트가 녹음 막대로 줄고, 다른 활동·지문 전환이 잠겨요','끝나면 내 낭독 듣기 + "읽기를 완료했어요 / 다시 읽을게요"','완료 → 읽기 완료 카드(학습 1회). 첫 영어 낭독 안내는 그대로']},
+  'article:KR':{t:'합친 기사 화면 · 한국어로 읽기',st:'plan',b:['한국어로 읽기를 고르면 지문이 한국어로 바뀌고 문장 단위 하이라이트','완료하면 읽기 완료 카드(오늘 읽은 시간·지금까지 낭독 횟수)']},
+  readDone:{t:'읽기 완료 · 카드',st:'plan',b:['청독 카드와 같은 모양에 "낭독" 도장','영어: 오늘 소리 내어 읽은 단어 / 지금까지 누적 단어. 한국어: 오늘 읽은 시간 / 낭독 횟수','영상 = 이 카드 + 내 녹음. "영상 저장"을 누를 때 휴대폰에서 만듦(2단계 모듈, 서버에 영상 저장 안 함)','가운데 재생 버튼은 영상 미리보기 흉내'],q:'제품 규칙 변경: 영상 이미지를 "주차별 템플릿"에서 "읽기 완료 카드"로. 뉴스북에도 읽기 카드를 실을지 회의'},
+  'article:DE':{t:'합친 기사 화면 · 찬반토론',st:'plan',b:['작성지 받기·사진 올리기를 빼고, 지문 아래에 토론 질문(임시, 나중에 콘텐츠 시트에서)','찬성해요 / 반대해요 / 잘 모르겠어요를 누르면 버튼마다 비율이 바로 보임','이유 한 줄(80자) 쓰고 "의견 내기" → 학습 1회. 낸 뒤에는 투표·이유를 고칠 수 없음','다른 친구들의 생각: 전체 / 찬성 / 반대 / 잘 모르겠어요 눌러 거르기. 이름은 안 보임. 일요일 자정 마감 뒤에는 투표만 닫히고 결과·친구 의견은 계속 보임'],q:'결정(10-10): 낸 의견은 고치지 않음, 인스타는 개인 의견 없는 토론 카드, 친구 의견은 이름 없이 공개(부적절한 글은 AI가 자동 숨김), 마감 뒤에도 결과·친구 의견 공개'},
+  'article:drate':{t:'의견 내기 · 토론 주제 반응',st:'plan',b:['의견 내기를 누르면 학습 1회, 입장·이유는 앱·뉴스북에 저장','바로 "오늘 토론 주제는 어땠어요?" 반응 4가지 중 하나(필수, 한 번만 누름)','정답 없는 반응이라 시험 느낌 없이. 운영팀은 기사별 토론 주제 반응을 대시보드·운영 시트에서 봄'],q:'반응 문구 4개는 임시'},
+  debateDone:{t:'토론 완료 · 토론 카드 (인스타용)',st:'plan',b:['청독·읽기 카드와 같은 모양 + "토론" 도장','토론 질문, N명이 함께 토론했어요 + 찬성/반대/잘 모르겠어요 비율(날짜 기준, 익명 집계), 내 반응','내 입장·이유는 카드에 넣지 않음 → 아이 의견이 인스타에 공개되지 않음'],q:'결정(10-10): 공개 여부를 아이에게 맡기지 않고, 인스타 카드에는 개인 의견을 넣지 않음'},
+  cardGallery:{t:'활동 카드 모음 (5종)',st:'plan',b:['청독·읽기 완료·기사 요약·VOCA·토론 카드가 같은 신문 스크랩 틀(1080×1350)에 도장만 다름','인스타에 올리는 그림이자 뉴스북 주차 쪽에 실리는 카드(앱·뉴스북용은 작게 4열)','요약 카드: 기자수첩 제목·요약 + 작성지 사진. VOCA 카드: 이번 주 단어 + 작성지 사진(또는 단어 낭독)','토론 카드만 개인 의견을 넣지 않음'],q:'요약 카드에 요약 글을 넣는 것은 아이가 쓴 글이지만 지금도 작성지 사진을 그대로 올리고 있어 같은 수준'},
   grace:{t:'마감 이후 홈',st:'live',b:['종강일이 지났는데 완주 전이면 홈이 바뀜','유예 중(종강 후 1주): 남은 개수와 유예 마감일','유예 끝: 늦은 완주 가능, 녹음 보관 기한 안내']}
 };
 function noteHTML(){
@@ -994,8 +1366,12 @@ function noteHTML(){
 const phone=document.getElementById('phone');
 let navKey='welcome';
 function go(name){clearTimers();clearInterval(L.int);L.int=null;pStop(false);S.playing=null;S.pacerPaused=false;S._sec=0;S.popup=null;S.screen=name;navKey=name;render();phone.querySelector('.scroll')?.scrollTo(0,0)}
+let lastScreen=null;
 function render(){
+  const sc=phone.querySelector('.scroll'), keep=sc&&lastScreen===S.screen?sc.scrollTop:0;
   phone.innerHTML=`<div class="screen">${SCREENS[S.screen]()}</div>${popupHTML()}`;
+  lastScreen=S.screen;
+  if(keep)phone.querySelector('.scroll')?.scrollTo(0,keep);
   document.getElementById('navList').innerHTML=NAV.map(([g,items,tag])=>`<div class="grp"><b>${g}${tag?`<span class="ptag">${tag}</span>`:''}</b>${items.map(([k,l])=>`<button class="nav${navKey===k?' on':''}" data-nav="${k}">${l}</button>`).join('')}</div>`).join('');
   document.getElementById('note').innerHTML=noteHTML();
   if(S.screen==='recording'&&!S._recStarted){S._recStarted=true;startRecording()}
@@ -1036,11 +1412,34 @@ document.addEventListener('input',e=>{
   if(b==='memoTitle')S.memo.title=e.target.value;
   if(b==='memoText')S.memo.text=e.target.value;
   if(b==='reason')S.reason=e.target.value;
+  if(b==='dreason'){S.dr=e.target.value;const c=document.getElementById('dcta');if(c){const ok=!!S.dr.trim();c.disabled=!ok;c.textContent=ok?'의견 내기':'이유를 한 줄 써 주세요'}}
 });
 document.addEventListener('click',e=>{
-  const el=e.target.closest('[data-go],[data-nav],[data-action],[data-os],[data-access],[data-week],[data-start],[data-play],[data-rate],[data-vote],[data-consent],[data-pick]');
-  if(!el)return;
+  const el=e.target.closest('[data-go],[data-nav],[data-action],[data-os],[data-access],[data-week],[data-start],[data-play],[data-rate],[data-vote],[data-consent],[data-pick],[data-mode],[data-la],[data-rl],[data-view],[data-dv],[data-df],[data-r5],[data-feel]');
+  if(!el||el.disabled)return;
   const d=el.dataset;
+  if(d.nav&&(d.nav.startsWith('article:')||d.nav==='readDone'||d.nav==='debateDone')){
+    const arg=d.nav.split(':')[1];
+    if(d.nav==='readDone'){go('readDone')}
+    else if(d.nav==='debateDone'){go('debateDone')}
+    else if(arg==='LI')openArticle('listen');
+    else if(arg==='rate'){openArticle('listen');S.heard.enAudio=Math.max(1,S.heard.enAudio);S.lsec=Math.max(S.lsec,EN_TOTAL*0.9);S.popup='rate';navKey='article:rate';render()}
+    else if(arg==='EN')openArticle('read','en');
+    else if(arg==='KR')openArticle('read','kr');
+    else if(arg==='DE')openArticle('debate');
+    else if(arg==='drate'){openArticle('debate');S.dv=S.dv||'con';S.dr=S.dr||'사람이 너무 몰려서 작품을 제대로 못 볼 것 같아요.';S.dsub=false;debateComplete();navKey='article:drate';render()}
+    if(arg!=='rate'&&arg!=='drate')navKey=d.nav;render();
+    if(arg==='DE')document.getElementById('debateSec')?.scrollIntoView({block:'start'});
+    document.getElementById('side').classList.remove('open');return}
+  if(d.mode){lStop();pStop();S.am=d.mode;S.rs='idle';S.view=d.mode==='read'?(S.rl==='en'?'en':'ko'):'both';navKey=articleKey();render();
+    if(d.mode==='debate')document.getElementById('debateSec')?.scrollIntoView({block:'start',behavior:'smooth'});return}
+  if(d.la){lStop();S.la=d.la;render();return}
+  if(d.rl){S.rl=d.rl;S.act=d.rl==='en'?'EN':'KR';S.view=d.rl==='en'?'en':'ko';navKey=articleKey();render();return}
+  if(d.view){S.view=d.view;render();return}
+  if(d.dv){S.dv=d.dv;render();return}
+  if(d.df){S.df=d.df;render();return}
+  if(d.feel!=null&&d.feel!==''){debateFeel(Number(d.feel));return}
+  if(d.r5){S.rated[S.selWeek]=Number(d.r5);S.popup=null;listenComplete();toast(`이해도 ${d.r5}단계로 기록했어요`);return}
   if(d.nav){const [scr,arg]=d.nav.split(':');
     if(scr==='worksheet'){S.wsType=arg;S.photo=false}
     go(scr);navKey=d.nav;render();
@@ -1053,9 +1452,10 @@ document.addEventListener('click',e=>{
   if(d.vote){S.vote=d.vote;render();return}
   if(d.consent){S.ocrConsent=d.consent==='1';render();return}
   if(d.pick){S.pick=Number(d.pick);render();return}
-  if(d.start){const k=d.start;if(k==='KR'||k==='EN'){S.act=k;go('reading')}else if(k==='LI'){go('listen')}else{S.wsType=k;S.photo=false;go('worksheet');navKey='worksheet:'+k;render()}return}
-  if(d.play){if(S.screen==='listen'){lToggle(d.play);return}if(S.screen==='reading'){readPlay(d.play);return}S.playing=S.playing===d.play?null:d.play;render();return}
-  if(d.rate){S.rate=Number(d.rate);document.querySelectorAll('[data-rate]').forEach(b=>{const on=Number(b.dataset.rate)===S.rate;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const e=document.getElementById('estTime');if(e)e.textContent=`${S.rate}배로 읽으면 약 ${fmtT((S.act==='EN'?EN_TOTAL:KO_TOTAL)/S.rate)} 걸려요 · 이어폰을 끼면 녹음이 더 깨끗해요`;return}
+  if(d.start){const k=d.start;if(k==='KR'||k==='EN'){openArticle('read',k==='EN'?'en':'kr')}else if(k==='LI'){openArticle('listen')}else if(k==='DE'){openArticle('debate')}else{S.wsType=k;S.photo=false;go('worksheet');navKey='worksheet:'+k;render()}return}
+  if(d.play){if(S.screen==='article'&&L.pos[d.play]!=null&&S.qOpen&&S.playing!==d.play){S.qOpen=false;render()}
+    if(S.screen==='listen'||(S.screen==='article'&&L.pos[d.play]!=null)){lToggle(d.play);return}if(S.screen==='reading'){readPlay(d.play);return}S.playing=S.playing===d.play?null:d.play;render();return}
+  if(d.rate){S.rate=Number(d.rate);document.querySelectorAll('[data-rate]').forEach(b=>{const on=Number(b.dataset.rate)===S.rate;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const e=document.getElementById('estTime');if(e)e.textContent=S.screen==='article'?`${S.rate}배 하이라이트로 약 ${fmtT((S.rl==='en'?EN_TOTAL:KO_TOTAL)/S.rate)} · 이어폰을 끼면 녹음이 더 깨끗해요`:`${S.rate}배로 읽으면 약 ${fmtT((S.act==='EN'?EN_TOTAL:KO_TOTAL)/S.rate)} 걸려요 · 이어폰을 끼면 녹음이 더 깨끗해요`;return}
   switch(d.action){
     case 'toggleRec':S.recOpen=!S.recOpen;render();break;
     case 'fillGap':S.selWeek=Number(d.w);go('activity');break;
@@ -1064,7 +1464,17 @@ document.addEventListener('click',e=>{
     case 'enOnly':if(S.screen==='listen'){S.enOnly=!S.enOnly;render();break}pStop(false);if(S.playing){setPlayBtn(S.playing,false);S.playing=null}S.enOnly=!S.enOnly;render();break;
     case 'slash':if(S.screen==='listen'){S.slash=!S.slash;render();break}pStop(false);if(S.playing)S.playing=null;S.slash=!S.slash;render();break;
     case 'loop':S.loop=el.checked;break;
-    case 'listenDone':listenComplete();break;
+    case 'listenDone':if(S.screen==='article'){lStop();S.popup='rate';navKey='article:rate';render()}else listenComplete();break;
+    case 'rateSkip':S.popup=null;listenComplete();break;
+    case 'loopChip':S.loop=!S.loop;el.classList.toggle('on',S.loop);el.setAttribute('aria-pressed',S.loop);break;
+    case 'readStart':readStart();break;
+    case 'qToggle':S.qOpen=!S.qOpen;render();break;
+    case 'readStop':clearTimers();pStop();S.pacerPaused=false;S.rs='done';render();break;
+    case 'readRetry':S.playing=null;S.rs='idle';render();break;
+    case 'readDone':readComplete();break;
+    case 'backArticle':openArticle('read');break;
+    case 'backDebate':openArticle('debate');break;
+    case 'debateDone':debateComplete();break;
     case 'pacerToggle':S.pacerOn=!S.pacerOn;S.pacerPaused=false;if(S.pacerOn){render();pStart('pacer',S.act==='EN'?'en':'ko',()=>{});}else{pStop();render();}break;
     case 'pacerPause':if(S.pacerPaused){S.pacerPaused=false;if(P.seq)pStep();else pStart('pacer',S.act==='EN'?'en':'ko',()=>{});}else{S.pacerPaused=true;clearTimeout(P.t);}document.getElementById('pauseBtn').textContent=S.pacerPaused?'다시 움직이기':'잠깐 멈추기';break;
     case 'pdf':toast(`${d.name}를 내려받아요 (목업)`);break;
@@ -1083,7 +1493,7 @@ document.addEventListener('click',e=>{
       if(t==='SU'&&(S.memo.title||S.memo.text))S.notes[S.selWeek]={title:S.memo.title,text:S.memo.text};
       if(t==='DE'&&S.vote)S.opinions[S.selWeek]={side:S.vote,reason:S.reason||'(이유 없음)'};
       S.photo=false;S.memo.ocr='none';go('home');toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);break}
-    case 'save':toast(d.kind==='video'?'사진첩에 영상을 저장했어요 (목업)':d.kind==='card'?'사진첩에 청독 카드를 저장했어요 (목업)':'사진첩에 사진을 저장했어요 (목업)');break;
+    case 'save':toast(d.kind==='video'?'사진첩에 영상을 저장했어요 (목업)':d.kind==='card'?'사진첩에 청독 카드를 저장했어요 (목업)':d.kind==='opinion'?'사진첩에 토론 카드를 저장했어요 (목업)':'사진첩에 사진을 저장했어요 (목업)');break;
     case 'verify':{const id=Number(d.id);S.queue=S.queue.filter(q=>q.id!==id);S.posted=Math.min(60,S.posted+1);render();toast(`올리기 완료! 완주까지 ${S.posted} / 60`);break}
     case 'closePopup':S.popup=null;render();toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);break;
     case 'insta':toast('인스타그램 게시물로 이동해요 (목업)');break;
@@ -1098,8 +1508,8 @@ document.getElementById('finTg').addEventListener('change',e=>{S.finished=e.targ
 document.getElementById('endTg').addEventListener('change',e=>{S.afterEnd=e.target.checked;if(S.screen!=='book'&&S.screen!=='record')go('book');else render()});
 document.getElementById('candTg').addEventListener('change',e=>{S.anchorCand=e.target.checked;go('record');navKey='record:anchor';render();const a=document.getElementById('anchorCard');if(a)a.scrollIntoView({block:'start'})});
 document.getElementById('listen90').addEventListener('click',()=>{
-  if(S.screen!=='listen')go('listen');
-  lStop();S.heard.enAudio++;S.lsec+=EN_TOTAL*0.9;L.pos.enAudio=0.9;render();toast('영어 기사 음원을 90% 들었어요 (데모)');
+  if(S.screen!=='listen'&&!(S.screen==='article'&&S.am==='listen'))openArticle('listen');
+  lStop();S.la='enAudio';S.heard.enAudio++;S.lsec+=EN_TOTAL*0.9;L.pos.enAudio=0.9;render();toast('영어 기사 음원을 90% 들었어요 (데모)');
 });
 document.getElementById('resetBtn').addEventListener('click',()=>{clearTimers();clearInterval(L.int);L.int=null;L.pos={enAudio:0,krAudio:0};L.counted={enAudio:false,krAudio:false};S=INIT();navKey='welcome';
   ['finTg','endTg','candTg'].forEach(id=>document.getElementById(id).checked=false);
