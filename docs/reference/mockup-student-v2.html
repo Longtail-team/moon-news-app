@@ -369,7 +369,7 @@ const INIT=()=>({
   pick:null, agree:false, entryDone:false,
   // 합친 기사 화면 (기획 중): am 모드 listen|read|debate, la 고른 음원, rl 읽기 언어 en|kr, rs 읽기 단계 idle|count|rec|done, view 지문 en|both|ko
   am:'listen', la:'enAudio', rl:'en', rs:'idle', view:'both',
-  rated:{}, lastRead:null,
+  rated:{}, lastRead:null, qOpen:true,
   // 찬반토론 3지선다: dv 내 투표 pro|con|idk, dr 이유 한 줄, dsub 냈음, df 친구 의견 거르기
   dv:null, dr:'', dsub:false, df:'all', dops:DEBATE.ops.slice()
 });
@@ -919,10 +919,13 @@ article(){
   const views=[['en','영어'],['both','한·영'],['ko','한국어']];
   const seg=`<div class="seg" role="group" aria-label="지문 보기">${views.map(([k,l])=>`<button data-view="${k}" class="${S.view===k?'on':''}" aria-pressed="${S.view===k}" ${lock?'disabled':''}>${l}</button>`).join('')}</div>`;
   const text=S.view==='en'?articleHTML(true,true,lock):S.view==='ko'?articleHTML(false,true,lock):articleHTML(true,false,false);
-  const preQ=!lock&&m!=='debate'?`<div class="tinted stack" style="gap:10px">
-      <div style="font-size:13px;font-weight:800;color:var(--deep)">듣기 전에 생각해 봐요</div>
-      <div style="font-size:16px;font-weight:700;line-height:1.55">내가 오랫동안 모아 온 물건이 있다면, 그 물건은 나에 대해 무엇을 말해 줄까요?</div>
-      <div class="between" style="padding-top:10px;border-top:1px solid rgba(31,127,119,.18)"><span style="font-size:14px;font-weight:800">기사 PDF</span><button class="get" style="background:var(--white)" data-action="pdf" data-name="기사 PDF">${I.dl}받기</button></div></div>`:'';
+  /* 듣기 전 질문: 처음엔 펼쳐 두고, 재생·읽기를 시작하면 한 줄로 접힘(누르면 다시 펼침) */
+  const PREQ='내가 오랫동안 모아 온 물건이 있다면, 그 물건은 나에 대해 무엇을 말해 줄까요?';
+  const preQ=lock||m==='debate'?'':S.qOpen
+    ?`<div class="tinted stack" style="gap:8px">
+      <div class="between"><span style="font-size:13px;font-weight:800;color:var(--deep)">${m==='listen'?'이 질문을 생각하며 들어 봐요':'이 질문을 생각하며 읽어 봐요'}</span><button class="textbtn" style="font-size:13px;text-decoration:none;color:var(--sub)" data-action="qToggle" aria-expanded="true">접기</button></div>
+      <div style="font-size:16px;font-weight:700;line-height:1.55">${PREQ}</div></div>`
+    :`<button class="tinted row" style="border:0;width:100%;text-align:left;padding:10px 14px;min-height:44px;gap:8px" data-action="qToggle" aria-expanded="false"><span style="font-size:13px;font-weight:800;color:var(--deep);flex-shrink:0">질문</span><span style="flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${PREQ}</span><span style="display:flex">${I.down}</span></button>`;
   return `<div class="scroll">${topBar('activity','학습 고르기',`${S.selWeek}주차 학습 ${Math.min(w,5)} / 5`)}
   <div class="pad stack" style="gap:10px">
     <div class="stack" style="gap:2px"><h2 class="h1" style="font-size:20px">${ARTICLE.title}</h2><div class="meta">난이도 ${ARTICLE.level} · 본문 ${ARTICLE.words}단어</div></div>
@@ -1031,7 +1034,7 @@ function debateHTML(){
   </div>`;
 }
 function openArticle(mode,rl){
-  S.am=mode;S.rs='idle';
+  S.am=mode;S.rs='idle';S.qOpen=true;
   if(rl){S.rl=rl;S.act=rl==='en'?'EN':'KR'}
   S.view=mode==='read'?(S.rl==='en'?'en':'ko'):'both';
   go('article');navKey=articleKey();render();
@@ -1039,7 +1042,7 @@ function openArticle(mode,rl){
 }
 const articleKey=()=>'article:'+(S.am==='listen'?'LI':S.am==='debate'?'DE':S.rl==='en'?'EN':'KR');
 function readStart(){
-  lStop();pStop();S.rs='count';S.view=S.rl==='en'?'en':'ko';S.act=S.rl==='en'?'EN':'KR';render();
+  lStop();pStop();S.rs='count';S.qOpen=false;S.view=S.rl==='en'?'en':'ko';S.act=S.rl==='en'?'EN':'KR';render();
   let n=3;const t=setInterval(()=>{n--;if(n<=0){clearInterval(t);S.rs='rec';S._sec=0;render();
     timers.push(setInterval(()=>{S._sec++;const c=document.getElementById('clock');if(c)c.textContent=`${Math.floor(S._sec/60)}:${String(S._sec%60).padStart(2,'0')}`},1000));
     if(S.pacerOn)pStart('pacer',S.rl==='en'?'en':'ko',()=>{});
@@ -1215,7 +1218,7 @@ const NOTES={
   book:{t:'뉴스북 보기',st:'live',b:['기수별 1권(12주). 진도 중간에는 화면으로 보고, 종강 다음 날부터 PDF','주차 쪽: 뉴스 카드(내 제목·요약), 의견 카드·찬반 결과, 청독 카드 4열','마지막: 내가 붙인 제목 모아보기','왼쪽 "종강 다음 날"을 켜면 PDF 버튼이 열림']},
   finish:{t:'완주',st:'live',b:['60번째 인증 직후 이동. COMPLETE!는 제때 완주만','활동별 횟수, 읽은 영어 단어, 청독 시간','첫·마지막 영어 낭독 비교(제때·유예 완주만)','왼쪽 "완주 단계"로 제때/유예/늦은 완주 비교']},
   cert:{t:'상장 이름 확인',st:'live',b:['상장에 들어갈 이름을 확인·수정 후 받기','서버에서 PDF로 만들어 휴대폰에서 받음, 발급 기관 "새벽달"(임시)'],q:'상장 디자인은 보완 예정'},
-  'article:LI':{t:'합친 기사 화면 · 청독',st:'plan',b:['지문은 한 화면에 한 번만. 아래 시트에서 청독 / 기사 읽기 / 찬반토론을 바꿔요','청독: 음원 고르기(영어 기사·한영 구간반복), 재생·진행, 속도, 반복, 이번 청독 시간','지문 위 영어 / 한·영 / 한국어 전환. 하이라이트는 지금 앱과 같음','90% 들으면 "청독 완료" → 이해도 평가 → 청독 카드'],q:'학습 고르기의 청독·한국어/영어 읽기·찬반토론이 모두 이 화면으로 들어와요(그 시트가 열린 채). 학습 1회 세는 법은 그대로'},
+  'article:LI':{t:'합친 기사 화면 · 청독',st:'plan',b:['지문은 한 화면에 한 번만. 아래 시트에서 청독 / 기사 읽기 / 찬반토론을 바꿔요','위쪽은 듣기 전 질문만(기사 PDF 받기는 뺌, 이번 주 자료 탭에 있음). 질문은 들어오면 펼쳐 있고, 재생·읽기를 시작하면 한 줄로 접힘','청독: 음원 고르기(영어 기사·한영 구간반복), 재생·진행, 속도, 반복, 이번 청독 시간','지문 위 영어 / 한·영 / 한국어 전환. 하이라이트는 지금 앱과 같음','90% 들으면 "청독 완료" → 이해도 평가 → 청독 카드'],q:'학습 고르기의 청독·한국어/영어 읽기·찬반토론이 모두 이 화면으로 들어와요(그 시트가 열린 채). 학습 1회 세는 법은 그대로'},
   'article:rate':{t:'청독 완료 · 이해도 5단계 평가',st:'plan',b:['청독 완료를 누르면 "이번 청독은 어땠나요?" 5단계','같은 기사 첫 청독은 필수(건너뛰기 없음), 다시 청독하면 선택(건너뛰기)','점수는 DB에 저장 → 운영 시트·관리자 대시보드에서 기사별·학년별·학습자별 난이도와 변화를 집계'],q:'회의: 5단계 문구(지금은 임시), 학생 화면에 내 점수 변화를 보여 줄지'},
   'article:EN':{t:'합친 기사 화면 · 영어로 읽기',st:'plan',b:['시트에서 한국어로 / 영어로 고르고 "읽기 시작" → 3초 뒤 녹음','녹음 중에는 시트가 녹음 막대로 줄고, 다른 활동·지문 전환이 잠겨요','끝나면 내 낭독 듣기 + "읽기를 완료했어요 / 다시 읽을게요"','완료 → 읽기 완료 카드(학습 1회). 첫 영어 낭독 안내는 그대로']},
   'article:KR':{t:'합친 기사 화면 · 한국어로 읽기',st:'plan',b:['한국어로 읽기를 고르면 지문이 한국어로 바뀌고 문장 단위 하이라이트','완료하면 읽기 완료 카드(오늘 읽은 시간·지금까지 낭독 횟수)']},
@@ -1314,7 +1317,8 @@ document.addEventListener('click',e=>{
   if(d.consent){S.ocrConsent=d.consent==='1';render();return}
   if(d.pick){S.pick=Number(d.pick);render();return}
   if(d.start){const k=d.start;if(k==='KR'||k==='EN'){openArticle('read',k==='EN'?'en':'kr')}else if(k==='LI'){openArticle('listen')}else if(k==='DE'){openArticle('debate')}else{S.wsType=k;S.photo=false;go('worksheet');navKey='worksheet:'+k;render()}return}
-  if(d.play){if(S.screen==='listen'||(S.screen==='article'&&L.pos[d.play]!=null)){lToggle(d.play);return}if(S.screen==='reading'){readPlay(d.play);return}S.playing=S.playing===d.play?null:d.play;render();return}
+  if(d.play){if(S.screen==='article'&&L.pos[d.play]!=null&&S.qOpen&&S.playing!==d.play){S.qOpen=false;render()}
+    if(S.screen==='listen'||(S.screen==='article'&&L.pos[d.play]!=null)){lToggle(d.play);return}if(S.screen==='reading'){readPlay(d.play);return}S.playing=S.playing===d.play?null:d.play;render();return}
   if(d.rate){S.rate=Number(d.rate);document.querySelectorAll('[data-rate]').forEach(b=>{const on=Number(b.dataset.rate)===S.rate;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const e=document.getElementById('estTime');if(e)e.textContent=S.screen==='article'?`${S.rate}배 하이라이트로 약 ${fmtT((S.rl==='en'?EN_TOTAL:KO_TOTAL)/S.rate)} · 이어폰을 끼면 녹음이 더 깨끗해요`:`${S.rate}배로 읽으면 약 ${fmtT((S.act==='EN'?EN_TOTAL:KO_TOTAL)/S.rate)} 걸려요 · 이어폰을 끼면 녹음이 더 깨끗해요`;return}
   switch(d.action){
     case 'toggleRec':S.recOpen=!S.recOpen;render();break;
@@ -1328,6 +1332,7 @@ document.addEventListener('click',e=>{
     case 'rateSkip':S.popup=null;listenComplete();break;
     case 'loopChip':S.loop=!S.loop;el.classList.toggle('on',S.loop);el.setAttribute('aria-pressed',S.loop);break;
     case 'readStart':readStart();break;
+    case 'qToggle':S.qOpen=!S.qOpen;render();break;
     case 'readStop':clearTimers();pStop();S.pacerPaused=false;S.rs='done';render();break;
     case 'readRetry':S.playing=null;S.rs='idle';render();break;
     case 'readDone':readComplete();break;
