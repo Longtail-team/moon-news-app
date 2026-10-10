@@ -343,6 +343,8 @@ const DEBATE={
   ]
 };
 const DV={pro:'찬성해요',con:'반대해요',idk:'잘 모르겠어요'}, DVS={pro:'찬성',con:'반대',idk:'잘 모르겠어요'};
+/* 토론 주제 반응 (문구 임시): 인스타 토론 카드에는 내 입장·이유 대신 이 반응이 들어감 */
+const FEEL=['더 이야기하고 싶어요','재미있었어요','그저 그랬어요','어려웠어요'];
 /* 청독 이해도 5단계 (문구 임시) */
 const RATE5=['한국어 뜻을 매우 찾고 싶었어요','한국어 뜻이 자주 궁금했어요','내용을 부분적으로 알아들었어요','내용을 대부분 이해했어요','한국어 없이도 거의 다 이해했어요'];
 const WAVE=[12,22,34,18,40,52,30,16,44,36,24,48,56,28,14,38,46,20,32,50,26,42,18,36,54,30,22,46,34,16,40,28,50,24,38,18,30,44,20,12];
@@ -376,7 +378,7 @@ const INIT=()=>({
   am:'listen', la:'enAudio', rl:'en', rs:'idle', view:'both',
   rated:{}, lastRead:null, qOpen:true,
   // 찬반토론 3지선다: dv 내 투표 pro|con|idk, dr 이유 한 줄, dsub 냈음, df 친구 의견 거르기
-  dv:null, dr:'', dsub:false, df:'all', dops:DEBATE.ops.slice()
+  dv:null, dr:'', dsub:false, df:'all', dops:DEBATE.ops.slice(), dfeel:{}, lastDebate:null
 });
 let S=INIT();
 const NOW=4; // 현재 주차
@@ -396,7 +398,7 @@ function addLearning(type,kind){
     S.selWeek=NOW;
   }
   S.weeks[S.selWeek-1].push(type);
-  const meta=`${S.selWeek}주차 · 10월 9일`+({card:' · 청독 카드',photo:' · 작성지 사진',opinion:' · 의견 카드',video:S.screen==='article'?' · 읽기 완료 카드 + 녹음':' 녹음'}[kind]||'');
+  const meta=`${S.selWeek}주차 · 10월 9일`+({card:' · 청독 카드',photo:' · 작성지 사진',opinion:' · 토론 카드',video:S.screen==='article'?' · 읽기 완료 카드 + 녹음':' 녹음'}[kind]||'');
   S.queue.push({id:S.nextId++,t:type,week:S.selWeek,meta,kind});
 }
 function tabbar(active,badge){
@@ -420,10 +422,32 @@ function stampSVG(o){
       <circle cx="150" cy="150" r="140" stroke-width="8"></circle>
       <circle cx="150" cy="150" r="124" stroke-width="2.5"></circle>
       <circle cx="150" cy="150" r="80" stroke-width="2.5"></circle>
-      <text fill="#1F7F77" stroke="none" font-family="Pretendard, sans-serif" font-size="19" font-weight="800"><textPath href="#${id}p" startOffset="0" textLength="640" lengthAdjust="spacing">SAEBYEOKDAL ENGLISH NEWS ★ ${o.kind==='read'?'READ ALOUD':'LISTENED'} ★</textPath></text>
-      <text x="150" y="158" text-anchor="middle" fill="#1F7F77" stroke="none" font-family="Noto Serif KR, serif" font-weight="900" font-size="52">${o.kind==='read'?'낭독':'청독'}</text>
+      <text fill="#1F7F77" stroke="none" font-family="Pretendard, sans-serif" font-size="19" font-weight="800"><textPath href="#${id}p" startOffset="0" textLength="640" lengthAdjust="spacing">SAEBYEOKDAL ENGLISH NEWS ★ ${o.kind==='read'?'READ ALOUD':o.kind==='debate'?'DEBATED':'LISTENED'} ★</textPath></text>
+      <text x="150" y="158" text-anchor="middle" fill="#1F7F77" stroke="none" font-family="Noto Serif KR, serif" font-weight="900" font-size="52">${o.kind==='read'?'낭독':o.kind==='debate'?'토론':'청독'}</text>
       <text x="150" y="196" text-anchor="middle" fill="#1F7F77" stroke="none" font-family="Pretendard, sans-serif" font-weight="800" font-size="20" letter-spacing="2">${o.stampDate}</text>
     </g></svg>`;
+}
+/* 토론 카드: 질문 + 함께 토론한 사람 수·비율(익명 집계) + 내 반응. 내 입장·이유는 넣지 않음 */
+function debateCardHTML(opts){
+  const o=Object.assign({w:358,week:4,date:'10월 9일(금)',stampDate:'2026.10.09',sx:690,sy:545,rot:12},opts);
+  const bar=(l,p,on)=>`<div style="display:flex;align-items:center;gap:20px"><span style="width:250px;font-size:30px;font-weight:700">${l}</span><span style="flex:1;height:22px;border-radius:11px;background:#fff;overflow:hidden"><i style="display:block;height:22px;width:${p}%;background:${on?'#1F7F77':'#76D4CC'}"></i></span><span style="width:96px;text-align:right;font-size:32px;font-weight:900">${p}%</span></div>`;
+  const top=Math.max(o.p.pro,o.p.con,o.p.idk);
+  return `<div class="ncard" style="width:${o.w}px;height:${Math.round(o.w*1.25)}px" role="img" aria-label="토론 카드: ${o.week}주차 ${o.date}, ${o.n}명이 함께 토론, 내 반응 ${o.feel}">
+  <div class="ncard-in" style="transform:scale(${o.w/1080})">
+    <div class="np">
+      <div class="nmast"><span class="serif" style="font-size:42px">새벽달 영어뉴스</span><span style="font-size:27px;color:#5A5A5A">1기 · ${o.week}주차 · ${o.date}</span></div>
+      <div style="margin-top:44px;font-size:28px;font-weight:800;color:#1F7F77;letter-spacing:2px">이번 주 토론</div>
+      <div class="serif" style="margin-top:14px;font-size:66px;line-height:1.25;letter-spacing:-1px">${o.q}</div>
+      <div style="font-size:30px;color:#5A5A5A;margin-top:26px">새벽달 영어뉴스 기자 지우</div>
+      <div style="flex:1"></div>
+      <div class="npills" style="margin:0 0 28px"><span>오늘 토론 주제: ${o.feel}</span></div>
+      <div class="nbox" style="padding:40px 48px;display:flex;flex-direction:column;gap:22px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:40px;font-weight:900">${o.n}명이 함께 토론했어요</span><span style="font-size:24px;color:#1F7F77;font-weight:700">${o.date.replace(/\(.\)/,'')} 기준</span></div>
+        ${bar('찬성',o.p.pro,o.p.pro===top)}${bar('반대',o.p.con,o.p.con===top)}${bar('잘 모르겠어요',o.p.idk,o.p.idk===top)}
+      </div>
+    </div>
+    ${stampSVG(Object.assign({kind:'debate'},o))}
+  </div></div>`;
 }
 function cardHTML(opts){
   const o=Object.assign({w:358,style:'insta',rot:-14,week:4,date:'10월 9일(금)',stampDate:'2026.10.09',en:2,kr:1,sec:432,total:4320,headline:ARTICLE.title},opts);
@@ -961,6 +985,20 @@ readDone(){
   <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:10px">
     <button class="cta" data-action="save" data-kind="video">${I.dl}&nbsp;영상 저장</button>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-go="queue">인스타 올리기</button><button class="btn2" data-action="backArticle">기사로 돌아가기</button></div></div>`;
+},
+
+debateDone(){
+  const c=S.lastDebate||Object.assign({q:DEBATE.q,feel:FEEL[0]},tally());
+  const w=S.weeks[S.selWeek-1].length;
+  return `<div class="scroll"><div class="pad stack" style="padding-top:28px;gap:16px">
+    <h2 class="h1" style="font-size:28px">토론 완료!</h2>
+    <div style="font-size:15px;line-height:1.6">${S.selWeek}주차 학습 <b>${Math.min(w,5)} / 5</b>. 카드를 저장해서 인스타에 올리면 인증돼요.</div>
+    <div style="display:flex;justify-content:center">${debateCardHTML({w:cardW(),week:S.selWeek,q:c.q,feel:c.feel,n:c.n,p:c.p})}</div>
+    <div class="help" style="text-align:center">내 입장과 이유는 카드에 들어가지 않아요. 앱과 뉴스북에만 저장돼요.</div>
+  </div></div>
+  <div class="pad stack" style="padding-top:12px;padding-bottom:20px;gap:10px">
+    <button class="cta" data-action="save" data-kind="opinion">${I.dl}&nbsp;카드 저장</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-go="queue">인스타 올리기</button><button class="btn2" data-action="backDebate">친구들 생각 보기</button></div></div>`;
 }
 };
 
@@ -1002,8 +1040,8 @@ function dockHTML(){
   }
   // debate
   if(S.dsub)return `${tabs}
-    <div class="tinted between"><span style="font-size:14px;font-weight:800;color:var(--deep)">의견을 냈어요 · 학습 1회</span><span class="meta">인스타 올리기에 추가됨</span></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-go="queue">인스타 올리기</button><button class="btn2" data-go="home">홈으로</button></div>`;
+    <div class="tinted between"><span style="font-size:14px;font-weight:800;color:var(--deep)">의견을 냈어요 · 학습 1회</span><span class="meta">토론 카드가 생겼어요</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-go="debateDone">토론 카드 보기</button><button class="btn2" data-go="home">홈으로</button></div>`;
   const ok=S.dv&&S.dr.trim();
   return `${tabs}
     <div class="help" style="text-align:center">투표하고 이유를 한 줄 쓰면 학습 1회 · 일요일 자정 마감</div>
@@ -1014,7 +1052,7 @@ function dockHTML(){
 function tally(){
   const c=Object.assign({},DEBATE.base);if(S.dv)c[S.dv]++;
   const n=c.pro+c.con+c.idk, p={};
-  ['pro','con','idk'].forEach(k=>p[k]=Math.round(c[k]/n*100));
+  p.pro=Math.round(c.pro/n*100);p.con=Math.round(c.con/n*100);p.idk=100-p.pro-p.con; // 합이 100이 되게
   return {c,n,p};
 }
 function debateHTML(){
@@ -1062,13 +1100,19 @@ function readComplete(){
   if(firstEN){S.firstShown=true;S.popup='first';render()}
   else toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);
 }
+/* 의견 내기 → 학습 1회, 입장·이유는 앱·뉴스북에 저장 → 토론 주제 반응(첫 토론 필수) → 토론 카드 */
 function debateComplete(){
   if(!S.dv||!S.dr.trim())return;
   addLearning('DE','opinion');
   const t=tally();
   S.dsub=true;S.dops.unshift({s:S.dv,t:S.dr.trim(),d:'10.09 지금',mine:true});
   S.opinions[S.selWeek]={side:DVS[S.dv],reason:S.dr.trim(),pro:t.p.pro,n:t.n};
-  render();toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);
+  S.popup='drate';render();
+}
+function debateFeel(i){
+  S.dfeel[S.selWeek]=i;
+  S.lastDebate=Object.assign({q:DEBATE.q,feel:FEEL[i]},tally());
+  go('debateDone');toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);
 }
 
 /* 이달의 앵커 카드 (기획 중) */
@@ -1160,6 +1204,12 @@ function progress(n,label){
   return `<div style="padding:20px 20px 0" class="stack"><div class="row" style="gap:6px">${bars}</div><div class="meta" style="font-size:13px;font-weight:700">${n} / 3 · ${label}</div></div>`;
 }
 function popupHTML(){
+  if(S.popup==='drate')return `<div class="dim"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="토론 주제 반응">
+    <div class="handle"></div>
+    <div class="tinted" style="padding:12px 14px;font-size:14px;font-weight:800;color:var(--deep)">의견을 냈어요 · ${S.selWeek}주차 학습 1회</div>
+    <h2 class="h1" style="font-size:22px">오늘 토론 주제는 어땠어요?</h2>
+    <div class="help" style="font-size:14px">하나만 골라 주세요. 토론 카드에 들어가요.</div>
+    <div class="stack" style="gap:8px">${FEEL.map((t,i)=>`<button class="r5" data-feel="${i}">${t}</button>`).join('')}</div></div>`;
   if(S.popup==='rate'){
     const first=!S.rated[S.selWeek];
     return `<div class="dim"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="청독 이해도">
@@ -1188,7 +1238,7 @@ function popupHTML(){
 const NAV=[
   ['첫 접속',[['welcome','1. 환영 · 정보 확인'],['student','2. 학습자 등록'],['access','3. 접속 방법 · 동의'],['reentry','다시 들어가기']]],
   ['학습',[['home','홈 (하단 탭)'],['activity','학습 고르기'],['materials','이번 주 자료 (하단 탭)']]],
-  ['합친 기사 화면 (10월 10일 안)',[['article:LI','기사 · 청독'],['article:rate','청독 완료 · 이해도 평가'],['listenDone','청독 완료 · 카드'],['article:EN','기사 · 영어로 읽기'],['article:KR','기사 · 한국어로 읽기'],['readDone','읽기 완료 · 카드'],['article:DE','기사 · 찬반토론']],'기획 중'],
+  ['합친 기사 화면 (10월 10일 안)',[['article:LI','기사 · 청독'],['article:rate','청독 완료 · 이해도 평가'],['listenDone','청독 완료 · 카드'],['article:EN','기사 · 영어로 읽기'],['article:KR','기사 · 한국어로 읽기'],['readDone','읽기 완료 · 카드'],['article:DE','기사 · 찬반토론'],['article:drate','찬반 의견 내기 · 주제 반응'],['debateDone','토론 완료 · 토론 카드']],'기획 중'],
   ['지금 앱 · 탭별 화면 (비교용)',[['listen','청독'],['reading','기사 읽기 · 듣기'],['recording','기사 읽기 · 녹음 중'],['review','기사 읽기 · 확인'],['worksheet:DE','찬반토론 · 작성지(지금)']]],
   ['작성',[['worksheet:SU','기사 요약 · 기자수첩'],['worksheet:VO','VOCA']]],
   ['인스타 올리기',[['queue','인스타 올리기 (하단 탭)']]],
@@ -1227,7 +1277,9 @@ const NOTES={
   'article:EN':{t:'합친 기사 화면 · 영어로 읽기',st:'plan',b:['시트에서 한국어로 / 영어로 고르고 "읽기 시작" → 3초 뒤 녹음','녹음 중에는 시트가 녹음 막대로 줄고, 다른 활동·지문 전환이 잠겨요','끝나면 내 낭독 듣기 + "읽기를 완료했어요 / 다시 읽을게요"','완료 → 읽기 완료 카드(학습 1회). 첫 영어 낭독 안내는 그대로']},
   'article:KR':{t:'합친 기사 화면 · 한국어로 읽기',st:'plan',b:['한국어로 읽기를 고르면 지문이 한국어로 바뀌고 문장 단위 하이라이트','완료하면 읽기 완료 카드(오늘 읽은 시간·지금까지 낭독 횟수)']},
   readDone:{t:'읽기 완료 · 카드',st:'plan',b:['청독 카드와 같은 모양에 "낭독" 도장','영어: 오늘 소리 내어 읽은 단어 / 지금까지 누적 단어. 한국어: 오늘 읽은 시간 / 낭독 횟수','영상 = 이 카드 + 내 녹음. "영상 저장"을 누를 때 휴대폰에서 만듦(2단계 모듈, 서버에 영상 저장 안 함)','가운데 재생 버튼은 영상 미리보기 흉내'],q:'제품 규칙 변경: 영상 이미지를 "주차별 템플릿"에서 "읽기 완료 카드"로. 뉴스북에도 읽기 카드를 실을지 회의'},
-  'article:DE':{t:'합친 기사 화면 · 찬반토론',st:'plan',b:['작성지 받기·사진 올리기를 빼고, 지문 아래에 토론 질문(임시, 나중에 콘텐츠 시트에서)','찬성해요 / 반대해요 / 잘 모르겠어요를 누르면 버튼마다 비율이 바로 보임','이유 한 줄(80자) 쓰고 "의견 내기" → 학습 1회','다른 친구들의 생각: 전체 / 찬성 / 반대 / 잘 모르겠어요 눌러 거르기. 이름은 안 보임'],q:'회의: 인스타에 올릴 것(의견 카드 이미지?), 친구 의견 공개 동의·부적절한 글 거르기, 의견 고치기 허용, 마감 뒤 처리'},
+  'article:DE':{t:'합친 기사 화면 · 찬반토론',st:'plan',b:['작성지 받기·사진 올리기를 빼고, 지문 아래에 토론 질문(임시, 나중에 콘텐츠 시트에서)','찬성해요 / 반대해요 / 잘 모르겠어요를 누르면 버튼마다 비율이 바로 보임','이유 한 줄(80자) 쓰고 "의견 내기" → 학습 1회','다른 친구들의 생각: 전체 / 찬성 / 반대 / 잘 모르겠어요 눌러 거르기. 이름은 안 보임'],q:'회의: 친구 의견 공개 동의·부적절한 글 거르기, 의견 고치기 허용, 마감 뒤 처리. 인스타는 개인 의견 없는 토론 카드로(10-10 결정)'},
+  'article:drate':{t:'의견 내기 · 토론 주제 반응',st:'plan',b:['의견 내기를 누르면 학습 1회, 입장·이유는 앱·뉴스북에 저장','바로 "오늘 토론 주제는 어땠어요?" 반응 4가지 중 하나(필수, 한 번만 누름)','정답 없는 반응이라 시험 느낌 없이. 운영팀은 기사별 토론 주제 반응을 대시보드·운영 시트에서 봄'],q:'반응 문구 4개는 임시'},
+  debateDone:{t:'토론 완료 · 토론 카드 (인스타용)',st:'plan',b:['청독·읽기 카드와 같은 모양 + "토론" 도장','토론 질문, N명이 함께 토론했어요 + 찬성/반대/잘 모르겠어요 비율(날짜 기준, 익명 집계), 내 반응','내 입장·이유는 카드에 넣지 않음 → 아이 의견이 인스타에 공개되지 않음'],q:'결정(10-10): 공개 여부를 아이에게 맡기지 않고, 인스타 카드에는 개인 의견을 넣지 않음'},
   grace:{t:'마감 이후 홈',st:'live',b:['종강일이 지났는데 완주 전이면 홈이 바뀜','유예 중(종강 후 1주): 남은 개수와 유예 마감일','유예 끝: 늦은 완주 가능, 녹음 보관 기한 안내']}
 };
 function noteHTML(){
@@ -1286,18 +1338,20 @@ document.addEventListener('input',e=>{
   if(b==='dreason'){S.dr=e.target.value;const c=document.getElementById('dcta');if(c){const ok=!!S.dr.trim();c.disabled=!ok;c.textContent=ok?'의견 내기':'이유를 한 줄 써 주세요'}}
 });
 document.addEventListener('click',e=>{
-  const el=e.target.closest('[data-go],[data-nav],[data-action],[data-os],[data-access],[data-week],[data-start],[data-play],[data-rate],[data-vote],[data-consent],[data-pick],[data-mode],[data-la],[data-rl],[data-view],[data-dv],[data-df],[data-r5]');
+  const el=e.target.closest('[data-go],[data-nav],[data-action],[data-os],[data-access],[data-week],[data-start],[data-play],[data-rate],[data-vote],[data-consent],[data-pick],[data-mode],[data-la],[data-rl],[data-view],[data-dv],[data-df],[data-r5],[data-feel]');
   if(!el||el.disabled)return;
   const d=el.dataset;
-  if(d.nav&&(d.nav.startsWith('article:')||d.nav==='readDone')){
+  if(d.nav&&(d.nav.startsWith('article:')||d.nav==='readDone'||d.nav==='debateDone')){
     const arg=d.nav.split(':')[1];
     if(d.nav==='readDone'){go('readDone')}
+    else if(d.nav==='debateDone'){go('debateDone')}
     else if(arg==='LI')openArticle('listen');
     else if(arg==='rate'){openArticle('listen');S.heard.enAudio=Math.max(1,S.heard.enAudio);S.lsec=Math.max(S.lsec,EN_TOTAL*0.9);S.popup='rate';navKey='article:rate';render()}
     else if(arg==='EN')openArticle('read','en');
     else if(arg==='KR')openArticle('read','kr');
     else if(arg==='DE')openArticle('debate');
-    if(arg!=='rate')navKey=d.nav;render();
+    else if(arg==='drate'){openArticle('debate');S.dv=S.dv||'con';S.dr=S.dr||'사람이 너무 몰려서 작품을 제대로 못 볼 것 같아요.';S.dsub=false;debateComplete();navKey='article:drate';render()}
+    if(arg!=='rate'&&arg!=='drate')navKey=d.nav;render();
     if(arg==='DE')document.getElementById('debateSec')?.scrollIntoView({block:'start'});
     document.getElementById('side').classList.remove('open');return}
   if(d.mode){lStop();pStop();S.am=d.mode;S.rs='idle';S.view=d.mode==='read'?(S.rl==='en'?'en':'ko'):'both';navKey=articleKey();render();
@@ -1307,6 +1361,7 @@ document.addEventListener('click',e=>{
   if(d.view){S.view=d.view;render();return}
   if(d.dv){S.dv=d.dv;render();return}
   if(d.df){S.df=d.df;render();return}
+  if(d.feel!=null&&d.feel!==''){debateFeel(Number(d.feel));return}
   if(d.r5){S.rated[S.selWeek]=Number(d.r5);S.popup=null;listenComplete();toast(`이해도 ${d.r5}단계로 기록했어요`);return}
   if(d.nav){const [scr,arg]=d.nav.split(':');
     if(scr==='worksheet'){S.wsType=arg;S.photo=false}
@@ -1341,6 +1396,7 @@ document.addEventListener('click',e=>{
     case 'readRetry':S.playing=null;S.rs='idle';render();break;
     case 'readDone':readComplete();break;
     case 'backArticle':openArticle('read');break;
+    case 'backDebate':openArticle('debate');break;
     case 'debateDone':debateComplete();break;
     case 'pacerToggle':S.pacerOn=!S.pacerOn;S.pacerPaused=false;if(S.pacerOn){render();pStart('pacer',S.act==='EN'?'en':'ko',()=>{});}else{pStop();render();}break;
     case 'pacerPause':if(S.pacerPaused){S.pacerPaused=false;if(P.seq)pStep();else pStart('pacer',S.act==='EN'?'en':'ko',()=>{});}else{S.pacerPaused=true;clearTimeout(P.t);}document.getElementById('pauseBtn').textContent=S.pacerPaused?'다시 움직이기':'잠깐 멈추기';break;
@@ -1360,7 +1416,7 @@ document.addEventListener('click',e=>{
       if(t==='SU'&&(S.memo.title||S.memo.text))S.notes[S.selWeek]={title:S.memo.title,text:S.memo.text};
       if(t==='DE'&&S.vote)S.opinions[S.selWeek]={side:S.vote,reason:S.reason||'(이유 없음)'};
       S.photo=false;S.memo.ocr='none';go('home');toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);break}
-    case 'save':toast(d.kind==='video'?'사진첩에 영상을 저장했어요 (목업)':d.kind==='card'?'사진첩에 청독 카드를 저장했어요 (목업)':'사진첩에 사진을 저장했어요 (목업)');break;
+    case 'save':toast(d.kind==='video'?'사진첩에 영상을 저장했어요 (목업)':d.kind==='card'?'사진첩에 청독 카드를 저장했어요 (목업)':d.kind==='opinion'?'사진첩에 토론 카드를 저장했어요 (목업)':'사진첩에 사진을 저장했어요 (목업)');break;
     case 'verify':{const id=Number(d.id);S.queue=S.queue.filter(q=>q.id!==id);S.posted=Math.min(60,S.posted+1);render();toast(`올리기 완료! 완주까지 ${S.posted} / 60`);break}
     case 'closePopup':S.popup=null;render();toast(`${S.selWeek}주차 학습 ${Math.min(S.weeks[S.selWeek-1].length,5)} / 5 완료!`);break;
     case 'insta':toast('인스타그램 게시물로 이동해요 (목업)');break;
