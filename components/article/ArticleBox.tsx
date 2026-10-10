@@ -17,6 +17,7 @@ export function ArticleBox({
   slash,
   onSlash,
   locked = false,
+  big = false,
 }: {
   sentences: Sentence[];
   hl: string[];
@@ -25,6 +26,7 @@ export function ArticleBox({
   slash: boolean;
   onSlash: (on: boolean) => void;
   locked?: boolean; // 녹음 중에는 바꾸지 않음
+  big?: boolean; // 녹음 중 큰 글자
 }) {
   const v = viewProps(view);
   return (
@@ -44,7 +46,9 @@ export function ArticleBox({
           </label>
         )}
       </div>
-      <ArticleText sentences={sentences} hl={hl} en={v.en} slash={slash && canSlash(view)} onlyMain={v.onlyMain} />
+      <div className={big ? "recText" : undefined}>
+        <ArticleText sentences={sentences} hl={hl} en={v.en} slash={slash && canSlash(view) && !big} onlyMain={v.onlyMain} gap={big ? 18 : 14} />
+      </div>
     </div>
   );
 }

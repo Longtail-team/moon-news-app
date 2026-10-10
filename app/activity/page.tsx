@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { pageLearner } from "@/lib/server/learner";
 import { getPicker } from "@/lib/server/reading";
+import { articleHref } from "@/lib/article/mode";
 import { ACT, ActIcon, type ActType } from "@/components/student/icons";
 import "../student.css";
 
@@ -71,7 +72,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
               const inProgress = sel.in_progress.includes(k);
               const n = sel.counts[k] ?? 0;
               return (
-                <Link key={k} className="act" href={k === "LISTENING" ? `/article/${sel.week_no}` : `/${k.endsWith("READING") ? "read" : "write"}/${sel.week_no}/${SLUG[k]}`}>
+                <Link key={k} className="act" href={k === "LISTENING" ? articleHref(sel.week_no) : k.endsWith("READING") ? articleHref(sel.week_no, "read", k === "EN_READING" ? "en" : "kr") : `/write/${sel.week_no}/${SLUG[k]}`}>
                   <span className="ic">
                     <ActIcon type={k} />
                   </span>
