@@ -54,7 +54,7 @@ describe("청독", () => {
       expect(item.card).toMatchObject({ activity_id: card.activity_id, week_no: 4, name: "박서연", plays: { article_audio: 1 }, session_seconds: 100, date: card.date });
 
       const b = (await tx.query<Row>("select public.newsbook('S-0002') as j")).rows[0].j as any;
-      expect(b.weeks[3].cards).toEqual([{ activity_id: card.activity_id }]);
+      expect(b.weeks[3].cards).toEqual([{ activity_id: card.activity_id, type: "LISTENING" }]); // 활동 종류(2026-10-10, 뉴스북 활동 카드 모두)
       expect(b.stats.acts.LISTENING).toBe(1);
       await tx.rollback();
     });

@@ -5,11 +5,14 @@ import type { BookWeek, Newsbook } from "@/lib/server/newsbook";
 import { fmtDay, fmtMonthDay, givenName } from "@/lib/format";
 import { withGa } from "@/lib/korean";
 import { STANCE_TAG } from "@/lib/debate/board";
+import { percents } from "@/lib/cards/layout";
+import { ACT } from "@/components/student/icons";
 
 function WeekCard({ w, reporter }: { w: BookWeek; reporter: string }) {
   const t = w.tally;
-  const total = t ? t.agree + t.disagree : 0;
-  const pct = t && total ? Math.round((t.agree / total) * 100) : 0;
+  const counts = t ? { agree: t.agree, disagree: t.disagree, unsure: t.unsure ?? 0 } : null;
+  const total = counts ? counts.agree + counts.disagree + counts.unsure : 0;
+  const p = counts ? percents(counts) : null;
   const empty = !w.summary && !w.opinion && w.cards.length === 0;
   return (
     <div className="card stack" style={{ gap: 10, ...(empty ? { background: "var(--bg)", borderStyle: "dashed" } : {}) }}>
@@ -20,11 +23,11 @@ function WeekCard({ w, reporter }: { w: BookWeek; reporter: string }) {
       {empty && <div className="help" style={{ fontSize: 13 }}>아직 비어 있어요. 청독, 기사 요약, 찬반토론을 하면 이 쪽이 채워져요.</div>}
       {w.cards.length > 0 && (
         <div className="stack" style={{ gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 800, color: "var(--deep)" }}>청독 카드 {w.cards.length}장</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: "var(--deep)" }}>활동 카드 {w.cards.length}장</span>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
             {w.cards.map((c) => (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={c.activity_id} src={`/media/${c.activity_id}`} alt="청독 카드" loading="lazy" style={{ width: "100%", aspectRatio: "4 / 5", objectFit: "cover", borderRadius: 6, border: "1px solid var(--line)", background: "var(--bg)" }} />
+              <img key={c.activity_id} src={`/media/${c.activity_id}?card=1`} alt={`${ACT[c.type]?.name ?? "활동"} 카드`} loading="lazy" style={{ width: "100%", aspectRatio: "4 / 5", objectFit: "cover", borderRadius: 6, border: "1px solid var(--line)", background: "var(--bg)" }} />
             ))}
           </div>
         </div>
@@ -50,14 +53,15 @@ function WeekCard({ w, reporter }: { w: BookWeek; reporter: string }) {
           {w.opinion.reason && <span style={{ fontSize: 14 }}>{w.opinion.reason}</span>}
         </div>
       )}
-      {t && total > 0 && (
+      {t && p && total > 0 && (
         <div className="stack" style={{ gap: 4 }}>
           <div className="between" style={{ fontSize: 13, fontWeight: 800 }}>
-            <span>찬성 {pct}%</span>
-            <span>반대 {100 - pct}%</span>
+            <span>찬성 {p.agree}%</span>
+            <span>반대 {p.disagree}%</span>
+            <span>잘 모르겠어요 {p.unsure}%</span>
           </div>
           <div className="bar">
-            <i style={{ width: `${pct}%` }} />
+            <i style={{ width: `${p.agree}%` }} />
           </div>
           <span className="meta">
             {t.final ? "최종 결과" : "지금까지"} {total}명

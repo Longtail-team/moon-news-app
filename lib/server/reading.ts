@@ -106,6 +106,7 @@ export type QueueItem = {
   kind: "video" | "photo";
   mediaUrl: string | null; // 사진 저장·영상 재료 (앱 주소 /media/활동, 누를 때 짧은 주소로)
   templateUrl: string | null; // 영상 화면 (2단계)
+  cardUrl: string | null; // 활동 카드 그림(앱 주소 /media/활동?card=1). 기사 요약·VOCA·토론은 이것을 저장(2026-10-10 결정: 인스타는 카드 한 장)
   // 청독: 인스타용 카드(제목 100px)를 휴대폰에서 다시 그릴 값
   card: { activity_id: string; week_no: number; title: string | null; cohort_no: number; name: string; date: string; plays: Record<string, number>; session_seconds: number; total_seconds: number } | null;
 };
@@ -116,11 +117,12 @@ export async function getQueue(studentId: string): Promise<Queue | null> {
   const { data, error } = await db().rpc("upload_queue", { p_student: studentId });
   if (error) throw error;
   if (!data) return null;
-  const q = data as Omit<Queue, "items"> & { items: (Omit<QueueItem, "mediaUrl" | "templateUrl"> & { media_key: string; template_key: string | null })[] };
-  const items = q.items.map(({ media_key, template_key, ...it }) => ({
+  const q = data as Omit<Queue, "items"> & { items: (Omit<QueueItem, "mediaUrl" | "templateUrl" | "cardUrl"> & { media_key: string; template_key: string | null; card_key: string | null })[] };
+  const items = q.items.map(({ media_key, template_key, card_key, ...it }) => ({
     ...it,
     mediaUrl: activityMediaUrl(it.activity_id, media_key),
     templateUrl: courseFileUrl(it.week_no, "insta_template", template_key),
+    cardUrl: card_key || media_key?.startsWith("cards/") ? `/media/${it.activity_id}?card=1` : null,
   }));
   return { deadline: q.deadline, total_target: q.total_target, verified_count: q.verified_count, items };
 }

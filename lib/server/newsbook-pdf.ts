@@ -11,11 +11,12 @@ import { renderNewsbook, type PdfPhoto } from "@/lib/pdf/newsbook";
 import { pdfImage } from "@/lib/pdf/images";
 
 const BUCKET = "media";
-const VERSION = "2"; // PDF 모양을 바꾸면 올려서 예전 파일을 다시 만들게
+const VERSION = "3"; // PDF 모양을 바꾸면 올려서 예전 파일을 다시 만들게(3: 활동 카드 모두·잘 모르겠어요)
 
 // 손글씨 사진·카드 그림: 보관 기간 안에 남아 있고 PDF에 넣을 수 있는 형식(JPEG·PNG)일 때만, 보이는 크기로 줄여서
 async function image(activityId: string, studentId: string, kind: "photo" | "card"): Promise<PdfPhoto | null> {
-  const { data: key } = await db().rpc("activity_media", { p_student: studentId, p_activity: activityId });
+  // 카드는 활동 카드 그림(card_key, 청독·토론은 활동 파일), 사진은 작성지
+  const { data: key } = await db().rpc(kind === "card" ? "activity_card" : "activity_media", { p_student: studentId, p_activity: activityId });
   if (typeof key !== "string") return null;
   const { data: file } = await db().storage.from(BUCKET).download(key);
   if (!file) return null;

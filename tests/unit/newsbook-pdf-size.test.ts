@@ -30,7 +30,7 @@ function book(): { b: Newsbook; pages: BookWeek[] } {
     title_ko: null,
     summary: { activity_id: `s${i}`, title: "RM's Long Self-Introduction", body: "RM of BTS is sharing his art collection at SFMOMA. ".repeat(4), has_photo: true },
     opinion: { stance: "agree", reason: "It is a good way to share art." },
-    cards: [0, 1, 2, 3].map((k) => ({ activity_id: `c${i}-${k}` })),
+    cards: [0, 1, 2, 3].map((k) => ({ activity_id: `c${i}-${k}`, type: "LISTENING" as const })),
     tally: { agree: 20, disagree: 15, final: true },
   }));
   const b = {
