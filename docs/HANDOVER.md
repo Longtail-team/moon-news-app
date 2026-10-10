@@ -49,7 +49,7 @@ node --env-file=.env.local scripts/delete-test-order.mjs 01000009001       # 시
 ```
 npm install
 npm run dev        # http://localhost:3000  (predev가 ffmpeg 워커를 public/ffmpeg로 복사)
-npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 136개
+npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 140개
 npm run build
 ```
 
@@ -80,7 +80,8 @@ app/
   profiles/ add-learner/ reentry/   학습자 고르기·추가, 다시 들어가기(번호 → 새 링크)
   activity/              활동 고르기
   read/[week]/[kind]/    기사 읽기·VOCA 단어 (en | kr | voca)
-  listen/[week]/         청독 (음원 듣기 → 청독 완료 → 카드)
+  article/[week]/        합친 기사 화면(T07): 지문 + 아래 청독 / 기사 읽기 / 찬반토론 시트(?mode=). 지금은 청독만 이 안에서, 읽기·찬반은 기존 화면으로 연결
+  listen/[week]/         예전 청독 주소 → article로 이동
   write/[week]/[kind]/   작성 활동 (voca | summary | debate)
   upload/                인스타 올리기
   materials/             이번 주 자료 (주차별 순차 공개)
@@ -92,7 +93,7 @@ app/
   */loading.tsx          불러오는 동안 뼈대 (components/student/PageLoading)
   api/activity/*  api/onboarding/*  api/reentry
   lab/                   T01 기기 검증 페이지, lab/cards 활동 카드 5종 미리보기(샘플 값)
-components/student|reading|work|upload|materials|onboarding/
+components/student|reading|work|upload|materials|onboarding|article/   (article: 기사 화면 부품 — 화면 틀·지문 상자·질문·시트별로 나눔)
 lib/
   server/                서버 전용(db, session, home, reading, media, learner, guardian, onboarding, notify, materials, ocr, newsbook-pdf)
                          learner.ts: API용 requireLearner, 화면용 pageLearner(세션·학습자 없으면 이동)
@@ -104,6 +105,8 @@ lib/
   video/                 2단계 영상 모듈 연결 규칙 (지금은 자리만, MAX_RECORDING_SEC=300)
   reading/               지문·하이라이트 순서, 녹음기
   listening.ts           청독량 기록(재생 시간 재기·전송)
+  listen/                청독 재생 훅(useListening)·청독 완료(finish: 카드 그리기·올리기)
+  article/mode.ts        기사 화면 상태 규칙(시트·지문 보기, 테스트)
   cards/                 활동 카드 그리기(1080×1350): frame.ts 공통 틀·도장, layout.ts 배치 규칙(테스트), listening·reading·summary·voca·debate.ts 카드 5종
 scripts/sync-content.mjs 콘텐츠 반영 (GitHub Actions에서 실행)
 .github/workflows/content-sync.yml

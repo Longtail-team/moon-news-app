@@ -528,7 +528,7 @@ export function ReadingFlow({
           ))}
           {kind !== "voca" && (
             // 영어 기사 음원·한영 구간반복은 청독에서 (2026-10-09)
-            <Link className="card row" href={`/listen/${material.week_no}`} style={{ padding: "12px 16px" }}>
+            <Link className="card row" href={`/article/${material.week_no}`} style={{ padding: "12px 16px" }}>
               <span className="stack" style={{ gap: 2, flex: 1 }}>
                 <span style={{ fontSize: 15, fontWeight: 800 }}>음원은 청독에서 들어요</span>
                 <span className="meta">영어 기사 음원 · 한영 구간반복</span>
