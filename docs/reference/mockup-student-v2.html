@@ -428,10 +428,56 @@ function stampSVG(o){
       <circle cx="150" cy="150" r="140" stroke-width="8"></circle>
       <circle cx="150" cy="150" r="124" stroke-width="2.5"></circle>
       <circle cx="150" cy="150" r="80" stroke-width="2.5"></circle>
-      <text fill="#1F7F77" stroke="none" font-family="Pretendard, sans-serif" font-size="19" font-weight="800"><textPath href="#${id}p" startOffset="0" textLength="640" lengthAdjust="spacing">SAEBYEOKDAL ENGLISH NEWS ★ ${o.kind==='read'?'READ ALOUD':o.kind==='debate'?'DEBATED':'LISTENED'} ★</textPath></text>
-      <text x="150" y="158" text-anchor="middle" fill="#1F7F77" stroke="none" font-family="Noto Serif KR, serif" font-weight="900" font-size="52">${o.kind==='read'?'낭독':o.kind==='debate'?'토론':'청독'}</text>
+      <text fill="#1F7F77" stroke="none" font-family="Pretendard, sans-serif" font-size="19" font-weight="800"><textPath href="#${id}p" startOffset="0" textLength="640" lengthAdjust="spacing">SAEBYEOKDAL ENGLISH NEWS ★ ${({read:'READ ALOUD',debate:'DEBATED',summary:'SUMMARIZED',voca:'WORDS LEARNED'})[o.kind]||'LISTENED'} ★</textPath></text>
+      <text x="150" y="158" text-anchor="middle" fill="#1F7F77" stroke="none" font-family="Noto Serif KR, serif" font-weight="900" font-size="52">${({read:'낭독',debate:'토론',summary:'요약',voca:'단어'})[o.kind]||'청독'}</text>
       <text x="150" y="196" text-anchor="middle" fill="#1F7F77" stroke="none" font-family="Pretendard, sans-serif" font-weight="800" font-size="20" letter-spacing="2">${o.stampDate}</text>
     </g></svg>`;
+}
+/* 작성지 사진 자리(목업): 줄 친 종이 그림. 실제로는 올린 작성지 사진 */
+const paperPhoto=(x,y,w,h,rot,lines)=>`<div style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;transform:rotate(${rot}deg);background:#fff;border:2px solid #E3E9E8;border-radius:10px;box-shadow:0 10px 26px rgba(45,45,45,.16);padding:26px">
+  <div style="width:100%;height:100%;background:repeating-linear-gradient(#FBFCFC 0 36px,#D3DCDB 36px 38px);border-radius:4px;position:relative">${lines||''}</div></div>`;
+const scribble=(n)=>Array.from({length:n},(_,i)=>`<div style="position:absolute;left:14px;top:${12+i*38}px;height:6px;width:${[78,64,86,52,70,82,58,74][i%8]}%;border-radius:3px;background:#8A8A8A;opacity:.55"></div>`).join('');
+/* 기사 요약 카드: 내가 붙인 제목 + 요약 앞부분 + 작성지 사진 + "요약" 도장 */
+function summaryCardHTML(opts){
+  const o=Object.assign({w:358,week:4,date:'10월 9일(금)',stampDate:'2026.10.09',sx:150,sy:985,rot:-10,title:"RM's Long Self-Introduction",text:OCR_SAMPLE},opts);
+  return `<div class="ncard" style="width:${o.w}px;height:${Math.round(o.w*1.25)}px" role="img" aria-label="기사 요약 카드: ${o.week}주차 ${o.date}, 내가 붙인 제목 ${esc(o.title)}">
+  <div class="ncard-in" style="transform:scale(${o.w/1080})">
+    <div class="np">
+      <div class="nmast"><span class="serif" style="font-size:42px">새벽달 영어뉴스</span><span style="font-size:27px;color:#5A5A5A">1기 · ${o.week}주차 · ${o.date}</span></div>
+      <div style="margin-top:44px;font-size:28px;font-weight:800;color:#1F7F77;letter-spacing:2px">기자수첩 · 내가 붙인 제목</div>
+      <div class="serif" style="margin-top:14px;font-size:78px;line-height:1.15;letter-spacing:-1px">${esc(o.title)}</div>
+      <div style="font-size:26px;color:#5A5A5A;margin-top:20px">원래 기사: ${ARTICLE.title}</div>
+      <div style="font-size:30px;color:#5A5A5A;margin-top:12px">새벽달 영어뉴스 기자 지우</div>
+      <div style="position:relative;flex:1;margin-top:34px">
+        <div style="position:absolute;left:0;top:0;width:470px;font-size:31px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:9;-webkit-box-orient:vertical;overflow:hidden">${esc(o.text)}</div>
+        ${paperPhoto(500,10,400,520,4,scribble(10))}
+      </div>
+    </div>
+    ${stampSVG(Object.assign({kind:'summary'},o))}
+  </div></div>`;
+}
+/* VOCA 카드: 이번 주 단어 + 작성지 사진(또는 단어 낭독) + 익힌 단어 수 + "단어" 도장 */
+const VOCA=['collection','exhibition','personal','artwork','lend','audio guide','honestly','collector'];
+function vocaCardHTML(opts){
+  const o=Object.assign({w:358,week:4,date:'10월 9일(금)',stampDate:'2026.10.09',sx:700,sy:470,rot:14,how:'photo',total:32},opts);
+  const chips=VOCA.map(v=>`<span style="border:2px solid #2D2D2D;border-radius:999px;padding:10px 26px;font-size:30px;font-weight:700;background:#fff">${v}</span>`).join('');
+  return `<div class="ncard" style="width:${o.w}px;height:${Math.round(o.w*1.25)}px" role="img" aria-label="VOCA 카드: ${o.week}주차 ${o.date}, 단어 ${VOCA.length}개">
+  <div class="ncard-in" style="transform:scale(${o.w/1080})">
+    <div class="np">
+      <div class="nmast"><span class="serif" style="font-size:42px">새벽달 영어뉴스</span><span style="font-size:27px;color:#5A5A5A">1기 · ${o.week}주차 · ${o.date}</span></div>
+      <div style="margin-top:44px;font-size:28px;font-weight:800;color:#1F7F77;letter-spacing:2px">이번 주 VOCA</div>
+      <div class="serif" style="margin-top:14px;font-size:64px;line-height:1.2;letter-spacing:-1px">${ARTICLE.title}</div>
+      <div style="font-size:30px;color:#5A5A5A;margin-top:20px">새벽달 영어뉴스 기자 지우 · ${o.how==='photo'?'작성지로 익혔어요':'소리 내어 읽었어요'}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:34px;width:${o.how==='photo'?560:810}px">${chips}</div>
+      <div style="flex:1"></div>
+      <div class="nbox" style="display:flex;justify-content:space-between;align-items:center;padding:36px 48px">
+        <div><div style="font-size:30px;font-weight:700;color:#1F7F77">오늘 익힌 단어</div><div style="font-size:96px;font-weight:900;line-height:1.1">${VOCA.length}개</div></div>
+        <div style="text-align:right"><div style="font-size:30px;font-weight:700;color:#1F7F77">지금까지 누적</div><div style="font-size:56px;font-weight:900">${o.total}개</div></div>
+      </div>
+    </div>
+    ${o.how==='photo'?paperPhoto(660,560,330,400,5,scribble(8)):''}
+    ${stampSVG(Object.assign({kind:'voca'},o))}
+  </div></div>`;
 }
 /* 토론 카드: 질문 + 함께 토론한 사람 수·비율(익명 집계) + 내 반응. 내 입장·이유는 넣지 않음 */
 function debateCardHTML(opts){
@@ -825,7 +871,8 @@ book(){
     return `<div class="card lift stack" style="gap:10px">${head}
       ${note?`<div class="sec" style="margin-top:2px">뉴스 카드</div><div class="row" style="align-items:flex-start;padding:14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)"><div class="stack" style="gap:6px;flex:1"><div style="font-size:16px;font-weight:800">${esc(note.title||'(제목 없음)')}</div><div style="font-size:14px;line-height:1.6">${esc(note.text)}</div><div class="meta">기자 지우</div></div><span title="손글씨 작성지 사진" style="width:40px;height:52px;flex-shrink:0;border-radius:6px;background:var(--white);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--faint)">${svg('<path d="M5 7h14M5 11h10M5 15h12"></path>',18)}</span></div>`:''}
       ${op?`<div class="sec" style="margin-top:2px">의견 카드</div><div class="stack" style="gap:8px;padding:14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)"><div style="font-size:14px">내 입장: <b>${op.side}</b></div><div style="font-size:14px;line-height:1.6">${esc(op.reason)}</div>${op.n?voteBar(op.pro,`최종 결과 ${op.n}명`):''}</div>`:''}
-      ${cards.length?`<div class="sec" style="margin-top:2px">청독 카드 ${cards.length}장</div><div style="display:grid;grid-template-columns:repeat(4,70px);gap:8px;justify-content:start">${cards.map((c,i)=>cardHTML(Object.assign({},c,{w:70,style:'app'},STAMP_SPOTS[(i+n)%STAMP_SPOTS.length]))).join('')}</div>`:''}
+      ${(()=>{const all=[...cards.map((c,i)=>cardHTML(Object.assign({},c,{w:70,style:'app'},STAMP_SPOTS[(i+n)%STAMP_SPOTS.length]))),...(BOOK_EXTRA[n]||[]).map(k=>smallCard(k,n))];
+        return all.length?`<div class="sec" style="margin-top:2px">활동 카드 ${all.length}장</div><div style="display:grid;grid-template-columns:repeat(4,70px);gap:8px;justify-content:start">${all.join('')}</div>`:''})()}
     </div>`;
   };
   const titles=[1,2,3,4].filter(n=>S.notes[n]&&S.notes[n].title).map(n=>`<div class="between" style="padding:10px 0;border-bottom:1px solid var(--mute);font-size:14px"><span style="color:var(--sub)">${n}주차</span><span style="font-weight:800;text-align:right">${esc(S.notes[n].title)}</span></div>`).join('');
@@ -993,6 +1040,20 @@ readDone(){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn2" data-go="queue">인스타 올리기</button><button class="btn2" data-action="backArticle">기사로 돌아가기</button></div></div>`;
 },
 
+cardGallery(){
+  const w=cardW(), t=tally();
+  const item=(label,desc,html)=>`<div class="stack" style="gap:8px"><div class="between"><span style="font-size:16px;font-weight:800">${label}</span></div><div class="help">${desc}</div><div style="display:flex;justify-content:center">${html}</div></div>`;
+  return `<div class="scroll">${topBar('record','내 기록','')}
+  <div class="pad stack" style="gap:24px">
+    <div class="stack" style="gap:6px"><h2 class="h1">활동 카드 모음</h2><div class="help">활동마다 같은 신문 스크랩 모양에 도장만 달라요. 인스타에 올리고, 뉴스북 주차 쪽에도 실려요.</div></div>
+    ${item('청독 카드','들은 시간·누적 청독 시간 · "청독" 도장',cardHTML({w,style:'insta'}))}
+    ${item('읽기 완료 카드','읽은 단어·누적 단어(한국어는 읽은 시간·횟수) · "낭독" 도장 · 녹음을 입혀 영상으로',cardHTML({w,style:'insta',kind:'read',lang:'en',dur:'1:42',durLong:'1분 42초',words:ARTICLE.words,totalWords:ARTICLE.words*3,count:3,sx:690,sy:556,rot:-10}))}
+    ${item('기사 요약 카드','기자수첩 제목·요약 앞부분 + 작성지 사진 · "요약" 도장. 요약을 안 썼으면 기사 제목과 사진만',summaryCardHTML({w}))}
+    ${item('VOCA 카드','이번 주 단어 + 작성지 사진(단어 낭독이면 사진 없이 "소리 내어 읽었어요") · 익힌 단어 수 · "단어" 도장',vocaCardHTML({w}))}
+    ${item('토론 카드','질문·함께 토론한 사람 수·비율·토론 주제 반응 · "토론" 도장 · 내 입장과 이유는 넣지 않음',debateCardHTML({w,q:DEBATE.q,feel:FEEL[0],n:t.n,p:t.p}))}
+  </div></div>`;
+},
+
 debateDone(){
   const c=S.lastDebate||Object.assign({q:DEBATE.q,feel:FEEL[0]},tally());
   const w=S.weeks[S.selWeek-1].length;
@@ -1135,7 +1196,16 @@ function anchorCard(){
     <div class="row" style="gap:16px"><button class="textbtn" style="font-size:13px" data-go="anchorInfo">이달의 앵커란?</button><button class="textbtn" style="font-size:13px" data-go="anchorWin">지난 수상작 보기</button></div>
   </div>`;
 }
-function pageFilled(n){return !!(S.notes[n]||S.opinions[n]||(S.cards[n]||[]).length)}
+function pageFilled(n){return !!(S.notes[n]||S.opinions[n]||(S.cards[n]||[]).length||(BOOK_EXTRA[n]||[]).length)}
+/* 뉴스북 예시: 청독 카드 말고 다른 활동 카드(읽기 완료·토론·요약·VOCA)도 주차 쪽에 함께 */
+const BOOK_EXTRA={1:['summary','debate','voca'],2:['read','voca'],3:['summary','debate','read'],4:['read','voca']};
+function smallCard(k,week){
+  const t=tally();
+  if(k==='read')return cardHTML({w:70,style:'app',kind:'read',lang:'en',week,dur:'1:42',durLong:'1분 42초',words:ARTICLE.words,totalWords:ARTICLE.words*3,count:3,sx:600,sy:470,rot:9});
+  if(k==='debate')return debateCardHTML({w:70,week,q:DEBATE.q,feel:FEEL[1],n:t.n,p:t.p});
+  if(k==='summary')return summaryCardHTML({w:70,week});
+  return vocaCardHTML({w:70,week});
+}
 
 function rateBar(compact){
   return `<div class="rate" role="group" aria-label="속도">${compact?'':'<span>속도</span>'}${[0.5,0.8,1,1.2].map(r=>`<button class="${S.rate===r?'on':''}" data-rate="${r}" aria-pressed="${S.rate===r}">${r}배</button>`).join('')}</div>`;
@@ -1248,7 +1318,7 @@ const NAV=[
   ['지금 앱 · 탭별 화면 (비교용)',[['listen','청독'],['reading','기사 읽기 · 듣기'],['recording','기사 읽기 · 녹음 중'],['review','기사 읽기 · 확인'],['worksheet:DE','찬반토론 · 작성지(지금)']]],
   ['작성',[['worksheet:SU','기사 요약 · 기자수첩'],['worksheet:VO','VOCA']]],
   ['인스타 올리기',[['queue','인스타 올리기 (하단 탭)']]],
-  ['내 기록 · 뉴스북',[['record','내 기록 (하단 탭)'],['book','뉴스북 보기']]],
+  ['내 기록 · 뉴스북',[['record','내 기록 (하단 탭)'],['book','뉴스북 보기'],['cardGallery','활동 카드 모음']]],
   ['이달의 앵커',[['record:anchor','내 기록 · 앵커 카드'],['anchorInfo','이달의 앵커란?'],['anchorEntry','출품하기'],['anchorWin','수상작']],'기획 중'],
   ['완주 · 마감',[['finish','완주'],['cert','상장 이름 확인'],['grace','마감 이후 홈']]]
 ];
@@ -1275,7 +1345,7 @@ const NOTES={
   anchorInfo:{t:'이달의 앵커란? (학생 안내)',st:'plan',b:['학생·보호자에게 규칙을 한 화면으로 설명','후보 되기 → 출품하기 → 수상작 발표 3단계','후보가 아니어도 완주·상장에는 영향 없음']},
   anchorEntry:{t:'이달의 앵커 · 출품하기',st:'plan',b:['그 4주 동안 낸 영어 낭독 목록에서 들어 보고 하나 고름','보호자 공개 동의(필수) 후 출품','출품은 4주 묶음마다 1개'],q:'회의: 음성 공개 동의 문구(법률 검토)'},
   anchorWin:{t:'이달의 앵커 · 수상작',st:'plan',b:['운영팀이 고른 수상작을 모두가 들을 수 있음','관리자 화면 전에는 운영팀 요청 → 개발 담당이 표시'],q:'회의: 수상작 수·선정 방법, 이름 표시(전체 / 부르는 이름 / 가림), 수상 혜택'},
-  book:{t:'뉴스북 보기',st:'live',b:['기수별 1권(12주). 진도 중간에는 화면으로 보고, 종강 다음 날부터 PDF','주차 쪽: 뉴스 카드(내 제목·요약), 의견 카드·찬반 결과, 청독 카드 4열','마지막: 내가 붙인 제목 모아보기','왼쪽 "종강 다음 날"을 켜면 PDF 버튼이 열림']},
+  book:{t:'뉴스북 보기',st:'live',b:['기수별 1권(12주). 진도 중간에는 화면으로 보고, 종강 다음 날부터 PDF','주차 쪽: 뉴스 카드(내 제목·요약), 의견 카드·찬반 결과, 활동 카드 4열(청독·읽기 완료·요약·VOCA·토론, 10-10 결정)','마지막: 내가 붙인 제목 모아보기','왼쪽 "종강 다음 날"을 켜면 PDF 버튼이 열림']},
   finish:{t:'완주',st:'live',b:['60번째 인증 직후 이동. COMPLETE!는 제때 완주만','활동별 횟수, 읽은 영어 단어, 청독 시간','첫·마지막 영어 낭독 비교(제때·유예 완주만)','왼쪽 "완주 단계"로 제때/유예/늦은 완주 비교']},
   cert:{t:'상장 이름 확인',st:'live',b:['상장에 들어갈 이름을 확인·수정 후 받기','서버에서 PDF로 만들어 휴대폰에서 받음, 발급 기관 "새벽달"(임시)'],q:'상장 디자인은 보완 예정'},
   'article:LI':{t:'합친 기사 화면 · 청독',st:'plan',b:['지문은 한 화면에 한 번만. 아래 시트에서 청독 / 기사 읽기 / 찬반토론을 바꿔요','위쪽은 듣기 전 질문만(기사 PDF 받기는 뺌, 이번 주 자료 탭에 있음). 질문은 들어오면 펼쳐 있고, 재생·읽기를 시작하면 한 줄로 접힘','청독: 음원 고르기(영어 기사·한영 구간반복), 재생·진행, 속도, 반복, 이번 청독 시간','지문 상자 위 한 줄: 왼쪽 영어 / 한·영 / 한국어(작게), 오른쪽 끊어 읽기. 하이라이트는 지금 앱과 같음','90% 들으면 "청독 완료" → 이해도 평가 → 청독 카드'],q:'학습 고르기의 청독·한국어/영어 읽기·찬반토론이 모두 이 화면으로 들어와요(그 시트가 열린 채). 학습 1회 세는 법은 그대로'},
@@ -1286,6 +1356,7 @@ const NOTES={
   'article:DE':{t:'합친 기사 화면 · 찬반토론',st:'plan',b:['작성지 받기·사진 올리기를 빼고, 지문 아래에 토론 질문(임시, 나중에 콘텐츠 시트에서)','찬성해요 / 반대해요 / 잘 모르겠어요를 누르면 버튼마다 비율이 바로 보임','이유 한 줄(80자) 쓰고 "의견 내기" → 학습 1회. 낸 뒤에는 투표·이유를 고칠 수 없음','다른 친구들의 생각: 전체 / 찬성 / 반대 / 잘 모르겠어요 눌러 거르기. 이름은 안 보임. 일요일 자정 마감 뒤에는 투표만 닫히고 결과·친구 의견은 계속 보임'],q:'결정(10-10): 낸 의견은 고치지 않음, 인스타는 개인 의견 없는 토론 카드, 친구 의견은 이름 없이 공개(부적절한 글은 AI가 자동 숨김), 마감 뒤에도 결과·친구 의견 공개'},
   'article:drate':{t:'의견 내기 · 토론 주제 반응',st:'plan',b:['의견 내기를 누르면 학습 1회, 입장·이유는 앱·뉴스북에 저장','바로 "오늘 토론 주제는 어땠어요?" 반응 4가지 중 하나(필수, 한 번만 누름)','정답 없는 반응이라 시험 느낌 없이. 운영팀은 기사별 토론 주제 반응을 대시보드·운영 시트에서 봄'],q:'반응 문구 4개는 임시'},
   debateDone:{t:'토론 완료 · 토론 카드 (인스타용)',st:'plan',b:['청독·읽기 카드와 같은 모양 + "토론" 도장','토론 질문, N명이 함께 토론했어요 + 찬성/반대/잘 모르겠어요 비율(날짜 기준, 익명 집계), 내 반응','내 입장·이유는 카드에 넣지 않음 → 아이 의견이 인스타에 공개되지 않음'],q:'결정(10-10): 공개 여부를 아이에게 맡기지 않고, 인스타 카드에는 개인 의견을 넣지 않음'},
+  cardGallery:{t:'활동 카드 모음 (5종)',st:'plan',b:['청독·읽기 완료·기사 요약·VOCA·토론 카드가 같은 신문 스크랩 틀(1080×1350)에 도장만 다름','인스타에 올리는 그림이자 뉴스북 주차 쪽에 실리는 카드(앱·뉴스북용은 작게 4열)','요약 카드: 기자수첩 제목·요약 + 작성지 사진. VOCA 카드: 이번 주 단어 + 작성지 사진(또는 단어 낭독)','토론 카드만 개인 의견을 넣지 않음'],q:'요약 카드에 요약 글을 넣는 것은 아이가 쓴 글이지만 지금도 작성지 사진을 그대로 올리고 있어 같은 수준'},
   grace:{t:'마감 이후 홈',st:'live',b:['종강일이 지났는데 완주 전이면 홈이 바뀜','유예 중(종강 후 1주): 남은 개수와 유예 마감일','유예 끝: 늦은 완주 가능, 녹음 보관 기한 안내']}
 };
 function noteHTML(){
