@@ -44,7 +44,7 @@ describe("뉴스북", () => {
       const w3 = (await book(tx, "S-0001")).weeks[2];
       expect(w3.summary).toMatchObject({ title: "RM의 미술관", body: "RM shared his art.", has_photo: true });
       expect(w3.opinion).toEqual({ stance: "agree", reason: "좋아서" });
-      expect(w3.tally).toEqual({ agree: 1, disagree: 0, final: true });
+      expect(w3.tally).toEqual({ agree: 1, disagree: 0, unsure: 0, final: true }) // 잘 모르겠어요(2026-10-10);
       const w4 = (await book(tx, "S-0001")).weeks[3];
       expect(w4.summary).toBeNull();
       expect(w4.tally).toBeNull();

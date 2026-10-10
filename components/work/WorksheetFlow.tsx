@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import type { WorkMaterial } from "@/lib/server/reading";
 import { post, uploadMedia } from "@/lib/client-api";
 import { shrinkPhoto } from "@/lib/image";
+import { attachWorkCard, makeWorkCard } from "@/lib/work/card";
 
 type Kind = "voca" | "summary";
 const TYPE: Record<Kind, string> = { voca: "VOCA", summary: "SUMMARY" };
@@ -68,6 +69,7 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
   // 사진에서 읽은 글자: 학생이 "이대로 저장 / 수정"을 고르기 전까지 여기 둔다
   const [ocrText, setOcrText] = useState<string | null>(null);
   const bodyRef = useRef<HTMLTextAreaElement | null>(null);
+  const photoBlob = useRef<Blob | null>(null); // 카드에 넣을 작성지 사진(이번에 고른 것, 이어 하기면 앱 주소에서 불러옴)
   const camRef = useRef<HTMLInputElement | null>(null);
   const albumRef = useRef<HTMLInputElement | null>(null);
 
@@ -82,6 +84,7 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
       const id = activityId ?? (await post<{ activityId: string }>("/api/activity/start", { week: material.week_no, type: TYPE[kind] })).activityId;
       setActivityId(id);
       const blob = await shrinkPhoto(file);
+      photoBlob.current = blob;
       const path = await uploadMedia(id, blob, blob.type || file.type);
       await post("/api/activity/attach", { activityId: id, path });
       setPhoto(local);
@@ -152,7 +155,10 @@ export function WorksheetFlow({ kind, material, ocr }: { kind: Kind; material: W
         setBusy(null);
         return;
       }
+      // 활동 카드(기사 요약·VOCA): 완료 전에 그려 올리고 완료 뒤 붙인다. 인스타에는 이 카드를 올린다
+      const cardPath = await makeWorkCard({ activityId, photo: photoBlob.current ?? material.draft?.photoUrl ?? null, myTitle: title, summary: body, method: "photo" });
       const c = await post<{ weekNo: number; weekCompleted: number }>("/api/activity/complete", { activityId });
+      await attachWorkCard(activityId, cardPath);
       router.push(`/?done=${c.weekNo}-${c.weekCompleted}`);
     } catch {
       setError("완료하지 못했어요. 다시 눌러 주세요.");

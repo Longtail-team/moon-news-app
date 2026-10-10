@@ -33,3 +33,11 @@ export async function attachCard(studentId: string, activityId: string, path: st
   const { error } = await db().rpc("attach_card", { p_student: studentId, p_activity: activityId, p_card_key: path });
   return error ? "invalid" : "ok";
 }
+
+/** 기사 요약·VOCA 카드 머리글 값. 남의 활동·다른 종류면 null */
+export async function workCardHead(studentId: string, activityId: string): Promise<Record<string, unknown> | null> {
+  if (!UUID.test(activityId)) return null;
+  const { data, error } = await db().rpc("card_head", { p_student: studentId, p_activity: activityId });
+  if (error) throw error;
+  return (data as Record<string, unknown> | null) ?? null;
+}

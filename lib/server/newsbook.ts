@@ -10,8 +10,8 @@ export type BookWeek = {
   title_ko: string | null;
   summary: { activity_id: string; title: string | null; body: string | null; has_photo: boolean } | null;
   opinion: { stance: "agree" | "disagree" | "unsure"; reason: string | null } | null;
-  cards: { activity_id: string }[]; // 청독 카드(모두)
-  tally: { agree: number; disagree: number; final: boolean } | null; // 의견을 골랐을 때만
+  cards: { activity_id: string; type: ActType }[]; // 활동 카드 모두(청독·읽기 완료·기사 요약·VOCA·토론, 완료 순)
+  tally: { agree: number; disagree: number; unsure?: number; final: boolean } | null; // 의견을 골랐을 때만
 };
 
 export type Newsbook = {
@@ -49,5 +49,5 @@ export async function getNewsbook(studentId: string, enrollment?: string | null)
   return (data as Newsbook | null) ?? null;
 }
 
-/** 뉴스북에 실리는 기사 쪽: 기자수첩·의견·청독 카드가 있는 주차 */
+/** 뉴스북에 실리는 기사 쪽: 기자수첩·의견·활동 카드가 있는 주차 */
 export const bookPages = (b: Newsbook) => b.weeks.filter((w) => w.summary || w.opinion || w.cards.length > 0);

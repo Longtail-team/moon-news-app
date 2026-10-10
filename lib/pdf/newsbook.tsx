@@ -7,6 +7,7 @@ import type { BookWeek, Newsbook } from "@/lib/server/newsbook";
 import { fmtDay, fmtMonthDay, givenName } from "@/lib/format";
 import { withGa } from "@/lib/korean";
 import { STANCE_TAG } from "@/lib/debate/board";
+import { percents } from "@/lib/cards/layout";
 
 const FONT_DIR = path.join(process.cwd(), "lib", "pdf", "fonts");
 Font.register({
@@ -38,8 +39,9 @@ export type PdfPhoto = { data: Buffer; format: "jpg" | "png" };
 
 function ArticlePage({ w, reporter, photo, cards }: { w: BookWeek; reporter: string; photo?: PdfPhoto; cards: PdfPhoto[] }) {
   const t = w.tally;
-  const total = t ? t.agree + t.disagree : 0;
-  const pct = t && total ? Math.round((t.agree / total) * 100) : 0;
+  const counts = t ? { agree: t.agree, disagree: t.disagree, unsure: t.unsure ?? 0 } : null;
+  const total = counts ? counts.agree + counts.disagree + counts.unsure : 0;
+  const p = counts ? percents(counts) : { agree: 0, disagree: 0, unsure: 0 };
   return (
     <Page size="A4" style={s.page}>
       <Text style={s.meta}>
@@ -71,19 +73,20 @@ function ArticlePage({ w, reporter, photo, cards }: { w: BookWeek; reporter: str
         <View style={{ marginTop: 4 }}>
           <Text style={s.label}>찬반 결과{t.final ? "" : " (집계 중)"}</Text>
           <View style={s.bar}>
-            <View style={{ width: `${pct}%`, backgroundColor: C.main }} />
+            <View style={{ width: `${p.agree}%`, backgroundColor: C.main }} />
           </View>
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <Text style={{ fontSize: 10 }}>찬성 {pct}%</Text>
+            <Text style={{ fontSize: 10 }}>찬성 {p.agree}%</Text>
+            <Text style={{ fontSize: 10 }}>반대 {p.disagree}%</Text>
             <Text style={{ fontSize: 10 }}>
-              반대 {100 - pct}% · {total}명
+              잘 모르겠어요 {p.unsure}% · {total}명
             </Text>
           </View>
         </View>
       )}
       {cards.length > 0 && (
         <View style={{ marginTop: 14 }}>
-          <Text style={s.label}>청독 카드 {cards.length}장</Text>
+          <Text style={s.label}>활동 카드 {cards.length}장</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: -3 }}>
             {cards.map((c, i) => (
               // 4열 (인스타 4:5 그대로)

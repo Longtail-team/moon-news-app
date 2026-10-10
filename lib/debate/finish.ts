@@ -25,9 +25,10 @@ export async function finishDebate(o: { board: DebateBoard; stance: Stance; reas
     counts: countsWith(o.board, o.stance),
     feel: o.feel ? DEBATE_FEELS[o.feel - 1] : null, // 건너뛰면 카드에 반응을 넣지 않는다
   };
-  const path = await uploadMedia(a.activityId, await drawDebateCard(card, "app"), "image/png", "card");
+  // 인스타용 한 장만 그려 보관(인스타 올리기·뉴스북이 같은 그림을 씀, 저사양 휴대폰 메모리 절약)
+  const blob = await drawDebateCard(card, "insta");
+  const path = await uploadMedia(a.activityId, blob, "image/png", "card");
   const c = await post<{ weekNo: number; weekCompleted: number }>("/api/activity/complete", { activityId: a.activityId, path });
   if (o.feel) await post("/api/rating", { activityId: a.activityId, kind: "debate_feel", value: o.feel }).catch(() => {});
-  const blob = await drawDebateCard(card, "insta");
   return { ...c, card: { url: URL.createObjectURL(blob), file: new File([blob], `새벽달영어뉴스_${week}주차_토론.png`, { type: "image/png" }) } };
 }

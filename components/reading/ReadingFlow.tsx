@@ -10,6 +10,7 @@ import { clock, fmtDuration, timeline, totalSec } from "@/lib/reading/text";
 import { useRecording } from "@/lib/reading/useRecording";
 import { RATES } from "@/lib/listen/useListening";
 import { post, uploadMedia } from "@/lib/client-api";
+import { attachWorkCard, makeWorkCard } from "@/lib/work/card";
 import { ArticleText } from "./ArticleText";
 
 const RATE_KEY = "nd_rate"; // 고른 속도를 이 기기에 기억 (spec 8장)
@@ -89,7 +90,9 @@ export function ReadingFlow({ material, vocaAudio, maxSec }: { material: Materia
     try {
       const activityId = await activity.current;
       const path = await uploadMedia(activityId, R.result.blob, R.result.mime);
+      const cardPath = await makeWorkCard({ activityId, photo: null, method: "reading" }); // VOCA 카드(소리 내어 읽었어요)
       const c = await post<{ weekNo: number; weekCompleted: number }>("/api/activity/complete", { activityId, path });
+      await attachWorkCard(activityId, cardPath);
       router.push(goUp ? "/upload" : `/?done=${c.weekNo}-${c.weekCompleted}`);
     } catch {
       R.setError("저장하지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요. 녹음은 그대로 있어요.");

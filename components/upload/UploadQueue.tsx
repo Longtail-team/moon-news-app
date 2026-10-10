@@ -24,11 +24,12 @@ function Item({ item, onVerified, onMessage }: { item: QueueItem; onVerified: (v
   // 사진은 미리 받아 둔다: 공유 창은 버튼을 누른 바로 그 순간에 열어야 하는 기기가 있어서
   // 청독 카드는 인스타용(제목 100px)으로 휴대폰에서 다시 그린다(앱·뉴스북용은 서버에 보관된 것)
   useEffect(() => {
-    if (!photo || (!item.mediaUrl && !item.card)) return;
+    if (!photo || (!item.mediaUrl && !item.card && !item.cardUrl)) return;
     let alive = true;
+    // 청독은 인스타용으로 다시 그리고, 다른 활동은 보관된 활동 카드(기사 요약·VOCA·토론), 카드가 없으면(예전 기록) 작성지 사진
     const blob = item.card
       ? drawListeningCard({ ...item.card, reporter: givenName(item.card.name) }, "insta")
-      : fetch(item.mediaUrl!).then((r) => (r.ok ? r.blob() : Promise.reject()));
+      : fetch((item.cardUrl ?? item.mediaUrl)!).then((r) => (r.ok ? r.blob() : Promise.reject()));
     blob
       .then((b) => {
         if (!alive) return;
@@ -84,7 +85,7 @@ function Item({ item, onVerified, onMessage }: { item: QueueItem; onVerified: (v
             <span style={{ fontSize: 16, fontWeight: 800 }}>{ACT[item.activity_type].name}</span>
             <span className="meta">
               {item.week_no}주차 · {fmtMonthDay(item.completed_at)}
-              {item.activity_type === "LISTENING" ? " · 청독 카드" : photo ? " · 작성지 사진" : " 녹음"}
+              {item.activity_type === "LISTENING" ? " · 청독 카드" : item.cardUrl ? " · 활동 카드" : photo ? " · 작성지 사진" : " 녹음"}
             </span>
           </span>
         </div>
