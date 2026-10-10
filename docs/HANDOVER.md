@@ -49,7 +49,7 @@ node --env-file=.env.local scripts/delete-test-order.mjs 01000009001       # 시
 ```
 npm install
 npm run dev        # http://localhost:3000  (predev가 ffmpeg 워커를 public/ffmpeg로 복사)
-npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 135개
+npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 136개
 npm run build
 ```
 
@@ -63,7 +63,7 @@ DB 변경
 supabase link --project-ref mefmwetcfrmwdqcgxtpz -p <DB 비밀번호>
 supabase db push -p <DB 비밀번호>            # supabase/migrations 적용
 ```
-- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 24개 모두 운영에 적용됨.
+- 마이그레이션은 추가만 한다(이미 적용된 파일은 고치지 않는다). 지금까지 25개 모두 운영에 적용됨.
 
 ### Windows 주의
 - 프로젝트 경로에 한글이 있으면 Node `fs.cpSync`가 오류 없이 종료된다 → `copyFileSync` 사용(`scripts/copy-ffmpeg-worker.mjs`)
@@ -85,7 +85,7 @@ app/
   upload/                인스타 올리기
   materials/             이번 주 자료 (주차별 순차 공개)
   finish/                완주 화면, finish/certificate 상장 이름 확인, finish/certificate/pdf 상장 PDF
-  record/                내 기록 탭 (학습자별 기록·지난 기수·설정), record/book 뉴스북 보기, record/book/pdf PDF(종강 다음 날부터)
+  record/                내 기록 탭 (학습자별 기록·지난 기수·설정), record/book 뉴스북 보기, record/book/pdf PDF(종강 다음 날부터, 저장소 books/에 만들어 두고 1분 주소로 내려받기)
   files/[week]/[type]/   학습 자료 파일 → 확인 후 짧은 주소로 이동
   media/[activity]/      녹음·사진 → 주인 확인 후 1분 주소로 이동 (화면에 저장소 주소를 싣지 않음)
   live/[session]/        라이브 입장·다시보기 (입장 기록)
@@ -94,12 +94,12 @@ app/
   lab/                   T01 기기 검증 페이지, lab/cards 활동 카드 5종 미리보기(샘플 값)
 components/student|reading|work|upload|materials|onboarding/
 lib/
-  server/                서버 전용(db, session, home, reading, media, learner, guardian, onboarding, notify, materials, ocr)
+  server/                서버 전용(db, session, home, reading, media, learner, guardian, onboarding, notify, materials, ocr, newsbook-pdf)
                          learner.ts: API용 requireLearner, 화면용 pageLearner(세션·학습자 없으면 이동)
   client-api.ts          브라우저 → 서버 API, 파일 직접 업로드
   format.ts phone.ts korean.ts insta.ts image.ts   날짜·이름 표시, 번호 정리·가리기, 조사·학년, 인스타 링크 정리, 사진 줄이기
   lab/                   /lab 기기 검증 페이지 전용
-  pdf/                   뉴스북·상장 PDF (react-pdf), fonts/ Pretendard TTF + LICENSE
+  pdf/                   뉴스북·상장 PDF (react-pdf), images.ts PDF용 그림 줄이기(sharp), fonts/ Pretendard TTF + LICENSE
   content/parse.mjs      콘텐츠 시트 검사·변환, 파일명 규칙
   video/                 2단계 영상 모듈 연결 규칙 (지금은 자리만, MAX_RECORDING_SEC=300)
   reading/               지문·하이라이트 순서, 녹음기
@@ -108,7 +108,7 @@ lib/
 scripts/sync-content.mjs 콘텐츠 반영 (GitHub Actions에서 실행)
 .github/workflows/content-sync.yml
 supabase/
-  migrations/            24개
+  migrations/            25개
   seed.sql               샘플 데이터
   sample-cleanup.sql     개강 전 샘플 지우기
 tests/db/ tests/unit/
@@ -175,7 +175,7 @@ docs/ spec.md · tasks/ · devlog.md · spike-results.md · content/ · referenc
 
 ## 9. 주의
 - **운영 DB에 샘플 데이터가 있다.** 실제 수강생 등록 전에 `supabase/sample-cleanup.sql` 실행(파일 안의 확인 쿼리 먼저). 시험하며 생긴 기록도 함께 지워진다.
-- 시험으로 녹음·사진을 올리면 `media` 버킷에 파일이 남는다. 샘플 정리 때 버킷의 `recordings/`, `photos/`, `cards/`도 비운다.
+- 시험으로 녹음·사진을 올리면 `media` 버킷에 파일이 남는다. 샘플 정리 때 버킷의 `recordings/`, `photos/`, `cards/`, `books/`(뉴스북 PDF)도 비운다.
 - 미리보기도 운영 DB를 쓴다. DB를 바꾸는 PR은 미리보기 확인 전에 운영 DB에 먼저 반영된다(지금까지는 모두 기존 화면과 호환되게 만듦).
 - 미리보기에서 만든 시험 주문(01000009061)이 남아 있다. 확인이 끝나면 `delete-test-order.mjs`로 지운다.
 - 콘텐츠 드라이브는 공유 드라이브라 Claude 연결 계정으로는 파일 이동이 안 된다(만들기·이름 바꾸기는 됨).
