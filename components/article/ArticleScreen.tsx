@@ -23,6 +23,8 @@ import { ListenDoneView } from "./ListenDoneView";
 import { ReadSheet } from "./ReadSheet";
 import { ReadDoneView } from "./ReadDoneView";
 import { DebateSheetLink } from "./InterimSheets";
+import { RatingSheet } from "@/components/rating/RatingSheet";
+import { LISTEN_LEVELS } from "@/lib/rating/options";
 
 const TYPE: Record<ReadLang, string> = { en: "EN_READING", kr: "KR_READING" };
 
@@ -39,6 +41,7 @@ export function ArticleScreen({
   maxSec,
   learnerName,
   deadline,
+  listenRatingRequired,
 }: {
   week: number;
   title: string;
@@ -52,6 +55,7 @@ export function ArticleScreen({
   maxSec: number; // 녹음 최대 길이(2단계 확정 전 임시)
   learnerName: string; // 부르는 이름(첫 낭독 안내)
   deadline: string; // 종강일 표시
+  listenRatingRequired: boolean; // 이 주차 첫 청독이면 이해도 평가 필수(다시 청독은 선택)
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>(initialMode);
@@ -64,6 +68,8 @@ export function ArticleScreen({
   const [error, setError] = useState<string | null>(null);
   const [listenDone, setListenDone] = useState<ListenDone | null>(null);
   const [readDone, setReadDone] = useState<{ done: ReadDone; sec: number; popup: boolean } | null>(null);
+  const [rateOpen, setRateOpen] = useState(false); // 청독 완료 → 이해도 평가
+  const [rateRequired, setRateRequired] = useState(listenRatingRequired);
   const activity = useRef<Promise<string> | null>(null);
 
   const L = useListening({ week, audios, sentences });
@@ -99,15 +105,25 @@ export function ArticleScreen({
     setView(defaultView("read", l));
   }
 
-  async function completeListening() {
+  // 청독 완료 → 이해도 평가 창(첫 청독은 필수) → 고르거나 건너뛰면 완료 처리
+  function askRating() {
+    if (!L.passed || busy) return;
+    L.pauseAll();
+    setRateOpen(true);
+  }
+
+  async function completeListening(understanding: number | null) {
     if (!L.passed || busy) return;
     setBusy(true);
     setError(null);
-    L.pauseAll();
     try {
       await L.flush();
-      setListenDone(await finishListening(week, L.plays, L.session));
+      const done = await finishListening(week, L.plays, L.session, understanding);
+      if (understanding) setRateRequired(false);
+      setRateOpen(false);
+      setListenDone(done);
     } catch {
+      setRateOpen(false);
       setError("청독 카드를 만들지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요. 들은 기록은 남아 있어요.");
     } finally {
       setBusy(false);
@@ -200,7 +216,7 @@ export function ArticleScreen({
 
       <div className="bottom dock stack" style={{ gap: 10 }}>
         <ModeTabs mode={mode} onMode={changeMode} locked={recording} />
-        {mode === "listen" && <ListenSheet audios={audios} selected={selected} onSelect={(t) => (L.pauseAll(), setSelected(t))} L={L} busy={busy} onComplete={() => void completeListening()} />}
+        {mode === "listen" && <ListenSheet audios={audios} selected={selected} onSelect={(t) => (L.pauseAll(), setSelected(t))} L={L} busy={busy} onComplete={askRating} />}
         {mode === "read" && (
           <ReadSheet
             R={R}
@@ -217,6 +233,20 @@ export function ArticleScreen({
         )}
         {mode === "debate" && <DebateSheetLink week={week} />}
       </div>
+
+      {rateOpen && (
+        <RatingSheet
+          label="청독 이해도"
+          title="이번 청독은 어땠나요?"
+          help={rateRequired ? "이 기사를 처음 청독했어요. 나와 가장 가까운 것을 골라 주세요." : "같은 기사를 다시 들었어요. 골라도 되고 건너뛰어도 돼요."}
+          options={LISTEN_LEVELS}
+          numbered
+          required={rateRequired}
+          busy={busy}
+          onPick={(v) => void completeListening(v)}
+          onSkip={() => void completeListening(null)}
+        />
+      )}
 
       {R.phase === "count" && (
         <div className="count" role="status">

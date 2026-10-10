@@ -28,3 +28,9 @@
 .app .qline { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 10px 14px; border: 0; border-radius: 16px; background: var(--tint); text-align: left; font: inherit; color: var(--ink); cursor: pointer; }
 .app .qline b { flex-shrink: 0; font-size: 13px; color: var(--deep); }
 .app .qline span { flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 평가 창(청독 이해도·토론 주제 반응) */
+.app .r5 { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 8px 14px; border-radius: 12px; border: 1px solid var(--line2); background: var(--white); font: inherit; font-size: 15px; font-weight: 700; color: var(--ink); text-align: left; cursor: pointer; }
+.app .r5 b { width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; background: var(--tint); color: var(--deep); font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.app .r5sub { font-size: 13px; font-weight: 500; color: var(--sub); }
+.app .r5:disabled { opacity: 0.6; }
