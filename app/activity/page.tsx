@@ -72,7 +72,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
               const inProgress = sel.in_progress.includes(k);
               const n = sel.counts[k] ?? 0;
               return (
-                <Link key={k} className="act" href={k === "LISTENING" ? articleHref(sel.week_no) : k.endsWith("READING") ? articleHref(sel.week_no, "read", k === "EN_READING" ? "en" : "kr") : `/write/${sel.week_no}/${SLUG[k]}`}>
+                <Link key={k} className="act" href={k === "LISTENING" ? articleHref(sel.week_no) : k.endsWith("READING") ? articleHref(sel.week_no, "read", k === "EN_READING" ? "en" : "kr") : k === "DEBATE" ? articleHref(sel.week_no, "debate") : `/write/${sel.week_no}/${SLUG[k]}`}>
                   <span className="ic">
                     <ActIcon type={k} />
                   </span>

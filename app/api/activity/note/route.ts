@@ -1,5 +1,5 @@
 // 기자수첩·의견 저장 (선택 입력): 기사 요약은 제목·요약, 찬반토론은 입장·이유. 학습 완료 직전에 저장한다.
-// 찬반토론 의견은 그 주차 일요일 자정까지만 받는다(마감 뒤에는 저장하지 않음). 의견을 고르면 그 주차 찬반 결과를 돌려준다.
+// 찬반토론: 찬성 / 반대 / 잘 모르겠어요 + 이유 한 줄. 마감(그 주차 일요일 자정) 뒤에 낸 의견은 저장하되 비율·친구 의견에는 넣지 않는다(2026-10-10).
 import { db } from "@/lib/server/db";
 import { json, requireLearner } from "@/lib/server/learner";
 
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   if (!learner) return json({ error: "unauthorized" }, 401);
   const b = (await req.json().catch(() => null)) as { activityId?: string; week?: unknown; title?: unknown; body?: unknown; stance?: unknown; reason?: unknown } | null;
   if (!b?.activityId) return json({ error: "bad request" }, 400);
-  const stance = b.stance === "agree" || b.stance === "disagree" ? b.stance : null;
+  const stance = b.stance === "agree" || b.stance === "disagree" || b.stance === "unsure" ? b.stance : null;
   const { error } = await db().rpc("save_note", {
     p_student: learner.student_id,
     p_activity: b.activityId,

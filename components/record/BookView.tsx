@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { BookWeek, Newsbook } from "@/lib/server/newsbook";
 import { fmtDay, fmtMonthDay, givenName } from "@/lib/format";
 import { withGa } from "@/lib/korean";
+import { STANCE_TAG } from "@/lib/debate/board";
 
 function WeekCard({ w, reporter }: { w: BookWeek; reporter: string }) {
   const t = w.tally;
@@ -45,7 +46,7 @@ function WeekCard({ w, reporter }: { w: BookWeek; reporter: string }) {
       {w.opinion && (
         <div className="stack" style={{ gap: 4, padding: 12, borderRadius: 12, border: "1px solid var(--line)" }}>
           <span style={{ fontSize: 13, fontWeight: 800, color: "var(--deep)" }}>의견 카드</span>
-          <b style={{ fontSize: 15 }}>내 입장: {w.opinion.stance === "agree" ? "찬성" : "반대"}</b>
+          <b style={{ fontSize: 15 }}>내 입장: {STANCE_TAG[w.opinion.stance]}</b>
           {w.opinion.reason && <span style={{ fontSize: 14 }}>{w.opinion.reason}</span>}
         </div>
       )}

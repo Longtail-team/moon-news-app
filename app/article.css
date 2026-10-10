@@ -34,3 +34,20 @@
 .app .r5 b { width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; background: var(--tint); color: var(--deep); font-size: 13px; display: flex; align-items: center; justify-content: center; }
 .app .r5sub { font-size: 13px; font-weight: 500; color: var(--sub); }
 .app .r5:disabled { opacity: 0.6; }
+
+/* 찬반토론: 3지선다(누르면 비율), 친구 의견 */
+.app .vopt { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 56px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--line2); background: var(--white); font: inherit; font-size: 16px; font-weight: 800; color: var(--ink); text-align: left; cursor: pointer; }
+.app .vopt i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--mute); animation: grow 0.5s ease-out; }
+.app .vopt.on { border: 2px solid var(--deep); }
+.app .vopt.on i { background: var(--tint); }
+.app .vopt span, .app .vopt b { position: relative; }
+.app .vopt b { font-size: 15px; color: var(--sub); }
+.app .vopt.on b { color: var(--deep); }
+.app .vopt:disabled { cursor: default; }
+@keyframes grow { from { width: 0; } }
+.app .optag { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; }
+.app .optag.agree { background: var(--tint); color: var(--deep); }
+.app .optag.disagree { background: var(--mute); color: var(--ink); }
+.app .optag.unsure { background: var(--white); color: var(--sub); border: 1px solid var(--line2); }
+.app .opi { padding: 14px 0; border-bottom: 1px solid var(--mute); display: flex; flex-direction: column; gap: 8px; }
+@media (prefers-reduced-motion: reduce) { .app .vopt i { animation: none; } }

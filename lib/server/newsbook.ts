@@ -9,7 +9,7 @@ export type BookWeek = {
   title_en: string | null;
   title_ko: string | null;
   summary: { activity_id: string; title: string | null; body: string | null; has_photo: boolean } | null;
-  opinion: { stance: "agree" | "disagree"; reason: string | null } | null;
+  opinion: { stance: "agree" | "disagree" | "unsure"; reason: string | null } | null;
   cards: { activity_id: string }[]; // 청독 카드(모두)
   tally: { agree: number; disagree: number; final: boolean } | null; // 의견을 골랐을 때만
 };
