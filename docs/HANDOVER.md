@@ -49,7 +49,7 @@ node --env-file=.env.local scripts/delete-test-order.mjs 01000009001       # 시
 ```
 npm install
 npm run dev        # http://localhost:3000  (predev가 ffmpeg 워커를 public/ffmpeg로 복사)
-npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 130개
+npm test           # vitest: DB 규칙(PGlite) + 단위 테스트, 135개
 npm run build
 ```
 
@@ -91,7 +91,7 @@ app/
   live/[session]/        라이브 입장·다시보기 (입장 기록)
   */loading.tsx          불러오는 동안 뼈대 (components/student/PageLoading)
   api/activity/*  api/onboarding/*  api/reentry
-  lab/                   T01 기기 검증 페이지
+  lab/                   T01 기기 검증 페이지, lab/cards 활동 카드 5종 미리보기(샘플 값)
 components/student|reading|work|upload|materials|onboarding/
 lib/
   server/                서버 전용(db, session, home, reading, media, learner, guardian, onboarding, notify, materials, ocr)
@@ -103,7 +103,8 @@ lib/
   content/parse.mjs      콘텐츠 시트 검사·변환, 파일명 규칙
   video/                 2단계 영상 모듈 연결 규칙 (지금은 자리만, MAX_RECORDING_SEC=300)
   reading/               지문·하이라이트 순서, 녹음기
-  listening.ts           청독량 기록(재생 시간 재기·전송), listening-card.ts 청독 카드 그리기(1080×1350)
+  listening.ts           청독량 기록(재생 시간 재기·전송)
+  cards/                 활동 카드 그리기(1080×1350): frame.ts 공통 틀·도장, layout.ts 배치 규칙(테스트), listening·reading·summary·voca·debate.ts 카드 5종
 scripts/sync-content.mjs 콘텐츠 반영 (GitHub Actions에서 실행)
 .github/workflows/content-sync.yml
 supabase/
