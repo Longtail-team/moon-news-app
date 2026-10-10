@@ -2,6 +2,7 @@
 // 찬반토론: 찬성 / 반대 / 잘 모르겠어요 + 이유 한 줄. 마감(그 주차 일요일 자정) 뒤에 낸 의견은 저장하되 비율·친구 의견에는 넣지 않는다(2026-10-10).
 import { db } from "@/lib/server/db";
 import { json, requireLearner } from "@/lib/server/learner";
+import { moderateOpinion } from "@/lib/server/moderation";
 
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max) : null);
 
@@ -20,6 +21,8 @@ export async function POST(req: Request) {
     p_reason: str(b.reason, 300),
   });
   if (error) return json({ error: error.message.includes("vote closed") ? "vote_closed" : "cannot save" }, 409);
+  // 찬반 이유: 금칙어·연락처에 걸리면 친구들에게만 숨김(쓴 아이에게는 알리지 않음)
+  if (stance) await moderateOpinion(learner.student_id, b.activityId, str(b.reason, 300)).catch(() => {});
   // 찬반토론: 의견을 골랐을 때만 결과(고르지 않았으면 null)
   if ("stance" in b && Number.isInteger(b.week)) {
     const { data: tally } = await db().rpc("my_debate_tally", { p_student: learner.student_id, p_week: b.week });
