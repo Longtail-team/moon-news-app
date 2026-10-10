@@ -166,8 +166,37 @@ export function drawPills(ctx: CanvasRenderingContext2D, pills: { label: string;
 export const BOX_H = 322;
 export const BOX_Y = H - 64 - 56 - BOX_H;
 
-/** 아래 숫자 칸: 위 라벨 + 큰 값 / 줄 / 아래 라벨 + 값 */
-export function drawStatBox(ctx: CanvasRenderingContext2D, s: { label: string; big: string; footLabel: string; footValue: string }) {
+/** 활동 아이콘(앱 12주 기록·활동 고르기와 같은 그림, components/student/icons.tsx). 이모지는 기기마다 달라 쓰지 않음 */
+export type ActivityIcon = "listen" | "read-en" | "read-kr";
+export function drawActivityIcon(ctx: CanvasRenderingContext2D, icon: ActivityIcon, x: number, y: number, size: number) {
+  const k = size / 24; // 아이콘은 24×24 기준
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(k, k);
+  ctx.strokeStyle = C.deep;
+  ctx.fillStyle = C.deep;
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  if (icon === "listen") {
+    ctx.stroke(new Path2D("M4 15v-3a8 8 0 0 1 16 0v3"));
+    ctx.beginPath();
+    ctx.roundRect(3, 14, 4.5, 6.5, 1.8);
+    ctx.roundRect(16.5, 14, 4.5, 6.5, 1.8);
+    ctx.stroke();
+  } else {
+    ctx.stroke(new Path2D("M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-8l-4 3.5V17H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"));
+    const en = icon === "read-en";
+    ctx.font = `800 ${en ? 9 : 8}px ${SANS}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(en ? "A" : "가", 12, 13.6);
+  }
+  ctx.restore();
+}
+
+/** 아래 숫자 칸: 위 라벨 + 큰 값(옆에 활동 아이콘) / 줄 / 아래 라벨 + 값 */
+export function drawStatBox(ctx: CanvasRenderingContext2D, s: { label: string; big: string; footLabel: string; footValue: string; icon?: ActivityIcon }) {
   rr(ctx, X0, BOX_Y, MAX_W, BOX_H, 24);
   ctx.fillStyle = C.tint;
   ctx.fill();
@@ -178,6 +207,9 @@ export function drawStatBox(ctx: CanvasRenderingContext2D, s: { label: string; b
   ctx.fillStyle = C.ink;
   ctx.font = `900 112px ${SANS}`;
   ctx.fillText(s.big, bx, BOX_Y + 32 + 45 + 8 + 96);
+  // 큰 숫자 바로 옆에 활동 아이콘(뉴스북의 작은 카드에서도 청독·낭독이 구분되게)
+  // 크기 140px: 뉴스북 작은 카드(폭 약 75px)에서도 10px 정도로 보임
+  if (s.icon) drawActivityIcon(ctx, s.icon, bx + ctx.measureText(s.big).width + 34, BOX_Y + 52, 140);
   ctx.fillStyle = C.main;
   ctx.fillRect(bx, BOX_Y + 228, MAX_W - 80, 2);
   ctx.fillStyle = C.deep;

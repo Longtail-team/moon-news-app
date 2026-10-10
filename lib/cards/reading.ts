@@ -32,8 +32,8 @@ export async function drawReadingCard(d: ReadingCardData, style: CardStyle = "ap
   drawStatBox(
     ctx,
     en
-      ? { label: "오늘 소리 내어 읽은 단어", big: `${d.words.toLocaleString()}개`, footLabel: "지금까지 누적", footValue: `${d.total_words.toLocaleString()}단어` }
-      : { label: "오늘 읽은 시간", big: fmtDuration(d.record_seconds), footLabel: "지금까지 낭독", footValue: `${d.total_reads}회` },
+      ? { label: "오늘 소리 내어 읽은 단어", big: `${d.words.toLocaleString()}개`, footLabel: "지금까지 누적", footValue: `${d.total_words.toLocaleString()}단어`, icon: "read-en" }
+      : { label: "오늘 읽은 시간", big: fmtDuration(d.record_seconds), footLabel: "지금까지 낭독", footValue: `${d.total_reads}회`, icon: "read-kr" },
   );
 
   // 도장은 녹음 길이를 가리지 않게 알약 아래 ~ 숫자 칸 위

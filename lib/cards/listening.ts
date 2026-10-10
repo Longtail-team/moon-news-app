@@ -2,6 +2,7 @@
 // - 들은 음원만 표시, 오늘 들은 시간·누적 시간을 크게
 // - 두 가지 스타일: "app" = 앱 화면·뉴스북(제목 2줄 68px, 3줄 58px), "insta" = 인스타 저장(제목 100px, 넘치면 84→68→58px)
 //   앱·뉴스북용만 서버에 보관하고, 인스타용은 저장할 때 같은 값으로 다시 그린다
+// - 숫자 칸 큰 숫자 옆에 청독 아이콘(헤드폰, 2026-10-10)
 // - 도장: 음원 표시와 시간 칸 사이 빈 곳의 아무 자리 + 각도 -25°~+25° (빈 곳이 좁으면 시간 칸 오른쪽 위 모서리)
 import { fmtListen, type AudioType } from "../listening";
 import { BOX_Y, SANS, SERIF, STAMP, W, drawPills, drawStatBox, drawSubLine, drawTitle, loadFonts, placeStamp, startCard, toPng, type CardHead } from "./frame";
@@ -56,7 +57,7 @@ export async function drawListeningCard(d: ListeningCardData, style: CardStyle =
     y,
   );
 
-  drawStatBox(ctx, { label: "오늘 들은 시간", big: fmtListen(d.session_seconds), footLabel: "지금까지 누적", footValue: fmtListen(d.total_seconds) });
+  drawStatBox(ctx, { label: "오늘 들은 시간", big: fmtListen(d.session_seconds), footLabel: "지금까지 누적", footValue: fmtListen(d.total_seconds), icon: "listen" });
 
   // 도장: 제목 아래 ~ 시간 칸 위(기자 이름·음원 표시와는 겹쳐도 됨, 제목·시간 숫자는 가리지 않게), 좁으면 시간 칸 오른쪽 위 모서리
   placeStamp(ctx, d, "listen", {
